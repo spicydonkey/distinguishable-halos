@@ -40,7 +40,7 @@
 
 %move to array for spherical cordinates instead of sep variables
 
-%-----------------------------------START user var----------------------------------------
+%% -----------------------START user var---------------------------
 
 %filepath='C:\Tmp\dld_data1\multihalos_';
 %filepath='C:\Tmp\dld_output\mag sens halos low atom num\d';
@@ -61,7 +61,7 @@ clean_radialy=1;            %only keep the halo values within a certian radius
 isverbose=1;                %print progress ect
     progress_scaling=50;    %what fraction of the time the progress bar should update
 find_sqz=0;
-find_correlation=1;         %find the correlation in x,y,z
+find_correlation=0;         %find the correlation in x,y,z
     corr.norm=1;            %normalize the correlations
     corr.fit=1;             %fit the correlaton with a gaussian
     %params for correlations
@@ -93,114 +93,14 @@ split_by_halocounts=0;
     halocounts_bins=5;
     plots_for_each_bin=1;
     
-% files.path='D:\TMP\HOM v3\d'; 
-% files.numstart=1;           %start file num
-% files.numtoimport=1900;       %number of files to import
-% 
-% 
-% windows.bragg.tmin=4.812;
-% windows.bragg.tmax=4.815;
-% 
-% windows.bec.tmin=4.822;
-% windows.bec.tmax=4.824;
-% 
-% windows.halo.tmin=4.8147;%.608
-% windows.halo.tmax=4.8217;
-% windows.halo.rmin=0.018;
-% windows.halo.rmax=0.022;
-% 
-% windows.reflections=0; %allows reflections throguh the mask
-% windows.halo.reflecrmin=0.010;
-% 
-% 
-% windows.all.xmin=-0.03;
-% windows.all.xmax=0.035;
-% windows.all.ymin=-0.03;
-% windows.all.ymax=0.035;
-% 
-% files.velocity=9.8*0.430;
-  
-%files.path='C:\Tmp\bragg 200us with mirror\d';
-% files.path='C:\Tmp\halo with bs amp scan 3\d'; 
-% files.numstart=1;           %start file num
-% files.numtoimport=100;       %number of files to import
-% 
-% windows.bragg.tmin=4.812;
-% windows.bragg.tmax=4.815;
-% 
-% windows.bec.tmin=4.822;
-% windows.bec.tmax=4.824;
-% 
-% windows.halo.tmin=4.8145;%.608
-% windows.halo.tmax=4.8217;
-% windows.halo.rmin=0.0175;
-% windows.halo.rmax=0.022;
-% 
-% windows.reflections=1; %allows reflections throguh the mask
-% windows.halo.reflecrmin=0.007;
-% 
-% windows.all.xmin=-0.03;
-% windows.all.xmax=0.035;
-% windows.all.ymin=-0.03;
-% windows.all.ymax=0.035;
-
-% %for mag insensitve halos
-%files.path='C:\Tmp\dld_output\mag insenstive pop scan\d';
-%files.path='C:\Tmp\bragg 600us halo\d';
-% files.path='C:\Tmp\bragg 200us with mirror\d'
-% files.numstart=1;           %start file num
-% files.numtoimport=200;       %number of files to import
-% 
-% windows.bragg.tmin=4.812;
-% windows.bragg.tmax=4.815;
-% 
-% windows.bec.tmin=4.822;
-% windows.bec.tmax=4.824;
-% 
-% windows.halo.tmin=4.815;%.608
-% windows.halo.tmax=4.8204;
-% windows.halo.rmin=0.0177;
-% windows.halo.rmax=0.025;
-% 
-% windows.all.xmin=-0.03;
-% windows.all.xmax=0.035;
-% windows.all.ymin=-0.03;
-% windows.all.ymax=0.035;
     
-    
-%for mag sensitive halo low num
-%  files.path='C:\Tmp\dld_output\mag sens halos low atom num\d';
-%  files.numstart=1;           %start file num
-%  files.numtoimport=19000;       %number of files to import
-% %for mag sensitive halo vary pop
-% % files.path='C:\Tmp\dld_output\Mag Sens Halos Varying Num\run 3\d';
-% % files.numstart=1;           %start file num
-% % files.numtoimport=14000;       %number of files to import
-% windows.bragg.tmin=0.60;
-% windows.bragg.tmax=.604;
-% 
-% windows.bec.tmin=.612;
-% windows.bec.tmax=.62;
-% 
-% windows.halo.tmin=.606;%.608
-% windows.halo.tmax=.611;
-% windows.halo.rmin=0.015;
-% windows.halo.rmax=0.025;
-% 
-% windows.all.xmin=-0.025;
-% windows.all.xmax=0.025;
-% windows.all.ymin=-0.025;
-% windows.all.ymax=0.025;
-
-
-%for multi bragg
-
-
-
-files.path='C:\Users\HE BEC\Documents\lab\halo_analysis\data\multihalos\multihalos_'; 
+% Kapitza-Dirac halos
+files.path='C:\Users\HE BEC\Documents\lab\halo_analysis\data\test\both\multihalos_';    % path to unindexed data file (e.g. 'a\b\datadir\datafile')
 files.numstart=1;           %start file num
-files.numtoimport=1000;       %number of files to import
-
+files.numtoimport=50;       %number of files to import
+files.velocity=9.8*0.430;
+%should be 2*9.8*0.6
+%files.velocity=sqrt(2*9.8*0.7);%*50;
 
 windows.bragg.tmin=0.204;
 windows.bragg.tmax=0.207;
@@ -222,23 +122,21 @@ windows.halo.rmax=0.03;
 windows.reflections=0; %allows reflections throguh the mask
 windows.halo.reflecrmin=0.010;
 
-files.velocity=9.8*0.430;
-
-%should be 2*9.8*0.6
-%files.velocity=sqrt(2*9.8*0.7);%*50;
-
 %for the all points the time windows can be different, this is usefull for
 %initialy finding where the bec is in time
 tmin_allpoints=windows.bragg.tmin;
 tmax_allpoints=windows.bec.tmax;
 
-%-------------------------------------END user var----------------------------------------
+%------------------------END user var------------------------------
+
+
+%% Main code
 
 tic
 
 %initialize
 close all;
-halo_centered=cell(files.numtoimport,1);
+% halo_centered=cell(files.numtoimport,1);    % redundant: var re-allocated in line 151
 
 if files.save_all_points
     all_points=cell(files.numtoimport,1);
@@ -248,7 +146,6 @@ if files.save_all_points
 end
 
 %import the halo data
-%[halo_centered_cells,halo_centered,bec_bragg,all_points]
 [halo_centered_cells,halo_centered,bec_bragg,all_points]=HaloReflecImportData(files,windows,use_txy,use_saved_halos,1,progress_scaling);
 
 %if all the points were saved then a TOF and 3d plot will be done
