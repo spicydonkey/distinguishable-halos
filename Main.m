@@ -48,15 +48,7 @@ clean_radialy=1;            %only keep the halo values within a certian radius
 
 isverbose=1;                %print progress ect
     progress_scaling=50;    %what fraction of the time the progress bar should update
-    
-find_sqz=0;
-find_correlation=0;         %find the correlation in x,y,z
-    corr.norm=1;            %normalize the correlations
-    corr.fit=1;             %fit the correlaton with a gaussian
-    %params for correlations
-    corr.yy=linspace(-0.005,0.005,50);    %define the bin size
-    corr.dx=0.0005;         %define the condition in other axes
-    corr.dt=corr.dx;
+
 plot_sph_dist=1;            %plot the spherical distibution hitograms( radial, azm ,elev)
     fit_rad_dist=0;         %fit the radial distribution with a gaussian +offset & linear or just est from avg and sd
     azm_bins=300;            %number of bins for histogram and azm bin
@@ -70,12 +62,20 @@ plot2d_hist=1;              %plot a 2d histogram(image) of the halo colapsed in 
     plot2d_hist_each_shot=0;%plot for each shot indiv. to look for phase grains, will save
 plot3d_halo=1;              %display all the combined halos as a 3d plot
 plot_counts_dist=0;         %plot a histogram of the counts in the halo
-
-movies3d=0;                 %make movies of the 3d plots
-
+movies3d=0;                 %make movies of the 3d plots %TODO don't choke analysis & do movie of final data
+    
+find_sqz=0;
+find_correlation=0;         %find the correlation in x,y,z
+    corr.norm=1;            %normalize the correlations
+    corr.fit=1;             %fit the correlaton with a gaussian
+    %params for correlations
+    corr.yy=linspace(-0.005,0.005,50);    %define the bin size
+    corr.dx=0.0005;         %define the condition in other axes
+    corr.dt=corr.dx;
+    
 split_by_halocounts=0;
     halocounts_min=3;
-    halocounts_max=1000;%375;
+    halocounts_max=1000;
     halocounts_bins=5;
     plots_for_each_bin=1;
     
@@ -86,7 +86,7 @@ files.do_pos_correction=1;	%find the halo pos from the ceneter of bragg orders (
                             %if false will not radialy mask
 files.save_all_points=0;    %create array that off all the points usefull for intial investigation and plot TOF and 3d
 
-files.path='C:\Users\HE BEC\Documents\lab\halo_analysis\data\test\txy\multihalos_';    % path to unindexed data file (e.g. 'a\b\datadir\datafile')
+files.path='..\data\test\multihalos_';    % path to unindexed data file (e.g. 'a\b\datadir\datafile')
 files.numstart=1;           %start file num
 files.numtoimport=50;       %number of files to import
 files.velocity=9.8*0.430;   %should be 2*9.8*0.6
@@ -121,13 +121,18 @@ tmax_allpoints=windows.bec.tmax;
 %------------------------END user var------------------------------
 
 
+%% Path setting
+dir_repo = fileparts(which(mfilename));     % directory of main code repo
+addpath(genpath(dir_repo));     % add all subdirectories to search path
+
+
 %% Main code
 tic
 close all; clc;
 
 %import the halo data
 [halo_centered_cells,bec_bragg,all_points]=HaloReflecImportData(files,windows,use_txy,use_saved_halos,isverbose,progress_scaling);
-halo_centered=vertcat(halo_centered_cells{:});
+halo_centered=vertcat(halo_centered_cells{:});  % collated halos
 
 %if all the points were saved then a TOF and 3d plot will be done
 if files.save_all_points
@@ -179,6 +184,7 @@ if plot3d_halo
     end
 end
 
+% halo histogram in (x,y)
 if plot3d_hist
     figure(2)
     %hist3(halo_centered(:,2:3),[100 100])
@@ -191,56 +197,57 @@ if plot3d_hist
     zlabel('Counts/Files')
 end
 
-if plot2d_hist==1 && plot2d_hist_each_shot==0
-    figure(11)
-    
-    XEdges=windows.all.xmin:plot2d_hist_binw:windows.all.xmax;
-    YEdges=windows.all.ymin:plot2d_hist_binw:windows.all.ymax;
-
-    [counts,centers]=hist3(halo_centered(:,2:3),'edges',{XEdges,YEdges});
-    if  ~plot2d_hist_gauss==0
-        filter=fspecial('gaussian',round(10*plot2d_hist_gauss/plot2d_hist_binw),plot2d_hist_gauss/plot2d_hist_binw);
-    	counts=imfilter(counts, filter, 'replicate');
-    end
-    %imagesc seems to plot the wrong way round so we transpose here
-    imagesc(centers{1},centers{2},transpose(counts))
-    set(gcf,'Color',[1 1 1]);
-    title(['Halo Count Dist Combined Blur=',num2str(plot2d_hist_gauss)])
-    
-elseif plot2d_hist==1 && plot2d_hist_each_shot==1
-    %calc the filter kernel out of the loop
-    if  ~plot2d_hist_gauss==0
-        filter=fspecial('gaussian',round(10*plot2d_hist_gauss/plot2d_hist_binw),plot2d_hist_gauss/plot2d_hist_binw);
-    end
-    XEdges=windows.all.xmin:plot2d_hist_binw:windows.all.xmax;
-    YEdges=windows.all.ymin:plot2d_hist_binw:windows.all.ymax;
-    figure(11)
-    for n=1:length(halo_centered_cells)
-        current_file_str = num2str(files.numstart+n-1);
-        temp_halo=halo_centered_cells{n};
-
-        if length(temp_halo)>300
-            [counts,centers]=hist3(temp_halo(:,2:3),'edges',{XEdges,YEdges});
-            if  ~plot2d_hist_gauss==0
-                counts=imfilter(counts, filter, 'replicate');
-            end
-            imagesc(centers{1},centers{2},transpose(counts))
-            set(gcf,'Color',[1 1 1]);
-            title(['Halo Count Dist ',int2str(n),' Blur=',num2str(plot2d_hist_gauss),'m'])
-            saveas(gcf,[files.path,current_file_str,'_2d_hist.jpg'])
-        else
-            disp(['file number ',current_file_str,' has too few counts to plot 2dhist'])
+% halo histogram (2D figure)
+if plot2d_hist
+    if ~plot2d_hist_each_shot
+        figure(11)
+        
+        XEdges=windows.all.xmin:plot2d_hist_binw:windows.all.xmax;
+        YEdges=windows.all.ymin:plot2d_hist_binw:windows.all.ymax;
+        
+        [counts,centers]=hist3(halo_centered(:,2:3),'edges',{XEdges,YEdges});
+        
+        % gaussian blur
+        if  plot2d_hist_gauss~=0
+            filter=fspecial('gaussian',round(10*plot2d_hist_gauss/plot2d_hist_binw),plot2d_hist_gauss/plot2d_hist_binw);
+            counts=imfilter(counts, filter, 'replicate');
         end
-    end
-    clear temp_halo
-    clear filter
-end
-clear XEdges
-clear YEdges
-clear counts
-clear centers
-
+        
+        %imagesc seems to plot the wrong way round so we transpose here
+        imagesc(centers{1},centers{2},transpose(counts));
+        set(gcf,'Color',[1 1 1]);
+        title(['Halo Count Dist Combined Blur=',num2str(plot2d_hist_gauss)])
+        
+        % plot halo histogram for individual shot and save
+    else
+        %calc the filter kernel out of the loop
+        if  plot2d_hist_gauss~=0
+            filter=fspecial('gaussian',round(10*plot2d_hist_gauss/plot2d_hist_binw),plot2d_hist_gauss/plot2d_hist_binw);
+        end
+        XEdges=windows.all.xmin:plot2d_hist_binw:windows.all.xmax;
+        YEdges=windows.all.ymin:plot2d_hist_binw:windows.all.ymax;
+        figure(11)
+        for n=1:length(halo_centered_cells)
+            current_file_str = num2str(files.numstart+n-1);
+            temp_halo=halo_centered_cells{n};
             
+            if length(temp_halo)>300
+                [counts,centers]=hist3(temp_halo(:,2:3),'edges',{XEdges,YEdges});
+                if  plot2d_hist_gauss~=0
+                    counts=imfilter(counts, filter, 'replicate');
+                end
+                imagesc(centers{1},centers{2},transpose(counts))
+                set(gcf,'Color',[1 1 1]);
+                title(['Halo Count Dist ',int2str(n),' Blur=',num2str(plot2d_hist_gauss),'m'])
+                saveas(gcf,[files.path,current_file_str,'_2d_hist.jpg'])
+            else
+                disp(['file number ',current_file_str,' has too few counts to plot 2dhist'])
+            end
+        end
+        clear temp_halo filter;
+    end
+end
+clear XEdges YEdges counts centers;
 
 %fing the number in each halo
 halo_counts=cellfun(@(x) size(x,1),halo_centered_cells);
@@ -278,9 +285,7 @@ if split_by_halocounts
         halo_centered_cells_count_bined{n}=halo_centered_cells(mask);
         
     end
-    clear mask
-    clear counts_min
-    clear counts_max
+    clear mask counts_min counts_max;
     verbose_corr=0;
 else
     halo_centered_cells_count_bined={halo_centered_cells};
