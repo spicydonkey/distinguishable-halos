@@ -38,9 +38,7 @@ function [halo_centered_cells,halo_centered,bec_bragg,all_points]=HaloReflecImpo
 
 
 % OUTPUTS
-% bec_bragg files*2*7 matrix which contains each file contains bragg avg (t,x,y)
-% sd(t x y) numcounts as flat vector and then the same for bec
-
+% bec_bragg Nfiles*2*7 matrix: [[File#];[BEC/Bragg];[avg(3),std(3),Ncounts]]
 
 % TO IMPROVE:
 % if files =0 import all
@@ -63,7 +61,7 @@ vars_saved = {'halo_centered_cells','windows','files','bec_bragg',...
 %% Use saved settings
 if use_saved_halos
     if ~fileExists([files.path,'_all_halos_saved.mat'])
-        disp(['WARNING: Halo data "', [files.path,'_all_halos_saved.mat'], '" does not exist - setting use_saved_halos=0 and continue...']);
+        warning(['Halo data "', [files.path,'_all_halos_saved.mat'], '" does not exist - setting use_saved_halos=0 and continue...']);
         use_saved_halos=0;
     else
         % Error checks on prev saved file
@@ -76,16 +74,19 @@ if use_saved_halos
         
         % Completeness of information
         if ~is_complete
-            disp('WARNING: Previously saved file is incomplete - setting use_saved_halos=0 and continue...');
+            warning('Previously saved file is incomplete - setting use_saved_halos=0 and continue...');
             use_saved_halos=0;
             
             % Check consistency of requested analysis settings and saved data
         elseif ~isequal(windows,S.windows) || ~isequal(files,S.files)
-            disp('WARNING: Previously saved data contains settings (windows, files) different to requested - setting use_saved_halos=0 and continue...');
+            warning('Previously saved data contains settings (windows, files) different to requested - setting use_saved_halos=0 and continue...');
             use_saved_halos=0;
             
             % OK load all vars in file
         else
+            if isverbose
+                disp('Loading saved data...');
+            end
             load([files.path,'_all_halos_saved.mat']);
         end
         
@@ -96,7 +97,7 @@ end
 %% Import data files and do pre-processing
 if ~use_saved_halos
     %initalize variables
-    halo_centered_cells={};
+    halo_centered_cells=cell(files.numtoimport,1);
     
     %initialize the parfor compatible counters
     lowcountfiles=zeros(files.numtoimport,1);
@@ -110,37 +111,41 @@ if ~use_saved_halos
     halo_radius=zeros(files.numtoimport,1);
     
     if isverbose
-        disp('Importing data...');
+        if use_txy
+            fprintf('--------------------------------------------------\nImporting data from TXY files...\n');
+        else
+            fprintf('--------------------------------------------------\nImporting data from raw DLD files...\n');
+        end
         parfor_progress(round(files.numtoimport/progress_scaling));
     end
     
     bec_bragg=zeros(files.numtoimport,2,7);
     
-    % use parfor below? - DKS
+    % TODO
+    % when to use parfor below?
+%     parfor n=1:files.numtoimport
     for n=1:files.numtoimport
         current_file_str = num2str(files.numstart+n-1);
         
-        % BELOW IS BUGGY for use_txy switch
-        %TODO
         %check if any (raw or txy) file exists
         if ~fileExists([files.path,current_file_str,'.txt'])&&~fileExists([files.path,'_txy_forc',current_file_str,'.txt'])
             missingfiles(n)=1;  % a missing file
             if isverbose
-                disp(['WARNING: missing file - file #', curr_file_str]);
+                warning(['missing file - file #', current_file_str]);
             end
             
         % user reqs to use_txy but txy data doesn't exist
         elseif use_txy && ~fileExists([files.path,'_txy_forc',current_file_str,'.txt'])
             missingfiles(n)=1;  % treat as missing file
-            if verbose
-                disp(['WARNING: use_txy=1 but TXY-data does not exist - file #', curr_file_str]);
+            if isverbose
+                warning(['use_txy=1 but TXY-data does not exist - file #', current_file_str]);
             end
             
         % user reqs to build txy data but raw doesn't exist
-        elseif use_txy && ~fileExists([files.path,current_file_str,'.txt'])
+        elseif ~use_txy && ~fileExists([files.path,current_file_str,'.txt'])
             missingfiles(n)=1;  %treat as missing file
-            if verbose
-                disp(['WARNING: use_txy=0 but raw DLD data does not exist - file #', curr_file_str]);
+            if isverbose
+                warning(['use_txy=0 but raw DLD data does not exist - file #', current_file_str]);
             end
             
         % Import from file
@@ -149,18 +154,22 @@ if ~use_saved_halos
             %three_channel_output=load('-ascii',[files.path,'_txy_forc',current_file_str,'.txt']);
             three_channel_output=txy_importer(files.path,current_file_str);
             
+            % Check for detection count
             if size(three_channel_output,1)<files.count_min
-                %disp('selected shot has too few counts')
                 lowcountfiles(n)=1;
-                
+                if isverbose
+                    warning(['low count in file #', current_file_str]);
+                end
+            
+            % Sufficient counts
             else
                 %                 if sum(sum(isnan(three_channel_output)))>0
                 %                     disp('NAN values found')
                 %                     return
                 %                 end
                 
+                %rotate the spatial coord in XY-plane
                 three_channel_output_rot=zeros(size(three_channel_output));
-                %rotate the spatial cord
                 sin_theta = sin(files.rot_angle);
                 cos_theta = cos(files.rot_angle);
                 three_channel_output_rot(:,1) = three_channel_output(:,1);
@@ -169,13 +178,13 @@ if ~use_saved_halos
                 three_channel_output_rot(:,3) = three_channel_output(:,2)*sin_theta...
                     + three_channel_output(:,3)*cos_theta;
                 
-                %which counts in the file are within the xy limits
+                % mask counts to set XY-limits
                 mask_XY=three_channel_output_rot(:,2)>windows.all.xmin &...
                     three_channel_output_rot(:,2)<windows.all.xmax & ...
                     three_channel_output_rot(:,3)>windows.all.ymin & ...
                     three_channel_output_rot(:,3)<windows.all.ymax;
                 
-                %save all points is mainly just usefull for a diagnostic
+                %save_all_points is useful for diagnostics
                 if files.save_all_points
                     all_points{n}=three_channel_output_rot(mask_XY,:);
                 end
@@ -186,10 +195,10 @@ if ~use_saved_halos
                 mask_BEC=three_channel_output_rot(:,1)>windows.bec.tmin &...
                     three_channel_output_rot(:,1)<windows.bec.tmax &...
                     mask_XY;
-                
                 mask_bragg=three_channel_output_rot(:,1)>windows.bragg.tmin &...
                     three_channel_output_rot(:,1)<windows.bragg.tmax &...
                     mask_XY;
+                
                 %if the bragg or bec is empty give up and set
                 %halo_centered_cells_temp to empty
                 if  (sum(mask_bragg)<min_counts_in_bragg_or_BEC || sum(mask_BEC)<min_counts_in_bragg_or_BEC) ...
@@ -197,24 +206,29 @@ if ~use_saved_halos
                     bec_or_bragg_zero(n)=1;
                     %write a halo file to prevent it getting here again
                     halo_centered_temp=[];
+                    if isverbose
+                        warning(['empty bragg/bec in file #', current_file_str]);
+                    end
+                        
+                % Create coord data for different components
                 else
                     three_channel_output_rot_bragg=three_channel_output_rot(mask_bragg,:);
                     three_channel_output_rot_BEC=three_channel_output_rot(mask_BEC,:);
-                    %find the center of the bragg and bec and then subtract
-                    %this position off the couns in the halo
+                    
+                    mean_bec=mean(three_channel_output_rot_BEC);
+                    mean_bragg=mean(three_channel_output_rot_bragg);
+                    halo_radius(n)=norm((mean_bragg-mean_bec).*[files.velocity 1 1])/2;
+                    bec_bragg(n,:,:)=[[mean_bec,std(three_channel_output_rot_BEC),sum(mask_BEC)];[mean_bragg,std(three_channel_output_rot_bragg),sum(mask_bragg)]];
+                    
+                    % position correction
                     if files.do_pos_correction
-                        mean_bec=mean(three_channel_output_rot_BEC);
-                        mean_bragg=mean(three_channel_output_rot_bragg);
-                        bec_bragg(n,:,:)=[[mean_bec,std(three_channel_output_rot_BEC),sum(mask_BEC)];[mean_bragg,std(three_channel_output_rot_bragg),sum(mask_bragg)]];
-                        halo_center=(mean_bragg+mean_bec)/2;
-                        halo_radius(n)=norm((mean_bragg-mean_bec).*[files.velocity 1 1])/2;
-                        
-                        bec_centered=mean_bec-halo_center;
-                        bragg_centered=mean_bragg-halo_center;
+                        % Centre halo with the mean of bragg/bec spots
+                        halo_center=(mean_bragg+mean_bec)/2;                        
                     else
-                        %same as not subtracting pos
                         halo_center=[0 0 0];
                     end
+                    bec_centered=mean_bec-halo_center;
+                    bragg_centered=mean_bragg-halo_center;
                     
                     %mask the halo
                     mask_halo=three_channel_output_rot(:,1)>windows.halo.tmin &...
@@ -222,30 +236,25 @@ if ~use_saved_halos
                         mask_XY;
                     three_channel_output_rot_halo=three_channel_output_rot(mask_halo,:);
                     
-                    %subtract the t,x,y center from every row
-                    %repmat is apparently the fastest http://au.mathworks.com/matlabcentral/newsreader/view_thread/267082
-                    %then convert the time axis into z pos by multiplying time by
-                    %files.velocity
-                    halo_centered_temp_zero=(three_channel_output_rot_halo-repmat(halo_center,size(three_channel_output_rot_halo,1),1)).*...
-                        repmat([files.velocity 1 1],size(three_channel_output_rot_halo,1),1);
+                    % centre halo and convert T to Z
+                    %repmat is fast http://au.mathworks.com/matlabcentral/newsreader/view_thread/267082
+%                     halo_centered_temp_zero=(three_channel_output_rot_halo-repmat(halo_center,size(three_channel_output_rot_halo,1),1)).*...
+%                         repmat([files.velocity 1 1],size(three_channel_output_rot_halo,1),1);
+                    halo_centered_temp_zero=three_channel_output_rot_halo-repmat(halo_center,size(three_channel_output_rot_halo,1),1);
+                    halo_centered_temp_zero(:,1)=halo_centered_temp_zero(:,1)*files.velocity;
                     
-                    %here i mask radialy by computing the radius and seeing if it
-                    %is within rmax,windows.halo.rmin
-                    %will not do if files.do_pos_correction=0 as the halo is not zero
-                    %centered
-                    importokfiles(n)=1;
+                    % Apply radial mask on halo
                     if files.do_pos_correction
-                        %radius for the ceneter halo
-                        radial_temp_zero=sqrt(sum(abs(halo_centered_temp_zero).^2,2));
-                        %radial_temp_zero=sqrt((:,1).^2+halo_centered_temp_zero(:,2).^2+halo_centered_temp_zero(:,3).^2);
-                        %radius for the halo reflections
+                        radial_temp_zero=sqrt(sum(halo_centered_temp_zero.^2,2));  % calculated masked halo radius
                         radial_mask=radial_temp_zero<windows.halo.rmax & radial_temp_zero>windows.halo.rmin;
                         counts_zero(n)=sum(radial_mask);
                         
-                        %if reflections are allowed then move all the
-                        %points, cacluate the radius and then add points
-                        %within the radius to the radial mask
+                        % Procedures for reflected halos
                         if windows.reflections
+                            %if reflections are allowed then move all the
+                            %points, cacluate the radius and then add points
+                            %within the radius to the radial mask
+                            %
                             %this creates two shifted version of the counts
                             %does it by scratch (not using above computer centered)
                             %which is easy but perhaps a little wastefull
@@ -268,19 +277,18 @@ if ~use_saved_halos
                         
                         halo_centered_temp=halo_centered_temp_zero(radial_mask,:);
                     end
+                    
+                    importokfiles(n)=1;     % file import went ok
                 end
                 
-                %save the halo counts
-                %use cells so that the output can be ragged
+                % save this halo
                 halo_centered_cells{n}=halo_centered_temp;
-                
-                %clean up variables
-                
             end %file size condition
         end %file exists condition
         
+        % update parfor
         if isverbose
-            % update parfor only occasionally
+            % only occasionally
             if rand(1)<(1/progress_scaling)
                 parfor_progress;
             end
@@ -299,12 +307,18 @@ if ~use_saved_halos
     
     if isverbose
         parfor_progress(0);
-        disp('Import Done')
+        fprintf('Import Done\n--------------------------------------------------\n')
     end
 end
 
 if ~files.save_all_points
     all_points=[];
+end
+
+%% Error check
+% empty data
+if isempty(halo_centered_cells)
+    error('Error: halo_centered_cells is empty: will cause error in analysis');
 end
 
 %% Summary
