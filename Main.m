@@ -41,35 +41,22 @@
 %move to array for spherical cordinates instead of sep variables
 
 %% -----------------------START user var---------------------------
-
-%filepath='C:\Tmp\dld_data1\multihalos_';
-%filepath='C:\Tmp\dld_output\mag sens halos low atom num\d';
-%filepath='C:\Tmp\dld_output\mag sens halos low atom num\d';
-
-
 use_txy=1;                  %if false will remake the txy_forc files
-use_saved_halos=1;          %if false will remake the halo files (usefull for any change to the halo cut)
+use_saved_halos=1;          %if false will remake the halo files (useful for any change to the halo cut)
 
-%import settings (will only change things if use_txy =0)
-files.count_min=100;       %min mumber of counts to read in 
-files.rot_angle=0.64;       %rotation anle from the txy data 
-files.do_pos_correction=1;	%find the halo pos from the ceneter of bragg orders (position correction)
-                            %if false will not radialy mask
 clean_radialy=1;            %only keep the halo values within a certian radius
-            
-%what to do with imported halos                                                     
+
 isverbose=1;                %print progress ect
     progress_scaling=50;    %what fraction of the time the progress bar should update
+    
 find_sqz=0;
 find_correlation=0;         %find the correlation in x,y,z
     corr.norm=1;            %normalize the correlations
     corr.fit=1;             %fit the correlaton with a gaussian
     %params for correlations
     corr.yy=linspace(-0.005,0.005,50);    %define the bin size
-    corr.dx=0.0005;
-    %corr.dx=0.004;                       %define the condition in other axes
+    corr.dx=0.0005;         %define the condition in other axes
     corr.dt=corr.dx;
-files.save_all_points=0;    %create array that off all the points usefull for intial investigation and plot TOF and 3d
 plot_sph_dist=1;            %plot the spherical distibution hitograms( radial, azm ,elev)
     fit_rad_dist=0;         %fit the radial distribution with a gaussian +offset & linear or just est from avg and sd
     azm_bins=300;            %number of bins for histogram and azm bin
@@ -86,22 +73,26 @@ plot_counts_dist=0;         %plot a histogram of the counts in the halo
 
 movies3d=0;                 %make movies of the 3d plots
 
-
 split_by_halocounts=0;
     halocounts_min=3;
     halocounts_max=1000;%375;
     halocounts_bins=5;
     plots_for_each_bin=1;
     
-    
-% Kapitza-Dirac halos
-files.path='C:\Users\HE BEC\Documents\lab\halo_analysis\data\test\both\multihalos_';    % path to unindexed data file (e.g. 'a\b\datadir\datafile')
+% files
+files.count_min=100;        %min mumber of counts to read in 
+files.rot_angle=0.64;       %rotation anle from the txy data 
+files.do_pos_correction=1;	%find the halo pos from the ceneter of bragg orders (position correction)
+                            %if false will not radialy mask
+files.save_all_points=0;    %create array that off all the points usefull for intial investigation and plot TOF and 3d
+
+files.path='C:\Users\HE BEC\Documents\lab\halo_analysis\data\test\txy\multihalos_';    % path to unindexed data file (e.g. 'a\b\datadir\datafile')
 files.numstart=1;           %start file num
 files.numtoimport=50;       %number of files to import
-files.velocity=9.8*0.430;
-%should be 2*9.8*0.6
+files.velocity=9.8*0.430;   %should be 2*9.8*0.6
 %files.velocity=sqrt(2*9.8*0.7);%*50;
 
+% windows
 windows.bragg.tmin=0.204;
 windows.bragg.tmax=0.207;
 
@@ -131,29 +122,19 @@ tmax_allpoints=windows.bec.tmax;
 
 
 %% Main code
-
 tic
-
-%initialize
-close all;
-% halo_centered=cell(files.numtoimport,1);    % redundant: var re-allocated in line 151
-
-if files.save_all_points
-    all_points=cell(files.numtoimport,1);
-    %as i do not save all the counts when saving the halo will have to
-    %reprocess, this is fine as the use case is rare
-    use_saved_halos=0;
-end
+close all; clc;
 
 %import the halo data
-[halo_centered_cells,halo_centered,bec_bragg,all_points]=HaloReflecImportData(files,windows,use_txy,use_saved_halos,1,progress_scaling);
+[halo_centered_cells,bec_bragg,all_points]=HaloReflecImportData(files,windows,use_txy,use_saved_halos,isverbose,progress_scaling);
+halo_centered=vertcat(halo_centered_cells{:});
 
 %if all the points were saved then a TOF and 3d plot will be done
 if files.save_all_points
     all_points=vertcat(all_points{:}); 
     
     %mask the dat 
-    figure(4)
+    figure(4);
     mask=all_points(:,1)>tmin_allpoints & all_points(:,1)<tmax_allpoints;
     all_points=all_points(mask,:);
     %plot TOF
@@ -180,7 +161,6 @@ if files.save_all_points
     end
 end
 
-
 %plots for all the count in the halo (all shots combined)
 %plot the halo
 if plot3d_halo
@@ -199,7 +179,6 @@ if plot3d_halo
     end
 end
 
-
 if plot3d_hist
     figure(2)
     %hist3(halo_centered(:,2:3),[100 100])
@@ -211,9 +190,6 @@ if plot3d_hist
     ylabel('Y(m)')
     zlabel('Counts/Files')
 end
-
-
-
 
 if plot2d_hist==1 && plot2d_hist_each_shot==0
     figure(11)
