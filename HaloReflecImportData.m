@@ -88,7 +88,15 @@ if use_saved_halos
             if isverbose
                 disp('Loading saved data...');
             end
-            load([files.path,'_all_halos_saved.mat']);
+            
+            % Check saved file is not empty
+            load([files.path,'_all_halos_saved.mat'],'halo_centered_cells');
+            halo_centered=vertcat(halo_centered_cells{:});  % this is unneccessary to return as output since it may be easily determine from halo_centered_cells
+            if isempty(halo_centered)
+                error('Saved file is empty - terminating program. User is recommended to recreate data file');
+            end
+            
+            load([files.path,'_all_halos_saved.mat']);  % okay to load everything
         end
         
         clear S;
@@ -129,8 +137,8 @@ if ~use_saved_halos
     end
     
     % Import data from each shot and do pre-processing
-%     parfor n=1:files.numtoimport
-    for n=1:files.numtoimport
+    parfor n=1:files.numtoimport
+%     for n=1:files.numtoimport
         current_file_str = num2str(files.numstart+n-1);
         
         %check if any (raw or txy) file exists
@@ -155,7 +163,13 @@ if ~use_saved_halos
             end
             
         % Import from file
-        else                         
+        else
+            if ~use_txy
+                % create TXY file from the raw DLD file
+                dld_raw_to_txy(files.path,files.numstart+n-1,files.numstart+n-1);
+                filestotxy(n)=1;
+            end
+            
             %three_channel_output=importdata([files.path,'_txy_forc',current_file_str,'.txt'],',');
             %three_channel_output=load('-ascii',[files.path,'_txy_forc',current_file_str,'.txt']);
             three_channel_output=txy_importer(files.path,current_file_str);
@@ -321,17 +335,18 @@ if ~use_saved_halos
     end
 end
 
-
-%% Error check
-% empty data
-if isempty(halo_centered_cells)
-    error('Error: halo_centered_cells is empty: will cause error in analysis');
-end
-
-%% Summary
 % collate all preprocessed data (redundant and uses a bit of memory)
 halo_centered=vertcat(halo_centered_cells{:});  % this is unneccessary to return as output since it may be easily determine from halo_centered_cells
 
+
+%% Error check
+% empty data
+if isempty(halo_centered)
+    error('Error: halo_centered_cells is empty: will cause error in analysis');
+end
+
+
+%% Summary
 if isverbose
     if use_saved_halos
         disp(['Data loaded from: ',[files.path,'_all_halos_saved.mat']]);
