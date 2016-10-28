@@ -1,4 +1,4 @@
-function [halo_centered_cells,halo_centered,bec_bragg,all_points]=HaloReflecImportData(files,windows,use_txy,use_saved_halos,isverbose,progress_scaling)
+function [halo_centered_cells,bec_bragg,all_points]=HaloReflecImportData(files,windows,use_txy,use_saved_halos,isverbose,progress_scaling)
 %======================================90char=============================================
 %+++++++++++++++++++++++++++++++++++++++ABOUT+++++++++++++++++++++++++++++++++++++++++++++
 %This function reads in txy data for listed in the LOG_parameters.txt file
@@ -56,7 +56,8 @@ min_counts_in_bragg_or_BEC=5;
 % variables to save in $files.path$_all_halos_saved.mat file
 vars_saved = {'halo_centered_cells','windows','files','bec_bragg',...
     'halo_radius','counts_plus','counts_minus','counts_zero',...
-    'lowcountfiles','missingfiles','filestotxy','bec_or_bragg_zero','importokfiles'};
+    'lowcountfiles','missingfiles','filestotxy','bec_or_bragg_zero','importokfiles',...
+    'all_points'};
 
 %% Use saved settings
 if use_saved_halos
@@ -95,9 +96,11 @@ if use_saved_halos
 end
 
 %% Import data files and do pre-processing
-if ~use_saved_halos
+if ~use_saved_halos    
     %initalize variables
     halo_centered_cells=cell(files.numtoimport,1);
+    bec_bragg=zeros(files.numtoimport,2,7);
+    all_points=cell(files.numtoimport,1);
     
     %initialize the parfor compatible counters
     lowcountfiles=zeros(files.numtoimport,1);
@@ -110,19 +113,22 @@ if ~use_saved_halos
     counts_minus=zeros(files.numtoimport,1);
     halo_radius=zeros(files.numtoimport,1);
     
+    % User feedback to data import stage
     if isverbose
         if use_txy
             fprintf('--------------------------------------------------\nImporting data from TXY files...\n');
         else
             fprintf('--------------------------------------------------\nImporting data from raw DLD files...\n');
         end
+        
+        if files.save_all_points
+            warning('Saving and returning all points in window.all - may produce large data file');
+        end
+        
         parfor_progress(round(files.numtoimport/progress_scaling));
     end
     
-    bec_bragg=zeros(files.numtoimport,2,7);
-    
-    % TODO
-    % when to use parfor below?
+    % Import data from each shot and do pre-processing
 %     parfor n=1:files.numtoimport
     for n=1:files.numtoimport
         current_file_str = num2str(files.numstart+n-1);
@@ -296,6 +302,10 @@ if ~use_saved_halos
     end %file loop
     
     %save the imported data
+    if fileExists([files.path,'_all_halos_saved.mat'])
+        delete([files.path,'_all_halos_saved.mat']);
+    end
+    save([files.path,'_all_halos_saved.mat'],vars_saved{1});    % must create *.mat without append option
     for i = 1:length(vars_saved)
         save([files.path,'_all_halos_saved.mat'],vars_saved{i},'-append');
     end
@@ -311,9 +321,6 @@ if ~use_saved_halos
     end
 end
 
-if ~files.save_all_points
-    all_points=[];
-end
 
 %% Error check
 % empty data
@@ -322,6 +329,9 @@ if isempty(halo_centered_cells)
 end
 
 %% Summary
+% collate all preprocessed data (redundant and uses a bit of memory)
+halo_centered=vertcat(halo_centered_cells{:});  % this is unneccessary to return as output since it may be easily determine from halo_centered_cells
+
 if isverbose
     if use_saved_halos
         disp(['Data loaded from: ',[files.path,'_all_halos_saved.mat']]);
@@ -336,9 +346,6 @@ if isverbose
     disp([int2str(sum(filestotxy)),' files converted to txy'])
     disp([int2str(sum(bec_or_bragg_zero)),' files with no counts in bec or bragg'])
     disp([int2str(sum(importokfiles)),' imported ok'])
-    
-    halo_centered=vertcat(halo_centered_cells{:});  % var for summary
-    
     disp(['avergage halo radius: ',num2str(mean(halo_radius))]);
     disp([int2str(sum(counts_zero)),',',int2str(sum(counts_plus)),',',int2str(sum(counts_minus)),' counts in zero,plus,minus'])
     disp([int2str(size(halo_centered,1)),' total counts in halo'])
