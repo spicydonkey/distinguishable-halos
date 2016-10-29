@@ -17,7 +17,7 @@ function [g2_normed,corr_fit_params] =CalcCorr(halo_centered_cells,corr,isverbos
 progress_scaling=round(length(halo_centered_cells)/100);
 
 if isverbose
-        disp('Calculating Correlation For Each Halo')
+        disp('Starting CalcCorr');
         parfor_progress(round(length(halo_centered_cells)/progress_scaling));
         tic
 end
@@ -46,7 +46,7 @@ parfor n=1:length(halo_centered_cells)
             end
         end
 end% loop over cells
-clear G2_temp
+clear G2_temp;
 
 if isverbose
     parfor_progress(0);
@@ -84,10 +84,10 @@ if corr.norm
     
     
     if isverbose
-        disp(['calculating normalized correlations'])
-        disp(['processing ',num2str(full_size),' counts in ',num2str(counts_per_uncorr),' count chunks'])
+        disp(['Calculating normalized correlations']);
+        disp(['Processing ',num2str(full_size),' counts in ',num2str(counts_per_uncorr),' count chunks']);
         parfor_progress(numel(edges)-1);
-        tic
+        tic;
     end
 
     %then we itterate over these bins
@@ -112,7 +112,7 @@ if corr.norm
     end
     if isverbose
         parfor_progress(0);
-        toc
+        toc;
     end
     
     sum_G2_uncorr=squeeze(sum(G2_uncorr,1));
@@ -128,7 +128,7 @@ end
 %clean the nans
 % g2_normed(isnan( g2_normed))=0;
 
- corr_fit_params=[];
+corr_fit_params=[];
  
 figure(3)
 subplot(2,2,1)
@@ -161,8 +161,6 @@ set(gcf,'Color',[1 1 1]);
 
 %do this in the main file
 
-
-
 % if isverbose && find_correlation
 %     if ~isempty(pairs_corr) %protects from the case that no pairs are fround
 %         disp([int2str(sum(pairs_corr(1,:))),' pairs in t'])
@@ -170,9 +168,6 @@ set(gcf,'Color',[1 1 1]);
 %         disp([int2str(sum(pairs_corr(3,:))),' pairs in y'])
 %     end
 % end
-
-
-
 
 end
 
