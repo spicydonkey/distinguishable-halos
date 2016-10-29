@@ -55,7 +55,7 @@ plot_sph_dist=1;            %plot the spherical distibution hitograms( radial, a
     radial_width_azm_dep=0; %plot the radial width as a function of azm angle
         radial_width_plots=0;%plot each azm bin and delay by 1s to show
     fit_sine_azm=0;              %fit a sine wave to the counts and width
-plot3d_hist=1;              %plot a 3d histogram of the halo collapsed in time
+plot3d_hist=0;              %plot a 3d histogram of the halo collapsed in time
 plot2d_hist=0;              %plot a 2d histogram(image) of the halo colapsed in time
     plot2d_hist_binw=0.0001; %bin width for hist in meters
     plot2d_hist_gauss=0.000;%apply gaussian blur in meters, for off set to zero otherwise specify blur radius
@@ -387,9 +387,9 @@ if find_sqz
         
     % DKS
     else
-        sqz_params{1}=squezing(halo_numcat{1},0);
-            saveas(gcf,[files.path,'_sqz.jpg'])
-            saveas(gcf,[files.path,'_sqz.fig'])
+        sqz_params{1}=squezing(halo_numcat{1},isverbose);
+        saveas(gcf,[files.path,'_sqz.jpg']);
+        saveas(gcf,[files.path,'_sqz.fig']);
     end
     
     if isverbose
@@ -400,44 +400,50 @@ end
 % Spherical plot of number distribution
 if plot_sph_dist 
     rad_fit_params=[];
-    for n=1:size(halo_numcat,2)
-        halo_centered_cells_count_bined_single=halo_numcat{n};
-        %here we plot the radial distribution of all halos combined
-        halo_centered_cells_count_bined_single_comb=vertcat(halo_centered_cells_count_bined_single{:});
-        bin_counts=length(halo_centered_cells_count_bined_single_comb);
-        [halo_radial,halo_azm,halo_elev]=ConvToSph(halo_centered_cells_count_bined_single_comb);
+    for n=1:length(halo_numcat)
+%         halo_centered_cells_count_bined_single=halo_numcat{n};    $ DKS -
+%         rename variable appropriately
+%         halo_single_tmp=halo_numcat{n};   % waste of tmp variable
         
-        figure(6)
+        %here we plot the radial distribution of all halos combined
+%         halo_single_comb=vertcat(halo_single_tmp{:});     % this should
+%         be the temp var to use
+        halo_numcat_tmp = vertcat(halo_numcat{n}{:});
+%         bin_counts=length(halo_numcat_tmp);   % usused variable
+        [halo_radial,halo_azm,halo_elev]=ConvToSph(halo_numcat_tmp);    % could use cart2sph and solve wrapping problem
+        
+        figure(6);
         set(gcf,'Color',[1 1 1]);
         %set(gcf,'Position',[400 100 600 600])
         
-        subplot(2,2,1)
-        hist(halo_elev/pi,100)
-        title('Elevation')
+        subplot(2,2,1);
+        hist(halo_elev/pi,100);
+        title('Elevation');
         set(gcf,'Color',[1 1 1]);
-        xlabel('Angle (Rad)/pi')
-        ylabel('Counts')
+        xlabel('Angle (Rad)/pi');
+        ylabel('Counts');
         
         subplot(2,2,2)
-        [azmcounts,azmedges]=histcounts(halo_azm/pi,azm_bins);
-        %from https://au.mathworks.com/matlabcentral/answers/89845-how-do-i-create-a-vector-of-the-average-of-consecutive-elements-of-another-vector-without-using-a-l
-        azmcenters=mean([azmedges(1:end-1);azmedges(2:end)]);
-        plot(azmcenters,azmcounts)
-        title('Azm Bin Counts')
-        set(gcf,'Color',[1 1 1]);
-        xlabel('Angle (Rad)/pi')
-        ylabel('Counts')
-        if fit_sine_azm
-            disp('fit sine')
-            %fit_params=fit_sine(xdata,ydata,amp_guess,phase_guess,freq_guess,isverbose)
-            azm_counts_fit_params(n,:,:)=fit_azm_sine(azmcenters,azmcounts,range(azmcounts),mean(azmcounts),0,1,1);
+        if azm_bins>1
+            [azmcounts,azmedges]=histcounts(halo_azm/pi,azm_bins);
+            azmcenters=0.5*(azmedges(1:end-1)+azmedges(2:end));
+            plot(azmcenters,azmcounts);
+            title('Azm Bin Counts');
+            set(gcf,'Color',[1 1 1]);
+            xlabel('Angle (Rad)/pi');
+            ylabel('Counts');
+            if fit_sine_azm
+                disp('fit sine');
+                %fit_params=fit_sine(xdata,ydata,amp_guess,phase_guess,freq_guess,isverbose)
+                azm_counts_fit_params(n,:,:)=fit_azm_sine(azmcenters,azmcounts,range(azmcounts),mean(azmcounts),0,1,1);
+            end
+        else
+            warning('azm_bins should be set to greater than 1 for histogram.');
         end
         
         subplot(2,2,3)
-        %hist(halo_radial,100)
         [radcounts,radcenters]=hist(halo_radial,100);
-        %from https://au.mathworks.com/matlabcentral/answers/89845-how-do-i-create-a-vector-of-the-average-of-consecutive-elements-of-another-vector-without-using-a-l
-        plot(radcenters,radcounts)
+        plot(radcenters,radcounts);
         title('Com. Radial Width')
         set(gcf,'Color',[1 1 1]);
         xlabel('Distance From Cen. (m)')
@@ -447,15 +453,15 @@ if plot_sph_dist
             %estimate the fit params by assuming that it is gaussian like
             rad_fit_params(n,:,:)=rad_fit(radcenters,radcounts,mean(halo_radial),std(halo_radial),max(radcounts),1);
         end
+        
         %want to calc the radial width as a function of the azm width
         %to start with will just calc the std radialy then maybe do a fit
         %if there are enough counts
-        
         if radial_width_azm_dep
             halo_radial_std_azmbin=zeros(1,length(azmedges)-1);
             for m=1:(length(azmedges)-1)
-                mask=halo_azm/pi>azmedges(m) & halo_azm/pi<azmedges(m+1);
-                halo_radial_azmbin=halo_radial(mask);
+                mask_tmp=halo_azm/pi>azmedges(m) & halo_azm/pi<azmedges(m+1);
+                halo_radial_azmbin=halo_radial(mask_tmp);
                 %can either find the sd of the radial for this azm bin or
                 %better yet do a fit
                 if fit_rad_dist  
@@ -495,10 +501,11 @@ if plot_sph_dist
         saveas(gcf,[files.path,'_RadDist _Bin',num2str(halo_bin_cent(n),'%5.0f'),'_counts.fig']) 
     end%loop over halo count bins
     
-    clear halo_centered_cells_count_bined_single
-    clear halo_centered_cells_count_bined_single_comb
-    clear bin_counts
-    clear mask
+%     clear halo_centered_cells_count_bined_single
+%     clear halo_centered_cells_count_bined_single_comb
+%     clear bin_counts
+    clear mask_tmp
+    
     if size(halo_numcat,2)>2 && fit_rad_dist
         figure(8)
         set(gcf,'Color',[1 1 1]);
