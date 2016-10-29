@@ -55,21 +55,21 @@ plot_sph_dist=1;            %plot the spherical distibution hitograms( radial, a
     radial_width_azm_dep=0; %plot the radial width as a function of azm angle
         radial_width_plots=0;%plot each azm bin and delay by 1s to show
     fit_sine_azm=0;              %fit a sine wave to the counts and width
-plot3d_hist=1;              %plot a 3d histogram of the halo colapsed in time
-plot2d_hist=1;              %plot a 2d histogram(image) of the halo colapsed in time
+plot3d_hist=1;              %plot a 3d histogram of the halo collapsed in time
+plot2d_hist=0;              %plot a 2d histogram(image) of the halo colapsed in time
     plot2d_hist_binw=0.0001; %bin width for hist in meters
     plot2d_hist_gauss=0.000;%apply gaussian blur in meters, for off set to zero otherwise specify blur radius
     plot2d_hist_each_shot=0;%plot for each shot indiv. to look for phase grains, will save
 plot3d_halo=1;              %display all the combined halos as a 3d plot
-plot_counts_dist=1;         %plot a histogram of the counts in the halo
+plot_counts_dist=0;         %plot a histogram of the counts in the halo
 movies3d=0;                 %make movies of the 3d plots %TODO don't choke analysis & do movie of final data
     
 find_sqz=0;
 find_correlation=1;         %find the correlation in x,y,z
     corr.norm=1;            %normalize the correlations
-    corr.fit=0;             %fit the correlaton with a gaussian
+    corr.fit=1;             %fit the correlaton with a gaussian
     %params for correlations
-    corr.yy=linspace(-0.005,0.005,50);    %define the bin size
+    corr.yy=linspace(-0.005,0.005,100);    %define the bin size
     corr.dx=0.0005;         %define the condition in other axes
     corr.dt=corr.dx;
     
@@ -86,9 +86,9 @@ files.do_pos_correction=1;	%find the halo pos from the ceneter of bragg orders (
                             %if false will not radialy mask
 files.save_all_points=0;    %create array that off all the points usefull for intial investigation and plot TOF and 3d
 
-files.path='..\data\test\multihalos_';    % path to unindexed data file (e.g. 'a\b\datadir\datafile')
+files.path='..\data\multihalos\multihalos_';    % path to unindexed data file (e.g. 'a\b\datadir\datafile')
 files.numstart=1;           %start file num
-files.numtoimport=50;       %number of files to import
+files.numtoimport=3700;       %number of files to import
 files.velocity=9.8*0.430;   %should be 2*9.8*0.6
 %files.velocity=sqrt(2*9.8*0.7);%*50;
 
@@ -263,112 +263,145 @@ if plot_counts_dist
 end
 
 % TODO - generalise this process
-%then for the corrrelation and the squezing we split into bins grouped by
-%the number in the halo (radial masked)
+% categorise halos into different atom numbers (for squeezing?)
 if split_by_halocounts
-	halo_centered_cells_count_bined={};
-    disp('binning by num in halo');
-
-    %define the bins
-    count_bins_edge=linspace(halocounts_min,halocounts_max,halocounts_bins+1);
-%     count_bins_cen=linspace(halocounts_min,halocounts_max,halocounts_bins+1);
-%     count_bins_cen=count_bins_cen(1:end-1)+halocounts_max/(halocounts_bins*2);  % TODO - strange way to find centers
-    count_bins_cen=count_bins_edge(1:end-1)+diff(count_bins_edge)/2;
-    %now sort them into the bin ranges
-    
-    halo_centered_cells_count_bined={}; %this will contan the halo_bins for each count range
-    halo_files_bined_counts=[];         
-    for n=[1:size(count_bins_cen,2)]
-        counts_min=count_bins_edge(n);
-        counts_max=count_bins_edge(n+1);
-        %select those files that are in the range
-        mask=logical(halo_counts<counts_max & halo_counts>counts_min);
-        halo_centered_cells_count_bined{n}=halo_centered_cells(mask);
+	if isverbose
+        fprintf('Categorising halos into atom number bins... ');
     end
-    clear mask counts_min counts_max;
+    
+    halo_numcat={};
+    
+    %define the bins
+    halo_bin_edge=linspace(halocounts_min,halocounts_max,halocounts_bins+1);  % bin edges
+    halo_bin_cent=halo_bin_edge(1:end-1)+diff(halo_bin_edge)/2;     % bin centers
+    
+    % TODO - halo_centered_cells_count_bined really necessary for analysis?
+    % bin halo_counts
+    halo_numcat={};     %this will contan the halo_bins for each count range
+    for n=1:length(halo_bin_cent)
+        halo_numcat{n}=halo_centered_cells(halo_counts<halo_bin_edge(n+1) & halo_counts>halo_bin_edge(n));
+    end
+%     clear mask counts_min counts_max;
     verbose_corr=0;
+    
+    if isverbose
+        fprintf('Done!\n--------------------------------------------------\n');
+    end
 else
-    halo_centered_cells_count_bined={halo_centered_cells};
-    count_bins_cen=[NaN];
+    halo_numcat={halo_centered_cells};  % TODO - if no filtering req'd then shouldn't create this var - it's not categorised
+    halo_bin_cent=[NaN];   % TODO - this var is dangerous to refer to, if no binning was done at all
     verbose_corr=1;
 end
 
-
+% Correlation analysis
 if find_correlation   
-    disp('Caclulating correlation for each bin');
+    if isverbose
+        fprintf('Starting correlation analysis\n');
+    end
     
-    parfor_progress(size(halo_centered_cells_count_bined,2));
     corr_params=[];
-    for n=1:size(halo_centered_cells_count_bined,2)
-        [~,corr_params(n,:,:,:)]=CalcCorr(halo_centered_cells_count_bined{n}, corr, verbose_corr);
-        saveas(gcf,[files.path,'_Correlations_Bin',num2str(count_bins_cen(n),'%5.0f'),'_counts.jpg'])
-        saveas(gcf,[files.path,'_Correlations_Bin',num2str(count_bins_cen(n),'%5.0f'),'_counts.fig'])
-        if verbose_corr==0
+    
+    if split_by_halocounts
+        % correlation analysis is conducted separately for halos of similar counts
+        if ~verbose_corr
+            parfor_progress(length(halo_numcat));
+        end
+        
+        for n=1:length(halo_numcat)
+            [~,corr_params(n,:,:,:)]=CalcCorr(halo_numcat{n}, corr, verbose_corr);
+            saveas(gcf,[files.path,'_Correlations_Bin',num2str(halo_bin_cent(n),'%5.0f'),'_counts.jpg'])
+            saveas(gcf,[files.path,'_Correlations_Bin',num2str(halo_bin_cent(n),'%5.0f'),'_counts.fig'])
+            if ~verbose_corr
+                parfor_progress;
+            end
+        end
+        
+        % TODO - make user control for generation of below figures
+        if length(halo_numcat)>2 && corr.fit
+            figure(100);
+            set(gcf,'Color',[1 1 1]);
+            subplot(2,1,1)
+            errorbar(halo_bin_cent,corr_params(:,1,1,1),corr_params(:,1,1,2))
+            hold on;
+            errorbar(halo_bin_cent,corr_params(:,2,1,1),corr_params(:,2,1,2),'r')
+            errorbar(halo_bin_cent,corr_params(:,3,1,1),corr_params(:,3,1,2),'g')
+            hold off;
+            xlabel('Counts')
+            ylabel('Corr Amp')
+            legend('Y','X','Z')     % TODO - figure out this var ordering
+            
+            subplot(2,1,2)
+            errorbar(halo_bin_cent,abs(corr_params(:,1,3,1)),corr_params(:,1,3,2))
+            hold on;
+            errorbar(halo_bin_cent,abs(corr_params(:,2,3,1)),corr_params(:,2,3,2),'r')
+            errorbar(halo_bin_cent,abs(corr_params(:,3,3,1)),corr_params(:,3,3,2),'g')
+            hold off;
+            xlabel('Counts')
+            ylabel('Corr Width (m)')
+            legend('Y','X','Z')
+        end
+        
+        if ~verbose_corr
+            parfor_progress(0);
+        end
+    
+    % DKS
+    else
+        % correlation analysis done across all halos
+        [~,corr_params(1,:,:,:)]=CalcCorr(halo_numcat{1}, corr, verbose_corr);
+        saveas(gcf,[files.path,'_corr.jpg'])
+        saveas(gcf,[files.path,'_corr.fig'])
+    end
+
+    if isverbose
+        fprintf('Done!\n--------------------------------------------------\n');
+    end
+end
+
+% Squeezing
+if find_sqz
+    disp('Starting analysis for squeezing...');
+    
+    sqz_params={};
+    if split_by_halocounts
+        parfor_progress(length(halo_numcat));
+        for n=1:length(halo_numcat)
+            sqz_params{n}=squezing(halo_numcat{n},0);
+            saveas(gcf,[files.path,'_Sqz_Bin_',num2str(halo_bin_cent(n),'%5.0f'),'_counts.jpg'])
+            saveas(gcf,[files.path,'_Sqz _Bin',num2str(halo_bin_cent(n),'%5.0f'),'_counts.fig'])
             parfor_progress;
         end
-    end
-    if verbose_corr==0
         parfor_progress(0);
-    end
-    if size(halo_centered_cells_count_bined,2)>2 && corr.fit
-        figure(100)
-        set(gcf,'Color',[1 1 1]);
-        subplot(2,1,1)
-        errorbar(count_bins_cen,corr_params(:,1,1,1),corr_params(:,1,1,2))
-        hold on;
-        errorbar(count_bins_cen,corr_params(:,2,1,1),corr_params(:,2,1,2),'r')
-        errorbar(count_bins_cen,corr_params(:,3,1,1),corr_params(:,3,1,2),'g')
-        hold off;
-        xlabel('Counts')
-        ylabel('Corr Amp')
-        legend('Y','X','Z')
         
-        subplot(2,1,2)
-        errorbar(count_bins_cen,abs(corr_params(:,1,3,1)),corr_params(:,1,3,2))
-        hold on;
-        errorbar(count_bins_cen,abs(corr_params(:,2,3,1)),corr_params(:,2,3,2),'r')
-        errorbar(count_bins_cen,abs(corr_params(:,3,3,1)),corr_params(:,3,3,2),'g')
-        hold off;
-        xlabel('Counts')
-        ylabel('Corr Width (m)')
-        legend('Y','X','Z')
+        % TODO - make user control for generation of below figures
+        if length(halo_numcat)>2
+            figure(101)
+            set(gcf,'Color',[1 1 1]);
+            errorbar(halo_bin_cent,cellfun(@(x) x{2}(1,1),sqz_params),cellfun(@(x) x{2}(1,2),sqz_params))
+            xlabel('Counts')
+            ylabel('Mean Norm Var (opst Bins)')
+            title('Sqz')
+            hold on
+            plot(halo_bin_cent,cellfun(@(x) x{2}(1,3),sqz_params),'r')
+        end
         
+    % DKS
+    else
+        sqz_params{1}=squezing(halo_numcat{1},0);
+            saveas(gcf,[files.path,'_sqz.jpg'])
+            saveas(gcf,[files.path,'_sqz.fig'])
     end
-end
-
-
-if find_sqz
-    disp('Caclulating sqz for bins')
-    parfor_progress(size(halo_centered_cells_count_bined,2));
-    sqz_params={};
-    for n=1:size(halo_centered_cells_count_bined,2)
-        sqz_params{n}=squezing(halo_centered_cells_count_bined{n},0);
-        saveas(gcf,[files.path,'_Sqz_Bin_',num2str(count_bins_cen(n),'%5.0f'),'_counts.jpg'])
-        saveas(gcf,[files.path,'_Sqz _Bin',num2str(count_bins_cen(n),'%5.0f'),'_counts.fig']) 
-        parfor_progress;
-
-    end
-    parfor_progress(0);
     
-    if size(halo_centered_cells_count_bined,2)>2
-        figure(101)
-        set(gcf,'Color',[1 1 1]);
-        errorbar(count_bins_cen,cellfun(@(x) x{2}(1,1),sqz_params),cellfun(@(x) x{2}(1,2),sqz_params))
-        xlabel('Counts')
-        ylabel('Mean Norm Var (opst Bins)')
-        title('Sqz')
-        hold on
-        plot(count_bins_cen,cellfun(@(x) x{2}(1,3),sqz_params),'r')
+    if isverbose
+        fprintf('Done!\n--------------------------------------------------\n');
     end
-
 end
 
-
-if plot_sph_dist==1 
-    disp('ploting radial distibution')
+% Spherical plot of number distribution
+if plot_sph_dist 
     rad_fit_params=[];
-    for n=1:size(halo_centered_cells_count_bined,2)
-        halo_centered_cells_count_bined_single=halo_centered_cells_count_bined{n};
+    for n=1:size(halo_numcat,2)
+        halo_centered_cells_count_bined_single=halo_numcat{n};
         %here we plot the radial distribution of all halos combined
         halo_centered_cells_count_bined_single_comb=vertcat(halo_centered_cells_count_bined_single{:});
         bin_counts=length(halo_centered_cells_count_bined_single_comb);
@@ -458,20 +491,20 @@ if plot_sph_dist==1
             end
         end
         
-        saveas(gcf,[files.path,'_RadDist_Bin_',num2str(count_bins_cen(n),'%5.0f'),'_counts.jpg'])
-        saveas(gcf,[files.path,'_RadDist _Bin',num2str(count_bins_cen(n),'%5.0f'),'_counts.fig']) 
+        saveas(gcf,[files.path,'_RadDist_Bin_',num2str(halo_bin_cent(n),'%5.0f'),'_counts.jpg'])
+        saveas(gcf,[files.path,'_RadDist _Bin',num2str(halo_bin_cent(n),'%5.0f'),'_counts.fig']) 
     end%loop over halo count bins
     
     clear halo_centered_cells_count_bined_single
     clear halo_centered_cells_count_bined_single_comb
     clear bin_counts
     clear mask
-    if size(halo_centered_cells_count_bined,2)>2 && fit_rad_dist
+    if size(halo_numcat,2)>2 && fit_rad_dist
         figure(8)
         set(gcf,'Color',[1 1 1]);
         subplot(2,1,1)
         
-        errorbar(count_bins_cen,rad_fit_params(:,3,1),rad_fit_params(:,3,2),'x');
+        errorbar(halo_bin_cent,rad_fit_params(:,3,1),rad_fit_params(:,3,2),'x');
         xlabel('Counts')
         ylabel('Halo Radial Width (m)')
         title('Halo Width')
@@ -479,19 +512,19 @@ if plot_sph_dist==1
         fracwidth=rad_fit_params(:,3,1)./rad_fit_params(:,2,1);
         fracunc=fracwidth.*sqrt( (rad_fit_params(:,3,2)./rad_fit_params(:,3,1)).^2 +...
             (rad_fit_params(:,2,2)./rad_fit_params(:,2,1)).^2);
-        errorbar(count_bins_cen,fracwidth,fracunc,'x');
+        errorbar(halo_bin_cent,fracwidth,fracunc,'x');
         xlabel('Counts')
         ylabel('Halo Radial Width Fraction')
         
         clear fracunc
     end
     
-end    %plot_sph_dist==1 
-    
-if isverbose
-   disp('all done')
 end
+
 toc
+if isverbose
+   disp('ALL TASKS COMPLETED');
+end
 
 %the halo width as frac of the halo radius
 %rad_fit_params(:,3,1)./rad_fit_params(:,2,1)
@@ -505,5 +538,3 @@ toc
 %as fraction of halo radius
 %mean(bec_bragg(:,1,5))/rad_fit_params(:,2,1)
 %mean(bec_bragg(:,1,6))/rad_fit_params(:,2,1)
-
-
