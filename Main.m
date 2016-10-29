@@ -61,13 +61,13 @@ plot2d_hist=1;              %plot a 2d histogram(image) of the halo colapsed in 
     plot2d_hist_gauss=0.000;%apply gaussian blur in meters, for off set to zero otherwise specify blur radius
     plot2d_hist_each_shot=0;%plot for each shot indiv. to look for phase grains, will save
 plot3d_halo=1;              %display all the combined halos as a 3d plot
-plot_counts_dist=0;         %plot a histogram of the counts in the halo
+plot_counts_dist=1;         %plot a histogram of the counts in the halo
 movies3d=0;                 %make movies of the 3d plots %TODO don't choke analysis & do movie of final data
     
 find_sqz=0;
-find_correlation=0;         %find the correlation in x,y,z
+find_correlation=1;         %find the correlation in x,y,z
     corr.norm=1;            %normalize the correlations
-    corr.fit=1;             %fit the correlaton with a gaussian
+    corr.fit=0;             %fit the correlaton with a gaussian
     %params for correlations
     corr.yy=linspace(-0.005,0.005,50);    %define the bin size
     corr.dx=0.0005;         %define the condition in other axes
@@ -249,30 +249,31 @@ if plot2d_hist
 end
 clear XEdges YEdges counts centers;
 
-%fing the number in each halo
+% get atom counts per halo
 halo_counts=cellfun(@(x) size(x,1),halo_centered_cells);
 
+% plot histogram of counts in halo
 if plot_counts_dist
-    figure(12)
+    figure(12);
     set(gcf,'Color',[1 1 1]);
-    %find the size of the matrix in each cell
-    hist(halo_counts,100)
-    xlabel('Halo Counts')
-    ylabel('Number of shots')
-    title('Halo Count Dist')
+    hist(halo_counts,100);
+    xlabel('Halo Counts');
+    ylabel('Number of shots');
+    title('Halo Count Dist');
 end
 
+% TODO - generalise this process
 %then for the corrrelation and the squezing we split into bins grouped by
 %the number in the halo (radial masked)
 if split_by_halocounts
 	halo_centered_cells_count_bined={};
-    disp('binning by num in halo')
-  
+    disp('binning by num in halo');
 
     %define the bins
     count_bins_edge=linspace(halocounts_min,halocounts_max,halocounts_bins+1);
-    count_bins_cen=linspace(halocounts_min,halocounts_max,halocounts_bins+1);
-    count_bins_cen=count_bins_cen(1:end-1)+halocounts_max/(halocounts_bins*2);
+%     count_bins_cen=linspace(halocounts_min,halocounts_max,halocounts_bins+1);
+%     count_bins_cen=count_bins_cen(1:end-1)+halocounts_max/(halocounts_bins*2);  % TODO - strange way to find centers
+    count_bins_cen=count_bins_edge(1:end-1)+diff(count_bins_edge)/2;
     %now sort them into the bin ranges
     
     halo_centered_cells_count_bined={}; %this will contan the halo_bins for each count range
@@ -283,7 +284,6 @@ if split_by_halocounts
         %select those files that are in the range
         mask=logical(halo_counts<counts_max & halo_counts>counts_min);
         halo_centered_cells_count_bined{n}=halo_centered_cells(mask);
-        
     end
     clear mask counts_min counts_max;
     verbose_corr=0;
@@ -294,9 +294,8 @@ else
 end
 
 
-
 if find_correlation   
-    disp('Caclulating correlation for each bin')
+    disp('Caclulating correlation for each bin');
     
     parfor_progress(size(halo_centered_cells_count_bined,2));
     corr_params=[];
