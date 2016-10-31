@@ -1,4 +1,4 @@
-function [HALO_DATA] = distinguish_halo(CONFIGS,VERBOSE)
+function [HALO_ZXY,BEC_ZXY] = distinguish_halo(CONFIGS,VERBOSE)
 % Processes the raw TXY data to identify distinguishable halos and their
 % properties
 %
@@ -27,10 +27,11 @@ f_path = CONFIGS.files.path;
 f_id = CONFIGS.files.idok;     % only analyse ok files
 
 % Initialise variables
-zxy_cell=cell(length(f_id),1);
+zxy_proc=cell(length(f_id),1);
+HALO_ZXY=cell(length(f_id),2);
+BEC_ZXY=cell(length(f_id),2);
 
-% two-condensate bimodal Gaussian dist model
-bec2gauss_dist_fun = @(p,x) ;
+bec_cent = cell(length(f_id),2);
 
 %% halo processing
 for i=1:length(f_id)
@@ -52,14 +53,28 @@ for i=1:length(f_id)
         zxy_shot=zxy_shot(in_window,:);
     end
     
-    %% Locate condensate
+    %% Locate condensates
+    zxy_bec=cell(2,1);  % BEC counts
+    for i_cond=1:2
+        zxy_temp=zxy_shot-repmat(CONFIGS.bec.pos{i_cond},[length(zxy_shot),1]); % relocate centre to approx BEC position
+        zxy_temp=sum(zxy_temp.^2,2);    % radial distance vector
+        ind_bec=zxy_temp<(CONFIGS.bec.Rmax{i_cond}^2);  % logical index vector for BEC
+        zxy_bec{i_cond}=zxy_shot(ind_bec,:);      % BEC atoms
+        zxy_shot=zxy_shot(~ind_bec,:);    % pop BEC out
+    end
     
-    
-    % save single-shot to HALO_DATA cell
-    zxy_cell{i}=zxy_shot;      % TODO this isn't actually desired output - only cropped atm
+    %% save single-shot to a cell
+    BEC_ZXY(i,:)=zxy_bec;  % BEC
+    zxy_proc{i}=zxy_shot;   % remaining counts
 end
 
-HALO_DATA=zxy_cell;
+
+if verbose>1
+    
+end
+
+
+HALO_ZXY=zxy_proc;     % TODO temporary soln
 
 % %% DEBUG
 % figure(199);
