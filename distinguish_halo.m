@@ -1,4 +1,4 @@
-function [HALO_ZXY,BEC_ZXY] = distinguish_halo(CONFIGS,VERBOSE)
+function [HALO,BEC] = distinguish_halo(CONFIGS,VERBOSE)
 % Processes the raw TXY data to identify distinguishable halos and their
 % properties
 %
@@ -8,7 +8,7 @@ function [HALO_ZXY,BEC_ZXY] = distinguish_halo(CONFIGS,VERBOSE)
 % VERBOSE - default is 0
 %
 % OUTPUT:
-% HALO_DATA - 2D cell of TXY-arrays from each halo
+% HALO.zxy - 2D cell of TXY-arrays from each halo
 % OUTPUT - optional output report (TODO)
 %
 % DKS 31/10/16
@@ -27,11 +27,10 @@ f_path = CONFIGS.files.path;
 f_id = CONFIGS.files.idok;     % only analyse ok files
 
 % Initialise variables
-zxy_proc=cell(length(f_id),1);
-HALO_ZXY=cell(length(f_id),2);
-BEC_ZXY=cell(length(f_id),2);
-
-bec_cent = cell(length(f_id),2);
+HALO.zxy=cell(length(f_id),2);  % halos
+HALO.cent=cell(length(f_id),2); % centre of halos
+BEC.zxy=cell(length(f_id),2);   % BECs
+BEC.cent=cell(length(f_id),2);  % centre of BECs
 
 %% halo processing
 for i=1:length(f_id)
@@ -57,26 +56,30 @@ for i=1:length(f_id)
     zxy_bec=cell(2,1);  % BEC counts
     for i_cond=1:2
         zxy_temp=zxy_shot-repmat(CONFIGS.bec.pos{i_cond},[length(zxy_shot),1]); % relocate centre to approx BEC position
-        zxy_temp=sum(zxy_temp.^2,2);    % radial distance vector
-        ind_bec=zxy_temp<(CONFIGS.bec.Rmax{i_cond}^2);  % logical index vector for BEC
-        zxy_bec{i_cond}=zxy_shot(ind_bec,:);      % BEC atoms
-        zxy_shot=zxy_shot(~ind_bec,:);    % pop BEC out
+        zxy_temp=sum(zxy_temp.^2,2);            % evaluate radial distances
+        ind_bec=zxy_temp<(CONFIGS.bec.Rmax{i_cond}^2);  % logical index vector for BEC - atoms within Rmax
+        zxy_bec{i_cond}=zxy_shot(ind_bec,:);    % BEC atoms
+        zxy_shot=zxy_shot(~ind_bec,:);          % pop BEC out
+        BEC.cent{i,i_cond}=mean(zxy_bec{i_cond},1);     % approx of BEC centre by mean position
+    end
+    
+    %% Clean around condensates
+    for i_cond=1:2
+        % TODO - remove counts near condensates: ~1.3*rad_window
+    end
+    
+    %% Capture halos
+    % assuming BEC centre lies on halo's Z-extremity and estimating halo radii
+    for i_halo=1:2
+        % add/subtract estimated halo radius in Z
+        HALO.cent{i,i_halo}=BEC.cent{i,i_halo}+((-1)^(i_halo+1))*[1,0,0]*CONFIGS.halo.R{i_halo};
+        zxy_temp=zxy_shot-repmat(HALO.cent{i,i_halo},[length(zxy_shot),1]);     % ref about halo G
+        zxy_temp=sum(zxy_temp.^2,2);            % evaluate radial distances
+        % TODO - radial mask around estimated centre
     end
     
     %% save single-shot to a cell
-    BEC_ZXY(i,:)=zxy_bec;  % BEC
-    zxy_proc{i}=zxy_shot;   % remaining counts
+    BEC.zxy(i,:)=zxy_bec;   % BEC
+    HALO.zxy{i}=zxy_shot;   % TODO: this is a temporary solution - dump all remaining counts to halo
 end
 
-
-if verbose>1
-    
-end
-
-
-HALO_ZXY=zxy_proc;     % TODO temporary soln
-
-% %% DEBUG
-% figure(199);
-% scatter3(halo_collate(:,2),halo_collate(:,3),halo_collate(:,1),'k.');
-% xlabel('X'); ylabel('Y'); zlabel('Z');
