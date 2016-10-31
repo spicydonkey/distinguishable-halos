@@ -27,10 +27,10 @@ usrconfigs.window.all{2}=[-20e-3,18e-3];    % X [m]
 usrconfigs.window.all{3}=[-10e-3,17e-3];    % Y [m]
 
 % DIST HALO PARAMS: params specific to data processing and analysis
-usrconfigs.bec.pos{1}=[20.7,4.75e-3,];   % approx condensate locations (z,x,y)
-usrconfigs.bec.Rmax{1}=[];  % max condensate radius for fitting
-usrconfigs.bec.pos{2}=[];
-usrconfigs.bec.Rmax{2}=[];
+usrconfigs.bec.pos{1}=[20.701,5e-3,3e-3];   % approx condensate locations (z,x,y)
+usrconfigs.bec.Rmax{1}=7e-3;  % max condensate sph radius
+usrconfigs.bec.pos{2}=[20.701,-7.3e-3,6.8e-3];
+usrconfigs.bec.Rmax{2}=6e-3;
 
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%% MAIN %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -46,7 +46,7 @@ importokfiles=zeros(length(configs.files.id),1);    % successfully imported file
 
 %% Load processed data
 vars_saved = {'usrconfigs','configs'...
-    'halo_data',...
+    'halo_data','bec_data',...
     'lowcountfiles','missingfiles','filestotxy','importokfiles',...
     };  % variables important in halo analysis - saved to a .mat file
 
@@ -169,7 +169,7 @@ if ~use_saved_data
     configs.files.idok=configs.files.id(importokfiles);     % ID's for OK files
     
     if verbose>0,disp('Processing TXY files to generate data for analysis...');,end;
-    halo_data=distinguish_halo(configs,verbose);  % all the data processing on raw-TXY to generate halo data
+    [halo_data,bec_data]=distinguish_halo(configs,verbose);  % all the data processing on raw-TXY to generate halo data
     
     %% Save processed data
     if verbose>0,disp('Saving data..');,end;
@@ -190,13 +190,14 @@ end
 
 
 %% DEBUG
-halo_collate = vertcat(halo_data{:});       % all halos collated
-figure(99);
-scatter3(halo_collate(:,2),halo_collate(:,3),halo_collate(:,1),1,'k.');
-set(gcf,'Color',[1 1 1]);
-axis vis3d;
-axis equal;
-xlabel('X'); ylabel('Y'); zlabel('Z');
+% % halo_collate = vertcat(halo_data{:});       % all halos collated
+% figure(99);
+% % scatter3(halo_collate(:,2),halo_collate(:,3),halo_collate(:,1),1,'k.');
+% rem_collate = vertcat(
+% set(gcf,'Color',[1 1 1]);
+% axis vis3d;
+% axis equal;
+% xlabel('X'); ylabel('Y'); zlabel('Z');
 
 %% Correlation analysis
 % find correlations
