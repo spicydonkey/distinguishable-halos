@@ -30,7 +30,7 @@ f_id = CONFIGS.files.idok;      % only analyse ok files
 
 v_z = CONFIGS.misc.vel_z;       % z-velocity for T-Z conversion
 
-R_tail=CONFIGS.bec.rtail;       % estimated ratio of tail to BEC
+R_tail=CONFIGS.bec.dR_tail;     % estimated tail radius from BEC
 R_halo=CONFIGS.halo.dR;         % fractional error around estimtaed halo rad for cropping (TODO - sensitivity?)
 
 %% Initialise variables
@@ -85,7 +85,7 @@ for i=1:length(f_id)
     for i_cond=1:2
         zxy_temp=zxy_shot-repmat(CONFIGS.bec.pos{i_cond},[length(zxy_shot),1]); % relocate centre to approx BEC position
         zxy_temp=sum(zxy_temp.^2,2);            % evaluate radial distances
-        ind_tail=zxy_temp<((R_tail{i_cond}*CONFIGS.bec.Rmax{i_cond})^2);  % tail counts index
+        ind_tail=zxy_temp<(((1+R_tail{i_cond})*CONFIGS.bec.Rmax{i_cond})^2);  % tail counts index
         zxy_tail{i_cond}=zxy_shot(ind_tail,:);  % counts in BEC tail
         zxy_shot=zxy_shot(~ind_tail,:);         % pop tail out
     end
