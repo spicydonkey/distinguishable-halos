@@ -13,7 +13,7 @@ function [HALO,BEC,CULLED] = distinguish_halo(CONFIGS,VERBOSE)
 % VERBOSE - default is 0 (TODO - need some print outs?)
 %
 % OUTPUT:
-% HALO,BEC,CULLED are structs with fields zxy, cent, etc. where appropriate
+% HALO,BEC,CULLED are structs with fields zxy, cent, etc. where appropriate 
 %   as processed from CONFIGS
 %
 % DKS 31/10/16
@@ -117,11 +117,9 @@ clear zxy_shot in_window zxy_bec zxy_temp ind_bec zxy_tail ind_tail zxy_halo ind
 clear i crop_dim i_cond i_halo;
 
 %% Shot-to-shot oscillation cancellation
-% post-processing: centre BEC-halo pairs to the centre of halo as
-%   determined above
-for i=1:size(HALO.zxy,1)
-    for j=1:2
-        HALO.zxy{i,j}=HALO.zxy{i,j}-repmat(HALO.cent{i,j},[size(HALO.zxy{i,j},1),1]);
-        BEC.zxy{i,j}=BEC.zxy{i,j}-repmat(HALO.cent{i,j},[size(BEC.zxy{i,j},1),1]);
-    end
+% % post-processing: centre BEC-halo pairs to the centre of halo as
+% %   determined above
+for i=1:2
+    BEC.zxy(:,i)=zxy_translate(BEC.zxy(:,i),HALO.cent(:,i));
+    HALO.zxy(:,i)=zxy_translate(HALO.zxy(:,i),HALO.cent(:,i));
 end
