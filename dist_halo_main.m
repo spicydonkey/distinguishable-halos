@@ -5,10 +5,13 @@ clear all; close all; clc;
 
 %% USER CONFIG
 % GENERAL
-use_saved_data=1;   %if false will remake the fully processed data files used in analysis
+use_saved_data=0;   %if false will remake the fully processed data files used in analysis
 use_txy=1;          %if false will remake the txy_forc files
 
 verbose=2;
+
+% ANALYSIS
+% TODO - usr configurable switches for analysis
 
 % PLOTS
 % TODO - usr configurable switches for different plots (and req'd
@@ -20,7 +23,7 @@ usrconfigs.files.path='..\data\test\d';    % path to unindexed data file (e.g. '
 usrconfigs.files.id=1:100;         % file id numbers to use for analysis
 usrconfigs.files.minCount=100;     % min counts to use for analysis
 
-% miscellaneous
+% MISCELLANEOUS
 usrconfigs.misc.vel_z=9.8*0.430;    % atom free-fall vert v at detector hit for T-to-Z conversion
 
 % WINDOW - captures only box-cropped counts in files ([]-->no crop)
@@ -32,16 +35,16 @@ usrconfigs.window.all{3}=[-10e-3,17e-3];    % Y [m]
 
 % DISTINGUISHABLE HALO PARAMS: params specific to data processing and analysis
 usrconfigs.bec.pos{1}=[20.7024,4.74e-3,2.72e-3];   % approx condensate locations (z,x,y)
-usrconfigs.bec.Rmax{1}=7e-3;  % max condensate sph radius
-usrconfigs.bec.rtail{1}=1.3;    % BEC tail rad ratio
+usrconfigs.bec.Rmax{1}=7e-3;    % max condensate sph radius
+usrconfigs.bec.dR_tail{1}=0.3;	% BEC tail radial frac diff
 usrconfigs.bec.pos{2}=[20.7005,-7.38e-3,6.55e-3];
 usrconfigs.bec.Rmax{2}=7e-3;
-usrconfigs.bec.rtail{2}=1.3;
+usrconfigs.bec.dR_tail{2}=0.3;
 
 usrconfigs.halo.R{1}=11e-3;     % estimated radius of halo
-usrconfigs.halo.dR{1}=0.2;      % halo fractional thickness each dir (in/out)
+usrconfigs.halo.dR{1}=0.15;      % halo fractional thickness each dir (in/out)
 usrconfigs.halo.R{2}=10e-3;
-usrconfigs.halo.dR{2}=0.2;
+usrconfigs.halo.dR{2}=0.15;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%% MAIN %%%%%%%%%%%%%%%%%%%%%%%%%%
 tic;
@@ -189,7 +192,7 @@ if ~use_saved_data
 end
 
 %% SUMMARY
-% Summary of TXY-preprocessing
+% TXY-preprocessing
 importokfiles=~(missingfiles|lowcountfiles);
 if verbose>1
     disp('===================IMPORT SUMMARY===================');
@@ -200,7 +203,7 @@ if verbose>1
     disp('====================================================');
 end
 
-% Summary
+% Distinguishable halo processing
 if verbose>0
     % Calculated BEC centre
     disp('=================PROCESSING SUMMARY=================');
@@ -219,11 +222,8 @@ figure(111); title('Single shot');
 dot_size=100;
 scatter_zxy(111,(halo.zxy{1,1}),dot_size,'r');
 scatter_zxy(111,(halo.zxy{1,2}),dot_size,'b');
-% scatter_zxy(111,(bec.zxy{1,1}),dot_size,'k');
-% scatter_zxy(111,(bec.zxy{1,2}),dot_size,'k');
-% WARNING: don't plot zero-shifted with culled counts- they won't be
-%   shifted and will have problems with visulisation
-%
+scatter_zxy(111,(bec.zxy{1,1}),dot_size,'k');
+scatter_zxy(111,(bec.zxy{1,2}),dot_size,'k');
 % scatter_zxy(111,(culled.tail.zxy{1,1}),dot_size,'g');     
 % scatter_zxy(111,(culled.tail.zxy{1,2}),dot_size,'g');
 % scatter_zxy(111,(culled.fuzz.zxy{1}),dot_size,'g');
@@ -231,11 +231,8 @@ scatter_zxy(111,(halo.zxy{1,2}),dot_size,'b');
 figure(101); title('All shots combined');
 scatter_zxy(101,vertcat(halo.zxy{:,1}),1,'r');
 scatter_zxy(101,vertcat(halo.zxy{:,2}),1,'b');
-% scatter_zxy(101,vertcat(bec.zxy{:,1}),1,'k');
-% scatter_zxy(101,vertcat(bec.zxy{:,2}),1,'k');
-% WARNING: don't plot zero-shifted with culled counts- they won't be
-%   shifted and will have problems with visulisation
-%
+scatter_zxy(101,vertcat(bec.zxy{:,1}),1,'k');
+scatter_zxy(101,vertcat(bec.zxy{:,2}),1,'k');
 % scatter_zxy(101,vertcat(culled.tail.zxy{:,1}),1,'g');
 % scatter_zxy(101,vertcat(culled.tail.zxy{:,2}),1,'g');
 % scatter_zxy(101,vertcat(culled.fuzz.zxy{:}),1,'g');
