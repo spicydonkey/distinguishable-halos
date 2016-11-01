@@ -1,20 +1,22 @@
 function [HALO,BEC,CULLED] = distinguish_halo(CONFIGS,VERBOSE)
 % Processes the raw TXY data to identify distinguishable halos and their
 % properties
+% Data processing includes:
+%   - Crop to pre-processing window (box)
+%   - Locate condensates per shot
+%   - Clean shot around condensate (thermal fraction)
+%   - Capture halos (TODO - improve with better radius estimation)
+%   - Shot-to-shot oscillation cancellation (post single-count classification)
 %
 % INPUT:
-% DATA_CONFIGS - struct; with fields 'files' and ...<TODO> that
-% configures the analysis
-% VERBOSE - default is 0
+% CONFIGS - struct configures the analysis: refer to dist_halo_main
+% VERBOSE - default is 0 (TODO - need some print outs?)
 %
 % OUTPUT:
-% HALO.zxy - 2D cell of TXY-arrays from each halo
-% OUTPUT - optional output report (TODO)
+% HALO,BEC,CULLED are structs with fields zxy, cent, etc. where appropriate
+%   as processed from CONFIGS
 %
 % DKS 31/10/16
-
-% T-Z scaling
-v_z = 9.8*0.430;    % TODO not sure of exact value to use
 
 % Input check
 if ~exist('VERBOSE','var')
@@ -22,14 +24,16 @@ if ~exist('VERBOSE','var')
     VERBOSE=0;
 end
 
-% Parse input
-f_path = CONFIGS.files.path;
+%% Parse input
+f_path = CONFIGS.files.path;    % full path + filename token
 f_id = CONFIGS.files.idok;      % only analyse ok files
+
+v_z = CONFIGS.misc.vel_z;       % z-velocity for T-Z conversion
 
 R_tail=CONFIGS.bec.rtail;       % estimated ratio of tail to BEC
 R_halo=CONFIGS.halo.dR;         % fractional error around estimtaed halo rad for cropping (TODO - sensitivity?)
 
-% Initialise variables
+%% Initialise variables
 HALO.zxy=cell(length(f_id),2);  % halos
 HALO.cent=cell(length(f_id),2); % centre of halos
 BEC.zxy=cell(length(f_id),2);   % BECs
@@ -37,7 +41,7 @@ BEC.cent=cell(length(f_id),2);  % centre of BECs
 CULLED.tail.zxy=cell(length(f_id),2);   % BEC tails
 CULLED.fuzz.zxy=cell(length(f_id),1);   % halo fuzz + background counts - 1D collated since no source to distinguish
 
-%% halo processing
+%% Halo processing
 for i=1:length(f_id)
     zxy_shot=txy_importer(f_path,f_id(i));  % import full txy-data to memory
     zxy_shot(:,1)=zxy_shot(:,1)*v_z;    % ToF to Z - scale with z-velocity at detector
@@ -60,7 +64,7 @@ for i=1:length(f_id)
     %% Locate condensates
     % Locate condensate by cropping a ball around estimated centres and
     %   radius and AVERAGE count positions
-    zxy_bec=cell(2,1);  % BEC counts
+    zxy_bec=cell(1,2);  % BEC counts
     
     for i_cond=1:2
         zxy_temp=zxy_shot-repmat(CONFIGS.bec.pos{i_cond},[length(zxy_shot),1]); % relocate centre to approx BEC position
@@ -76,7 +80,7 @@ for i=1:length(f_id)
     %   much stronger than scattered counts
     % Must be done after locating condensates since the clean-up windows
     %   for two condensates will significantly overlap
-    zxy_tail=cell(2,1);
+    zxy_tail=cell(1,2);
     
     for i_cond=1:2
         zxy_temp=zxy_shot-repmat(CONFIGS.bec.pos{i_cond},[length(zxy_shot),1]); % relocate centre to approx BEC position
@@ -89,7 +93,7 @@ for i=1:length(f_id)
     %% Capture halos
     % assuming BEC centre lies on halo's Z-extremity and estimating halo
     % radii, apply radial crop
-    zxy_halo=cell(2,1); % temp for halo counts
+    zxy_halo=cell(1,2); % temp for halo counts
     
     for i_halo=1:2
         % add/subtract estimated halo radius in Z: HALO 1 should be the
@@ -108,5 +112,16 @@ for i=1:length(f_id)
     HALO.zxy(i,:)=zxy_halo;   % TODO: this is a temporary solution - dump all remaining counts to halo
     CULLED.tail.zxy(i,:)=zxy_tail;  % tail
     CULLED.fuzz.zxy{i}=zxy_shot;    % all remaining counts
-    
+end
+clear zxy_shot in_window zxy_bec zxy_temp ind_bec zxy_tail ind_tail zxy_halo ind_halo;
+clear i crop_dim i_cond i_halo;
+
+%% Shot-to-shot oscillation cancellation
+% post-processing: centre BEC-halo pairs to the centre of halo as
+%   determined above
+for i=1:size(HALO.zxy,1)
+    for j=1:2
+        HALO.zxy{i,j}=HALO.zxy{i,j}-repmat(HALO.cent{i,j},[size(HALO.zxy{i,j},1),1]);
+        BEC.zxy{i,j}=BEC.zxy{i,j}-repmat(HALO.cent{i,j},[size(BEC.zxy{i,j},1),1]);
+    end
 end
