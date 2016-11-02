@@ -5,7 +5,7 @@ clear all; close all; clc;
 
 %% USER CONFIG
 % GENERAL
-use_saved_data=0;   %if false will remake the fully processed data files used in analysis
+use_saved_data=1;   %if false will remake the fully processed data files used in analysis
 use_txy=1;          %if false will remake the txy_forc files
 
 verbose=2;
@@ -273,10 +273,15 @@ for i=1:2
     bec.k(:,i)=zxy_translate(bec.zxy(:,i),halo.cent(:,i),-1);
 end
 
-% Isometric scaling: TODO halo centre and radius are very rough guess at the moment
+% Isometric scaling (normalisation)
+for i=1:size(halo.k,1)    % iterate shots
+    for j=1:2   % iterate internal states
+        halo.k{i,j}=halo.k{i,j}/halo.R{i,j}(1);     % normalise in k-space
+        bec.k{i,j}=bec.k{i,j}/halo.R{i,j}(1);
+    end
+end
 
-
-% TODO - do real-k conversion, scaling and axis
+% Plot counts in k-space
 if doplot.kspace.all
     figN=111; dotSize=1;
     figure(figN); title('All shots (k"-space)');
