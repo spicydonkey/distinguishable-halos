@@ -35,6 +35,7 @@ R_tail=CONFIGS.bec.dR_tail;     % estimated tail radius from BEC
 R_halo=CONFIGS.halo.dR;         % fractional error around estimtaed halo rad for cropping (TODO - sensitivity?)
 
 %% Initialise variables
+allcount=cell(length(f_id),1);  % storage for all unclassified counts
 HALO.zxy=cell(length(f_id),2);  % halos
 HALO.cent=cell(length(f_id),2); % centre of halos
 BEC.zxy=cell(length(f_id),2);   % BECs
@@ -44,8 +45,8 @@ CULLED.fuzz.zxy=cell(length(f_id),1);   % halo fuzz + background counts - 1D col
 
 %% Halo processing
 for i=1:length(f_id)
-    zxy_shot=txy_importer(f_path,f_id(i));  % import full txy-data to memory
-    zxy_shot(:,1)=zxy_shot(:,1)*v_z;    % ToF to Z - scale with z-velocity at detector
+    allcount{i}=txy_importer(f_path,f_id(i));   % import full txy-data to memory
+    allcount{i}(:,1)=allcount{i}(:,1)*v_z;      % ToF to Z - scale with z-velocity at detector
     
     %% Crop to pre-filter window
     % calculate z-window to do crop
@@ -58,8 +59,8 @@ for i=1:length(f_id)
         if isempty(CONFIGS.window.all{crop_dim})
             continue;    % empty window will pass cropping
         end
-        in_window=(zxy_shot(:,crop_dim)>CONFIGS.window.all{crop_dim}(1) & zxy_shot(:,crop_dim)<CONFIGS.window.all{crop_dim}(2));
-        zxy_shot=zxy_shot(in_window,:);
+        in_window=(allcount{i}(:,crop_dim)>CONFIGS.window.all{crop_dim}(1) & allcount{i}(:,crop_dim)<CONFIGS.window.all{crop_dim}(2));
+        allcount{i}=allcount{i}(in_window,:);
     end
     
     %% Locate condensates
@@ -81,11 +82,11 @@ for i=1:length(f_id)
             % get new ball centre for BEC capture
             ball_cent{i_cond}=BEC.cent{i,i_cond};
             
-            zxy_temp=zxy_shot-repmat(ball_cent{i_cond},[size(zxy_shot,1),1]); % centre to ball
+            zxy_temp=allcount{i}-repmat(ball_cent{i_cond},[size(allcount{i},1),1]); % centre to ball
             rsq_temp=sum(zxy_temp.^2,2);            % evaluate radial distances
             %TODO - this could be much tighter since single shot shows BEC rad < 4 mm
             ind_bec=rsq_temp<((0.7*ball_rad{i_cond})^2);  % logical index vector for BEC - atoms within Rmax
-            zxy_bec{i_cond}=zxy_shot(ind_bec,:);    % collate captured BEC counts
+            zxy_bec{i_cond}=allcount{i}(ind_bec,:);    % collate captured BEC counts
             
             % Evaluate BEC centre
             BEC.cent{i,i_cond}=mean(zxy_bec{i_cond},1);     % approx of BEC centre by mean position
@@ -101,7 +102,7 @@ for i=1:length(f_id)
         end
         % centre has converged
         
-        zxy_shot=zxy_shot(~ind_bec,:);  % pop BEC out
+        allcount{i}=allcount{i}(~ind_bec,:);  % pop BEC out
         
         % Summary
         if n_bec_this/n_bec_max<0.8
@@ -118,7 +119,6 @@ for i=1:length(f_id)
         end
     end
     
-    
     %% Clean around condensates
     % There is still spherical tail around the condensate capturing sphere which is
     %   much stronger than scattered counts
@@ -127,11 +127,11 @@ for i=1:length(f_id)
     zxy_tail=cell(1,2);
     
     for i_cond=1:2
-        zxy_temp=zxy_shot-repmat(BEC.cent{i,i_cond},[size(zxy_shot,1),1]); % relocate centre to approx BEC position
+        zxy_temp=allcount{i}-repmat(BEC.cent{i,i_cond},[size(allcount{i},1),1]); % relocate centre to approx BEC position
         zxy_temp=sum(zxy_temp.^2,2);            % evaluate radial distances
         ind_tail=zxy_temp<(((1+R_tail{i_cond})*CONFIGS.bec.Rmax{i_cond})^2);  % tail counts index
-        zxy_tail{i_cond}=zxy_shot(ind_tail,:);  % counts in BEC tail
-        zxy_shot=zxy_shot(~ind_tail,:);         % pop tail out
+        zxy_tail{i_cond}=allcount{i}(ind_tail,:);  % counts in BEC tail
+        allcount{i}=allcount{i}(~ind_tail,:);         % pop tail out
     end
     
     %% Capture halos
@@ -144,18 +144,24 @@ for i=1:length(f_id)
         %   non-magnetic Raman outcoupled atoms - Halo must sit "ABOVE" the
         %   BEC
         HALO.cent{i,i_halo}=BEC.cent{i,i_halo}+((-1)^(i_halo+1))*[1,0,0]*CONFIGS.halo.R{i_halo};
-        zxy_temp=zxy_shot-repmat(HALO.cent{i,i_halo},[size(zxy_shot,1),1]);     % ref about halo G
+        zxy_temp=allcount{i}-repmat(HALO.cent{i,i_halo},[size(allcount{i},1),1]);     % ref about halo G
         zxy_temp=sum(zxy_temp.^2,2);            % evaluate radial distances
         ind_halo=((zxy_temp<(((1+R_halo{i_halo})*CONFIGS.halo.R{i_halo})^2)) & (zxy_temp>(((1-R_halo{i_halo})*CONFIGS.halo.R{i_halo})^2)));  % halo counts index
-        zxy_halo{i_halo}=zxy_shot(ind_halo,:);  % counts in halo
-        zxy_shot=zxy_shot(~ind_halo,:);         % pop halo out
+        zxy_halo{i_halo}=allcount{i}(ind_halo,:);  % counts in halo
+        allcount{i}=allcount{i}(~ind_halo,:);         % pop halo out
     end
     
     %% save single-shot to a cell
-    BEC.zxy(i,:)=zxy_bec;   % BEC
-    HALO.zxy(i,:)=zxy_halo;   % TODO: this is a temporary solution - dump all remaining counts to halo
+    BEC.zxy(i,:)=zxy_bec;           % BEC
+    HALO.zxy(i,:)=zxy_halo;         % HALO
     CULLED.tail.zxy(i,:)=zxy_tail;  % tail
-    CULLED.fuzz.zxy{i}=zxy_shot;    % all remaining counts
+    CULLED.fuzz.zxy{i}=allcount{i};    % all remaining counts
 end
-clear zxy_shot in_window zxy_bec zxy_temp ind_bec zxy_tail ind_tail zxy_halo ind_halo;
+
+%% Halo capture
+% for i=1:size(
+% end
+
+
+clear in_window zxy_bec zxy_temp ind_bec zxy_tail ind_tail zxy_halo ind_halo;
 clear i crop_dim i_cond i_halo;
