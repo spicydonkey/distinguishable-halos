@@ -103,6 +103,9 @@ for i=1:length(f_id)
         zxy_shot=zxy_shot(~ind_bec,:);  % pop BEC out
         
         % Summary
+        if n_bec_this/n_bec_max<0.8
+            warning(['While locating BEC, a sudden drop in count was observed in shot #',num2str(i)]);
+        end
         if VERBOSE>2
             disp('-------------------------------------------------');
             disp(['Shot: ',num2str(i),', BEC#: ',num2str(i_cond)]);
@@ -157,10 +160,10 @@ clear zxy_shot in_window zxy_bec zxy_temp ind_bec zxy_tail ind_tail zxy_halo ind
 clear i crop_dim i_cond i_halo;
 
 
-%% Shot-to-shot oscillation cancellation
+%% Centre all shots
 % post-processing: centre BEC-halo pairs to the centre of halo as
 %   determined above
-if CONFIGS.proc.cancel_oscillation
+if CONFIGS.proc.centre_all
     for i=1:2
         BEC.zxy(:,i)=zxy_translate(BEC.zxy(:,i),HALO.cent(:,i));
         HALO.zxy(:,i)=zxy_translate(HALO.zxy(:,i),HALO.cent(:,i));
