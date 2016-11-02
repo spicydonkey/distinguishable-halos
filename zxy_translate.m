@@ -11,5 +11,5 @@ nShot=size(ZXY_IN,1);
 ZXY_OUT=cell(nShot,1);
 for i=1:nShot
     nCount=size(ZXY_IN{i},1);
-    ZXY_OUT{i}=ZXY_IN{i}-repmat(DISP{i},[nCount,1]);
+    ZXY_OUT{i}=ZXY_IN{i}+repmat(DISP{i},[nCount,1]);
 end
