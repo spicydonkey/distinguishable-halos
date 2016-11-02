@@ -5,7 +5,7 @@ clear all; close all; clc;
 
 %% USER CONFIG
 % GENERAL
-use_saved_data=0;   %if false will remake the fully processed data files used in analysis
+use_saved_data=1;   %if false will remake the fully processed data files used in analysis
 use_txy=1;          %if false will remake the txy_forc files
 
 verbose=2;
@@ -17,11 +17,7 @@ verbose=2;
 % TODO
 % viewall: overlay all shots for first visualisation
 %usrconfigs.mode='viewall';
-usrconfigs.proc.centre_all=0;   % TODO i'm only using this for manual supervison of process
 
-% PLOTS
-% TODO - usr configurable switches for different plots (and req'd
-%   analysis?)
 
 % IN/OUTPUTS
 % files -  data file
@@ -51,6 +47,15 @@ usrconfigs.halo.R{1}=11e-3;     % estimated radius of halo
 usrconfigs.halo.dR{1}=0.15;      % halo fractional thickness each dir (in/out)
 usrconfigs.halo.R{2}=10e-3;
 usrconfigs.halo.dR{2}=0.15;
+
+%% PLOTS
+% 3D real space
+doplot.real.all=1;      % real space
+doplot.real.ind=1:5;    % plots the selection of shots
+
+% 3D k-space (normed)   TODO
+doplot.kspace.all=1;    % k-space
+doplot.kspace.ind=1:1;  % plots the selection of shots
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%% MAIN %%%%%%%%%%%%%%%%%%%%%%%%%%
 tic;
@@ -221,30 +226,50 @@ if verbose>0
     disp('====================================================');
 end
 
+% Plot processed counts
+if doplot.real.all
+    figN=101; dotSize=1;
+    figure(figN);
+    scatter_zxy(figN,vertcat(halo.zxy{:,1}),dotSize,'r');
+    scatter_zxy(figN,vertcat(halo.zxy{:,2}),dotSize,'b');
+    scatter_zxy(figN,vertcat(bec.zxy{:,1}),dotSize,'m');
+    scatter_zxy(figN,vertcat(bec.zxy{:,2}),dotSize,'c');
+    scatter_zxy(figN,vertcat(culled.tail.zxy{:,1}),dotSize,'k');
+    scatter_zxy(figN,vertcat(culled.tail.zxy{:,2}),dotSize,'k');
+    scatter_zxy(figN,vertcat(culled.fuzz.zxy{:}),dotSize,'k');
+    
+    title('All shots (real space)');
+    xlabel('X'); ylabel('Y'); zlabel('Z');
+end
+if ~isempty(doplot.real.ind)
+    figN=102; dotSize=100;
+    figure(figN);
+    scatter_zxy(figN,vertcat(halo.zxy{doplot.real.ind,1}),dotSize,'r');
+    scatter_zxy(figN,vertcat(halo.zxy{doplot.real.ind,2}),dotSize,'b');
+    scatter_zxy(figN,vertcat(bec.zxy{doplot.real.ind,1}),dotSize,'m');
+    scatter_zxy(figN,vertcat(bec.zxy{doplot.real.ind,2}),dotSize,'c');
+    scatter_zxy(figN,vertcat(culled.tail.zxy{doplot.real.ind,1}),dotSize,'k');
+    scatter_zxy(figN,vertcat(culled.tail.zxy{doplot.real.ind,2}),dotSize,'k');
+    scatter_zxy(figN,vertcat(culled.fuzz.zxy{doplot.real.ind}),dotSize,'k');
+    
+    title(['Selected ',num2str(length(doplot.real.ind)),' shots (real space)']);
+    xlabel('X'); ylabel('Y'); zlabel('Z');
+end
 
-%% DEBUG
-% single-shot
-figure(111); title('Single shot');
-dot_size=100;
-scatter_zxy(111,(halo.zxy{1,1}),dot_size,'r');
-scatter_zxy(111,(halo.zxy{1,2}),dot_size,'b');
-scatter_zxy(111,(bec.zxy{1,1}),dot_size,'m');
-scatter_zxy(111,(bec.zxy{1,2}),dot_size,'c');
-if ~configs.proc.centre_all
-    scatter_zxy(111,(culled.tail.zxy{1,1}),dot_size,'k');
-    scatter_zxy(111,(culled.tail.zxy{1,2}),dot_size,'k');
-    scatter_zxy(111,(culled.fuzz.zxy{1}),dot_size,'k');
+%%
+
+% TODO - do real-k conversion, scaling and axis
+if doplot.kspace.all
+    figure(111); title('All shots (k"-space)');
+    scatter_zxy(111,vertcat(halo.zxy{:,1}),1,'r');
+    scatter_zxy(111,vertcat(halo.zxy{:,2}),1,'b');
+    scatter_zxy(111,vertcat(bec.zxy{:,1}),1,'m');
+    scatter_zxy(111,vertcat(bec.zxy{:,2}),1,'c');
+    
+    title('All halos and BEC (k-space)');
+    xlabel('$K_{X}$'); ylabel('$K_{Y}$'); zlabel('$K_{Z}$');
 end
-figure(101); title('All shots combined');
-scatter_zxy(101,vertcat(halo.zxy{:,1}),1,'r');
-scatter_zxy(101,vertcat(halo.zxy{:,2}),1,'b');
-scatter_zxy(101,vertcat(bec.zxy{:,1}),1,'m');
-scatter_zxy(101,vertcat(bec.zxy{:,2}),1,'c');
-if ~configs.proc.centre_all
-    scatter_zxy(101,vertcat(culled.tail.zxy{:,1}),1,'k');
-    scatter_zxy(101,vertcat(culled.tail.zxy{:,2}),1,'k');
-    scatter_zxy(101,vertcat(culled.fuzz.zxy{:}),1,'k');
-end
+
 
 %% Correlation analysis
 % find correlations
