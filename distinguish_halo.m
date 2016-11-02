@@ -159,7 +159,8 @@ for i=1:length(f_id)        % TODO: MAJOR BUG: treat f_id properly
         zxy_halo{i_halo}=allcount{i}(ind_halo,:);       % counts in halo
         allcount{i}=allcount{i}(~ind_halo,:);           % pop halo out
     
-        % Evaluate halo radius: [AVG_RADIUS STD_RADIUS] for counts in halo
+        % Estimate halo radius: [AVG_RADIUS STD_RADIUS] for counts in halo
+        % around the guessed centre
         HALO.R{i,i_halo}=[mean(sqrt(rsq_temp(ind_halo))),std(sqrt(rsq_temp(ind_halo)))];
     end
     
