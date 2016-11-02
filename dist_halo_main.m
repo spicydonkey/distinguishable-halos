@@ -5,7 +5,7 @@ clear all; close all; clc;
 
 %% USER CONFIG
 % GENERAL
-use_saved_data=1;   %if false will remake the fully processed data files used in analysis
+use_saved_data=0;   %if false will remake the fully processed data files used in analysis
 use_txy=1;          %if false will remake the txy_forc files
 
 verbose=2;
@@ -44,9 +44,9 @@ usrconfigs.bec.Rmax{2}=7e-3;
 usrconfigs.bec.dR_tail{2}=0.3;
 
 usrconfigs.halo.R{1}=11e-3;     % estimated radius of halo
-usrconfigs.halo.dR{1}=0.15;      % halo fractional thickness each dir (in/out)
+usrconfigs.halo.dR{1}=0.25;      % halo fractional thickness each dir (in/out)
 usrconfigs.halo.R{2}=10e-3;
-usrconfigs.halo.dR{2}=0.15;
+usrconfigs.halo.dR{2}=0.25;
 
 %% PLOTS
 % 3D real space
@@ -55,7 +55,7 @@ doplot.real.ind=1:5;    % plots the selection of shots
 
 % 3D k-space (normed)   TODO
 doplot.kspace.all=1;    % k-space
-doplot.kspace.ind=1:1;  % plots the selection of shots
+doplot.kspace.ind=1:5;  % plots the selection of shots
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%% MAIN %%%%%%%%%%%%%%%%%%%%%%%%%%
 tic;
@@ -202,7 +202,7 @@ if ~use_saved_data
     end
 end
 
-%% SUMMARY
+% SUMMARY
 % TXY-preprocessing
 importokfiles=~(missingfiles|lowcountfiles);
 if verbose>1
@@ -256,20 +256,49 @@ if ~isempty(doplot.real.ind)
     xlabel('X'); ylabel('Y'); zlabel('Z');
 end
 
-%%
+%% k-space conversion
+% transforming to k-space will simplify many analysis for s-wave scattering
+% TODO
+% Implementation:
+%   - translate to set halo centre as the origin
+%   - normalisation - isometric scale to let halo radius (i.e. recoil k) to 1
+
+% initialise vars
+halo.k=cell(size(halo.zxy));
+bec.k=cell(size(bec.zxy));
+
+% Translation
+for i=1:2
+    halo.k(:,i)=zxy_translate(halo.zxy(:,i),halo.cent(:,i),-1);
+    bec.k(:,i)=zxy_translate(bec.zxy(:,i),halo.cent(:,i),-1);
+end
+
+% Isometric scaling: TODO halo centre and radius are very rough guess at the moment
+
 
 % TODO - do real-k conversion, scaling and axis
 if doplot.kspace.all
-    figure(111); title('All shots (k"-space)');
-    scatter_zxy(111,vertcat(halo.zxy{:,1}),1,'r');
-    scatter_zxy(111,vertcat(halo.zxy{:,2}),1,'b');
-    scatter_zxy(111,vertcat(bec.zxy{:,1}),1,'m');
-    scatter_zxy(111,vertcat(bec.zxy{:,2}),1,'c');
+    figN=111; dotSize=1;
+    figure(figN); title('All shots (k"-space)');
+    scatter_zxy(figN,vertcat(halo.k{:,1}),dotSize,'r');
+    scatter_zxy(figN,vertcat(halo.k{:,2}),dotSize,'b');
+    scatter_zxy(figN,vertcat(bec.k{:,1}),dotSize,'m');
+    scatter_zxy(figN,vertcat(bec.k{:,2}),dotSize,'c');
     
     title('All halos and BEC (k-space)');
     xlabel('$K_{X}$'); ylabel('$K_{Y}$'); zlabel('$K_{Z}$');
 end
-
+if ~isempty(doplot.kspace.ind)
+    figN=112; dotSize=100;
+    figure(figN); title('All shots (k"-space)');
+    scatter_zxy(figN,vertcat(halo.k{doplot.kspace.ind,1}),dotSize,'r');
+    scatter_zxy(figN,vertcat(halo.k{doplot.kspace.ind,2}),dotSize,'b');
+    scatter_zxy(figN,vertcat(bec.k{doplot.kspace.ind,1}),dotSize,'m');
+    scatter_zxy(figN,vertcat(bec.k{doplot.kspace.ind,2}),dotSize,'c');
+    
+    title(['Selected ',num2str(length(doplot.kspace.ind)),' shots (k-space)']);
+    xlabel('$K_{X}$'); ylabel('$K_{Y}$'); zlabel('$K_{Z}$');
+end
 
 %% Correlation analysis
 % find correlations
