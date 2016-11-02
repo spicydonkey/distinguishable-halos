@@ -6,7 +6,8 @@ function [HALO,BEC,CULLED] = distinguish_halo(CONFIGS,VERBOSE)
 %   - Locate condensates per shot
 %   - Clean shot around condensate (thermal fraction)
 %   - Capture halos (TODO - improve with better radius estimation)
-%   - Shot-to-shot oscillation cancellation (post single-count classification)
+%
+%   NOTE: Shot-to-shot oscillation cancellation has been implemented
 %
 % INPUT:
 % CONFIGS - struct configures the analysis: refer to dist_halo_main
@@ -158,14 +159,3 @@ for i=1:length(f_id)
 end
 clear zxy_shot in_window zxy_bec zxy_temp ind_bec zxy_tail ind_tail zxy_halo ind_halo;
 clear i crop_dim i_cond i_halo;
-
-
-%% Centre all shots
-% post-processing: centre BEC-halo pairs to the centre of halo as
-%   determined above
-if CONFIGS.proc.centre_all
-    for i=1:2
-        BEC.zxy(:,i)=zxy_translate(BEC.zxy(:,i),HALO.cent(:,i));
-        HALO.zxy(:,i)=zxy_translate(HALO.zxy(:,i),HALO.cent(:,i));
-    end
-end
