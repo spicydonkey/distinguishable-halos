@@ -44,7 +44,7 @@ CULLED.tail.zxy=cell(length(f_id),2);   % BEC tails
 CULLED.fuzz.zxy=cell(length(f_id),1);   % halo fuzz + background counts - 1D collated since no source to distinguish
 
 %% Halo processing
-for i=1:length(f_id)
+for i=1:length(f_id)    % TODO: MAJOR BUG: treat f_id properly
     allcount{i}=txy_importer(f_path,f_id(i));   % import full txy-data to memory
     allcount{i}(:,1)=allcount{i}(:,1)*v_z;      % ToF to Z - scale with z-velocity at detector
     
@@ -128,40 +128,60 @@ for i=1:length(f_id)
     
     for i_cond=1:2
         zxy_temp=allcount{i}-repmat(BEC.cent{i,i_cond},[size(allcount{i},1),1]); % relocate centre to approx BEC position
-        zxy_temp=sum(zxy_temp.^2,2);            % evaluate radial distances
-        ind_tail=zxy_temp<(((1+R_tail{i_cond})*CONFIGS.bec.Rmax{i_cond})^2);  % tail counts index
+        rsq_temp=sum(zxy_temp.^2,2);            % evaluate radial distances
+        ind_tail=rsq_temp<(((1+R_tail{i_cond})*CONFIGS.bec.Rmax{i_cond})^2);  % tail counts index
         zxy_tail{i_cond}=allcount{i}(ind_tail,:);  % counts in BEC tail
         allcount{i}=allcount{i}(~ind_tail,:);         % pop tail out
     end
     
-    %% Capture halos
-    % assuming BEC centre lies on halo's Z-extremity and estimating halo
-    % radii, apply radial crop
-    zxy_halo=cell(1,2); % temp for halo counts
+%     %% Capture halos
+%     % assuming BEC centre lies on halo's Z-extremity and estimating halo
+%     % radii, apply radial crop
+%     zxy_halo=cell(1,2); % temp for halo counts
+%     
+%     for i_halo=1:2
+%         % add/subtract estimated halo radius in Z: HALO 1 should be the
+%         %   non-magnetic Raman outcoupled atoms - Halo must sit "ABOVE" the
+%         %   BEC
+%         HALO.cent{i,i_halo}=BEC.cent{i,i_halo}+((-1)^(i_halo+1))*[1,0,0]*CONFIGS.halo.R{i_halo};
+%         zxy_temp=allcount{i}-repmat(HALO.cent{i,i_halo},[size(allcount{i},1),1]);     % ref about halo G
+%         zxy_temp=sum(zxy_temp.^2,2);            % evaluate radial distances
+%         ind_halo=((zxy_temp<(((1+R_halo{i_halo})*CONFIGS.halo.R{i_halo})^2)) & (zxy_temp>(((1-R_halo{i_halo})*CONFIGS.halo.R{i_halo})^2)));  % halo counts index
+%         zxy_halo{i_halo}=allcount{i}(ind_halo,:);  % counts in halo
+%         allcount{i}=allcount{i}(~ind_halo,:);         % pop halo out
+%     end
     
+    %% save single-shot to a cell
+    BEC.zxy(i,:)=zxy_bec;           % BEC
+%     HALO.zxy(i,:)=zxy_halo;         % HALO
+    CULLED.tail.zxy(i,:)=zxy_tail;  % tail
+%     CULLED.fuzz.zxy{i}=allcount{i};    % all remaining counts
+end
+clear in_window zxy_bec ind_bec zxy_tail ind_tail zxy_temp rsq_temp;
+clear ball_cent ball_rad err_cent n_bec_max n_bec_this n_iter;
+clear i crop_dim i_cond;
+
+%% Halo capture
+% assuming BEC centre lies on halo's Z-extremity and estimating halo
+% radii, apply radial crop
+for i=1:length(f_id)        % TODO: MAJOR BUG: treat f_id properly
+    zxy_halo=cell(1,2); % temp for halo counts
     for i_halo=1:2
         % add/subtract estimated halo radius in Z: HALO 1 should be the
         %   non-magnetic Raman outcoupled atoms - Halo must sit "ABOVE" the
         %   BEC
         HALO.cent{i,i_halo}=BEC.cent{i,i_halo}+((-1)^(i_halo+1))*[1,0,0]*CONFIGS.halo.R{i_halo};
         zxy_temp=allcount{i}-repmat(HALO.cent{i,i_halo},[size(allcount{i},1),1]);     % ref about halo G
-        zxy_temp=sum(zxy_temp.^2,2);            % evaluate radial distances
-        ind_halo=((zxy_temp<(((1+R_halo{i_halo})*CONFIGS.halo.R{i_halo})^2)) & (zxy_temp>(((1-R_halo{i_halo})*CONFIGS.halo.R{i_halo})^2)));  % halo counts index
+        rsq_temp=sum(zxy_temp.^2,2);            % evaluate radial distances
+        ind_halo=((rsq_temp<(((1+R_halo{i_halo})*CONFIGS.halo.R{i_halo})^2)) & (rsq_temp>(((1-R_halo{i_halo})*CONFIGS.halo.R{i_halo})^2)));  % halo counts index
         zxy_halo{i_halo}=allcount{i}(ind_halo,:);  % counts in halo
         allcount{i}=allcount{i}(~ind_halo,:);         % pop halo out
     end
     
-    %% save single-shot to a cell
-    BEC.zxy(i,:)=zxy_bec;           % BEC
-    HALO.zxy(i,:)=zxy_halo;         % HALO
-    CULLED.tail.zxy(i,:)=zxy_tail;  % tail
-    CULLED.fuzz.zxy{i}=allcount{i};    % all remaining counts
+    % save single-shot to a cell
+    HALO.zxy(i,:)=zxy_halo;             % HALO
+    CULLED.fuzz.zxy{i}=allcount{i};     % all remaining counts
 end
-
-%% Halo capture
-% for i=1:size(
-% end
-
-
-clear in_window zxy_bec zxy_temp ind_bec zxy_tail ind_tail zxy_halo ind_halo;
-clear i crop_dim i_cond i_halo;
+clear allcount;     % all counts have been classified
+clear zxy_temp zxy_halo ind_halo zxy_temp rsq_temp;
+clear i i_halo;
