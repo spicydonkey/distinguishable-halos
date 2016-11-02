@@ -13,6 +13,12 @@ verbose=2;
 % ANALYSIS
 % TODO - usr configurable switches for analysis
 
+% mode
+% TODO
+% viewall: overlay all shots for first visualisation
+%usrconfigs.mode='viewall';
+usrconfigs.proc.centre_all=0;   % TODO i'm only using this for manual supervison of process
+
 % PLOTS
 % TODO - usr configurable switches for different plots (and req'd
 %   analysis?)
@@ -222,21 +228,23 @@ figure(111); title('Single shot');
 dot_size=100;
 scatter_zxy(111,(halo.zxy{1,1}),dot_size,'r');
 scatter_zxy(111,(halo.zxy{1,2}),dot_size,'b');
-scatter_zxy(111,(bec.zxy{1,1}),dot_size,'k');
-scatter_zxy(111,(bec.zxy{1,2}),dot_size,'k');
-% scatter_zxy(111,(culled.tail.zxy{1,1}),dot_size,'g');     
-% scatter_zxy(111,(culled.tail.zxy{1,2}),dot_size,'g');
-% scatter_zxy(111,(culled.fuzz.zxy{1}),dot_size,'g');
-
+scatter_zxy(111,(bec.zxy{1,1}),dot_size,'m');
+scatter_zxy(111,(bec.zxy{1,2}),dot_size,'c');
+if ~configs.proc.centre_all
+    scatter_zxy(111,(culled.tail.zxy{1,1}),dot_size,'k');
+    scatter_zxy(111,(culled.tail.zxy{1,2}),dot_size,'k');
+    scatter_zxy(111,(culled.fuzz.zxy{1}),dot_size,'k');
+end
 figure(101); title('All shots combined');
 scatter_zxy(101,vertcat(halo.zxy{:,1}),1,'r');
 scatter_zxy(101,vertcat(halo.zxy{:,2}),1,'b');
-scatter_zxy(101,vertcat(bec.zxy{:,1}),1,'k');
-scatter_zxy(101,vertcat(bec.zxy{:,2}),1,'k');
-% scatter_zxy(101,vertcat(culled.tail.zxy{:,1}),1,'g');
-% scatter_zxy(101,vertcat(culled.tail.zxy{:,2}),1,'g');
-% scatter_zxy(101,vertcat(culled.fuzz.zxy{:}),1,'g');
-
+scatter_zxy(101,vertcat(bec.zxy{:,1}),1,'m');
+scatter_zxy(101,vertcat(bec.zxy{:,2}),1,'c');
+if ~configs.proc.centre_all
+    scatter_zxy(101,vertcat(culled.tail.zxy{:,1}),1,'k');
+    scatter_zxy(101,vertcat(culled.tail.zxy{:,2}),1,'k');
+    scatter_zxy(101,vertcat(culled.fuzz.zxy{:}),1,'k');
+end
 
 %% Correlation analysis
 % find correlations
