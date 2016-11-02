@@ -17,5 +17,4 @@ end
 figure(FIG); hold on;
 scatter3(ZXY_ARRAY(:,2),ZXY_ARRAY(:,3),ZXY_ARRAY(:,1),SIZE,[COLOR,'.']);
 axis vis3d; axis equal;
-xlabel('X'); ylabel('Y'); zlabel('Z');
 end
