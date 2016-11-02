@@ -81,7 +81,7 @@ for i=1:length(f_id)
             % get new ball centre for BEC capture
             ball_cent{i_cond}=BEC.cent{i,i_cond};
             
-            zxy_temp=zxy_shot-repmat(ball_cent{i_cond},[length(zxy_shot),1]); % centre to ball
+            zxy_temp=zxy_shot-repmat(ball_cent{i_cond},[size(zxy_shot,1),1]); % centre to ball
             rsq_temp=sum(zxy_temp.^2,2);            % evaluate radial distances
             %TODO - this could be much tighter since single shot shows BEC rad < 4 mm
             ind_bec=rsq_temp<((0.7*ball_rad{i_cond})^2);  % logical index vector for BEC - atoms within Rmax
@@ -127,7 +127,7 @@ for i=1:length(f_id)
     zxy_tail=cell(1,2);
     
     for i_cond=1:2
-        zxy_temp=zxy_shot-repmat(CONFIGS.bec.pos{i_cond},[length(zxy_shot),1]); % relocate centre to approx BEC position
+        zxy_temp=zxy_shot-repmat(BEC.cent{i,i_cond},[size(zxy_shot,1),1]); % relocate centre to approx BEC position
         zxy_temp=sum(zxy_temp.^2,2);            % evaluate radial distances
         ind_tail=zxy_temp<(((1+R_tail{i_cond})*CONFIGS.bec.Rmax{i_cond})^2);  % tail counts index
         zxy_tail{i_cond}=zxy_shot(ind_tail,:);  % counts in BEC tail
@@ -144,7 +144,7 @@ for i=1:length(f_id)
         %   non-magnetic Raman outcoupled atoms - Halo must sit "ABOVE" the
         %   BEC
         HALO.cent{i,i_halo}=BEC.cent{i,i_halo}+((-1)^(i_halo+1))*[1,0,0]*CONFIGS.halo.R{i_halo};
-        zxy_temp=zxy_shot-repmat(HALO.cent{i,i_halo},[length(zxy_shot),1]);     % ref about halo G
+        zxy_temp=zxy_shot-repmat(HALO.cent{i,i_halo},[size(zxy_shot,1),1]);     % ref about halo G
         zxy_temp=sum(zxy_temp.^2,2);            % evaluate radial distances
         ind_halo=((zxy_temp<(((1+R_halo{i_halo})*CONFIGS.halo.R{i_halo})^2)) & (zxy_temp>(((1-R_halo{i_halo})*CONFIGS.halo.R{i_halo})^2)));  % halo counts index
         zxy_halo{i_halo}=zxy_shot(ind_halo,:);  % counts in halo
