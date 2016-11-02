@@ -63,17 +63,57 @@ for i=1:length(f_id)
     
     %% Locate condensates
     % Locate condensate by cropping a ball around estimated centres and
-    %   radius and AVERAGE count positions
+    %   radius and AVERAGE count positions - ITERATED until convergence
     zxy_bec=cell(1,2);  % BEC counts
     
-    for i_cond=1:2
-        zxy_temp=zxy_shot-repmat(CONFIGS.bec.pos{i_cond},[length(zxy_shot),1]); % relocate centre to approx BEC position
-        zxy_temp=sum(zxy_temp.^2,2);            % evaluate radial distances
-        ind_bec=zxy_temp<(CONFIGS.bec.Rmax{i_cond}^2);  % logical index vector for BEC - atoms within Rmax
-        zxy_bec{i_cond}=zxy_shot(ind_bec,:);    % BEC atoms
-        zxy_shot=zxy_shot(~ind_bec,:);          % pop BEC out
-        BEC.cent{i,i_cond}=mean(zxy_bec{i_cond},1);     % approx of BEC centre by mean position
+    % ITERATE to improve BEC estimation
+    % Initialisise
+    BEC.cent(i,:)=CONFIGS.bec.pos;
+    ball_cent=CONFIGS.bec.pos;      % ball (centre) to capture BEC
+    ball_rad=CONFIGS.bec.Rmax;      % radial window to count as BEC
+    for i_cond=1:2        
+        % iterate until mean position from counts ~= ball centre
+        err_cent=Inf;
+        n_bec_max=0;
+        n_iter=0;
+        while err_cent>0.02e-3     
+            % get new ball centre for BEC capture
+            ball_cent{i_cond}=BEC.cent{i,i_cond};
+            
+            zxy_temp=zxy_shot-repmat(ball_cent{i_cond},[length(zxy_shot),1]); % centre to ball
+            rsq_temp=sum(zxy_temp.^2,2);            % evaluate radial distances
+            %TODO - this could be much tighter since single shot shows BEC rad < 4 mm
+            ind_bec=rsq_temp<((0.7*ball_rad{i_cond})^2);  % logical index vector for BEC - atoms within Rmax
+            zxy_bec{i_cond}=zxy_shot(ind_bec,:);    % collate captured BEC counts
+            
+            % Evaluate BEC centre
+            BEC.cent{i,i_cond}=mean(zxy_bec{i_cond},1);     % approx of BEC centre by mean position
+            err_cent=norm(ball_cent{i_cond}-BEC.cent{i,i_cond});    % error this iteration
+            
+            % total count in this ball - used to tell if BEC well-captured
+            n_bec_this=sum(ind_bec);
+            if n_bec_this>n_bec_max
+                n_bec_max=n_bec_this;
+            end
+
+            n_iter=n_iter+1;
+        end
+        % centre has converged
+        
+        zxy_shot=zxy_shot(~ind_bec,:);  % pop BEC out
+        
+        % Summary
+        if VERBOSE>2
+            disp('-------------------------------------------------');
+            disp(['Shot: ',num2str(i),', BEC#: ',num2str(i_cond)]);
+            disp(['Iterations: ',num2str(n_iter)]);
+            disp(['Total counts in BEC (/max): ',num2str(n_bec_this),' / ',num2str(n_bec_max)]);
+            % total deviation from initial guess
+            dev_tot=norm(BEC.cent{i,i_cond}-CONFIGS.bec.pos{i_cond});
+            disp(['Deviation from initial guess: ',num2str(1e3*dev_tot),' mm']);
+        end
     end
+    
     
     %% Clean around condensates
     % There is still spherical tail around the condensate capturing sphere which is
@@ -116,10 +156,13 @@ end
 clear zxy_shot in_window zxy_bec zxy_temp ind_bec zxy_tail ind_tail zxy_halo ind_halo;
 clear i crop_dim i_cond i_halo;
 
+
 %% Shot-to-shot oscillation cancellation
-% % post-processing: centre BEC-halo pairs to the centre of halo as
-% %   determined above
-for i=1:2
-    BEC.zxy(:,i)=zxy_translate(BEC.zxy(:,i),HALO.cent(:,i));
-    HALO.zxy(:,i)=zxy_translate(HALO.zxy(:,i),HALO.cent(:,i));
+% post-processing: centre BEC-halo pairs to the centre of halo as
+%   determined above
+if CONFIGS.proc.cancel_oscillation
+    for i=1:2
+        BEC.zxy(:,i)=zxy_translate(BEC.zxy(:,i),HALO.cent(:,i));
+        HALO.zxy(:,i)=zxy_translate(HALO.zxy(:,i),HALO.cent(:,i));
+    end
 end
