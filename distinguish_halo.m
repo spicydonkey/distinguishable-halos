@@ -38,6 +38,7 @@ R_halo=CONFIGS.halo.dR;         % fractional error around estimtaed halo rad for
 allcount=cell(length(f_id),1);  % storage for all unclassified counts
 HALO.zxy=cell(length(f_id),2);  % halos
 HALO.cent=cell(length(f_id),2); % centre of halos
+HALO.R=cell(length(f_id),2);    % radii of halos
 BEC.zxy=cell(length(f_id),2);   % BECs
 BEC.cent=cell(length(f_id),2);  % centre of BECs
 CULLED.tail.zxy=cell(length(f_id),2);   % BEC tails
@@ -134,28 +135,9 @@ for i=1:length(f_id)    % TODO: MAJOR BUG: treat f_id properly
         allcount{i}=allcount{i}(~ind_tail,:);         % pop tail out
     end
     
-%     %% Capture halos
-%     % assuming BEC centre lies on halo's Z-extremity and estimating halo
-%     % radii, apply radial crop
-%     zxy_halo=cell(1,2); % temp for halo counts
-%     
-%     for i_halo=1:2
-%         % add/subtract estimated halo radius in Z: HALO 1 should be the
-%         %   non-magnetic Raman outcoupled atoms - Halo must sit "ABOVE" the
-%         %   BEC
-%         HALO.cent{i,i_halo}=BEC.cent{i,i_halo}+((-1)^(i_halo+1))*[1,0,0]*CONFIGS.halo.R{i_halo};
-%         zxy_temp=allcount{i}-repmat(HALO.cent{i,i_halo},[size(allcount{i},1),1]);     % ref about halo G
-%         zxy_temp=sum(zxy_temp.^2,2);            % evaluate radial distances
-%         ind_halo=((zxy_temp<(((1+R_halo{i_halo})*CONFIGS.halo.R{i_halo})^2)) & (zxy_temp>(((1-R_halo{i_halo})*CONFIGS.halo.R{i_halo})^2)));  % halo counts index
-%         zxy_halo{i_halo}=allcount{i}(ind_halo,:);  % counts in halo
-%         allcount{i}=allcount{i}(~ind_halo,:);         % pop halo out
-%     end
-    
     %% save single-shot to a cell
     BEC.zxy(i,:)=zxy_bec;           % BEC
-%     HALO.zxy(i,:)=zxy_halo;         % HALO
     CULLED.tail.zxy(i,:)=zxy_tail;  % tail
-%     CULLED.fuzz.zxy{i}=allcount{i};    % all remaining counts
 end
 clear in_window zxy_bec ind_bec zxy_tail ind_tail zxy_temp rsq_temp;
 clear ball_cent ball_rad err_cent n_bec_max n_bec_this n_iter;
@@ -174,8 +156,11 @@ for i=1:length(f_id)        % TODO: MAJOR BUG: treat f_id properly
         zxy_temp=allcount{i}-repmat(HALO.cent{i,i_halo},[size(allcount{i},1),1]);     % ref about halo G
         rsq_temp=sum(zxy_temp.^2,2);            % evaluate radial distances
         ind_halo=((rsq_temp<(((1+R_halo{i_halo})*CONFIGS.halo.R{i_halo})^2)) & (rsq_temp>(((1-R_halo{i_halo})*CONFIGS.halo.R{i_halo})^2)));  % halo counts index
-        zxy_halo{i_halo}=allcount{i}(ind_halo,:);  % counts in halo
-        allcount{i}=allcount{i}(~ind_halo,:);         % pop halo out
+        zxy_halo{i_halo}=allcount{i}(ind_halo,:);       % counts in halo
+        allcount{i}=allcount{i}(~ind_halo,:);           % pop halo out
+    
+        % Evaluate halo radius: [AVG_RADIUS STD_RADIUS] for counts in halo
+        HALO.R{i,i_halo}=[mean(sqrt(rsq_temp(ind_halo))),std(sqrt(rsq_temp(ind_halo)))];
     end
     
     % save single-shot to a cell
