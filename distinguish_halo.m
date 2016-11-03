@@ -1,4 +1,4 @@
-function [HALO,BEC,CULLED] = distinguish_halo(CONFIGS,VERBOSE)
+function [HALO,BEC,CULLED,ERRFLAG] = distinguish_halo(CONFIGS,VERBOSE)
 % Processes the raw TXY data to identify distinguishable halos and their
 % properties
 % Data processing includes:
@@ -16,6 +16,8 @@ function [HALO,BEC,CULLED] = distinguish_halo(CONFIGS,VERBOSE)
 % OUTPUT:
 % HALO,BEC,CULLED are structs with fields zxy, cent, etc. where appropriate 
 %   as processed from CONFIGS
+% ERRFLAG is a logical error flag generated for each shot - use this to see
+%   which shots passed and failed
 %
 % DKS 31/10/16
 
@@ -146,6 +148,7 @@ clear i crop_dim i_cond;
 %% Halo capture
 % assuming BEC centre lies on halo's Z-extremity and estimating halo
 % radii, apply radial crop
+ERRFLAG=false(size(f_id));  % flag for bad shots
 for i=1:length(f_id)        % TODO: MAJOR BUG: treat f_id properly
     zxy_halo=cell(1,2); % temp for halo counts
     for i_halo=1:2
@@ -156,12 +159,26 @@ for i=1:length(f_id)        % TODO: MAJOR BUG: treat f_id properly
         zxy_temp=allcount{i}-repmat(HALO.cent{i,i_halo},[size(allcount{i},1),1]);     % ref about halo G
         rsq_temp=sum(zxy_temp.^2,2);            % evaluate radial distances
         ind_halo=((rsq_temp<(((1+R_halo{i_halo})*CONFIGS.halo.R{i_halo})^2)) & (rsq_temp>(((1-R_halo{i_halo})*CONFIGS.halo.R{i_halo})^2)));  % halo counts index
+        
+        % Check for no counts captured for halo
+        if sum(ind_halo)==0
+            warning(['During halo capture, shot #',num2str(i),', halo #',num2str(i_halo),' has no counts.']);
+            ERRFLAG(i)=1;
+        end
+        
         zxy_halo{i_halo}=allcount{i}(ind_halo,:);       % counts in halo
         allcount{i}=allcount{i}(~ind_halo,:);           % pop halo out
     
         % Estimate halo radius: [AVG_RADIUS STD_RADIUS] for counts in halo
         % around the guessed centre
         HALO.R{i,i_halo}=[mean(sqrt(rsq_temp(ind_halo))),std(sqrt(rsq_temp(ind_halo)))];
+        
+        % NaN error occurs for halo radius - Occurs or zero halo count
+        if VERBOSE>0
+            if isnan(HALO.R{i,i_halo}(1))
+                warning(['During halo capture, shot #',num2str(i),', halo #',num2str(i_halo),' has returned NaN for halo radius.']);
+            end
+        end
     end
     
     % save single-shot to a cell
@@ -171,3 +188,25 @@ end
 clear allcount;     % all counts have been classified
 clear zxy_temp zxy_halo ind_halo zxy_temp rsq_temp;
 clear i i_halo;
+
+%% Process bad shots
+% bad shots will be discarded
+nBadshots=sum(ERRFLAG);
+
+% warning([num2str(nBadshots),' bad shots in data will be discarded.']);
+if nBadshots>0
+    warning([num2str(nBadshots),' bad shot(s) in data will be discarded.']);
+    
+    % Cull bad shots for all returned processed data
+    HALO.zxy=HALO.zxy(~ERRFLAG,:);
+    HALO.R=HALO.R(~ERRFLAG,:);
+    HALO.cent=HALO.cent(~ERRFLAG,:);
+    
+    BEC.zxy=BEC.zxy(~ERRFLAG,:);
+    BEC.cent=BEC.cent(~ERRFLAG,:);
+    
+    CULLED.fuzz.zxy=CULLED.fuzz.zxy(~ERRFLAG,:);
+    CULLED.tail.zxy=CULLED.tail.zxy(~ERRFLAG,:);
+end
+
+%HALO,BEC,CULLED,ERRFLAG returned
