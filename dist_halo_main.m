@@ -51,11 +51,11 @@ usrconfigs.halo.dR{2}=0.25;
 %% PLOTS
 % 3D real space
 doplot.real.all=1;      % real space
-doplot.real.ind=1:5;    % plots the selection of shots
+doplot.real.ind=1:3;    % plots the selection of shots
 
 % 3D k-space (normed)   TODO
 doplot.kspace.all=1;    % k-space
-doplot.kspace.ind=1:5;  % plots the selection of shots
+doplot.kspace.ind=1:3;  % plots the selection of shots
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%% MAIN %%%%%%%%%%%%%%%%%%%%%%%%%%
 tic;
@@ -66,10 +66,9 @@ missingfiles=zeros(length(configs.files.id),1);     % missing dld/txy file
 filestotxy=zeros(length(configs.files.id),1);       % dld files processed to txy
 lowcountfiles=zeros(length(configs.files.id),1);    % files with too few counts (skipped in analysis)
 
-
 %% Load processed data
 vars_saved = {'usrconfigs','configs'...
-    'halo','bec','culled',...
+    'halo','bec','culled','errflag',...
     'lowcountfiles','missingfiles','filestotxy',...
     };  % variables important in halo analysis - saved to a .mat file
 
@@ -109,7 +108,6 @@ if use_saved_data
         clear S_data;
     end
 end
-
 
 %% Pre-processing
 if ~use_saved_data
@@ -182,7 +180,7 @@ if ~use_saved_data
     configs.files.idok=configs.files.id(importokfiles);     % ID's for OK files
     
     if verbose>0,disp('Processing TXY files to generate data for analysis...');,end;
-    [halo,bec,culled]=distinguish_halo(configs,verbose);  % all the data processing on raw-TXY to generate halo data
+    [halo,bec,culled,errflag]=distinguish_halo(configs,verbose);  % all the data processing on raw-TXY to generate halo data
     
     
     %% Save processed data
@@ -218,10 +216,12 @@ end
 if verbose>0
     % Calculated BEC centre
     disp('=================PROCESSING SUMMARY=================');
+    disp([num2str(sum(errflag)),' bad shot(s) were discarded during data processing.']);
     for i_mj=1:2
         disp(['BEC ',num2str(i_mj),' centres: [',num2str(mean(vertcat(bec.cent{:,i_mj}))),']±[',num2str(std(vertcat(bec.cent{:,i_mj}))),']']);
         %disp(['HALO ',num2str(i_mj),' centres: [',num2str(mean(vertcat(halo.cent{:,i_mj}))),']±[',num2str(std(vertcat(halo.cent{:,i_mj}))),']']);   % not really useful with this algorithm
         % TODO - with optimisation, report halo radii
+        disp(['Halo ',num2str(i_mj),' radius: [',num2str(mean(vertcat(halo.R{:,i_mj}))),']±[',num2str(std(vertcat(halo.R{:,i_mj}))),']']);
     end
     disp('====================================================');
 end
@@ -308,4 +308,6 @@ end
 %% Correlation analysis
 % find correlations
 
+
+%% end of code %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 toc;
