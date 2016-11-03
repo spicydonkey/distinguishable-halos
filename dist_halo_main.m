@@ -305,6 +305,18 @@ if ~isempty(doplot.kspace.ind)
     xlabel('$K_{X}$'); ylabel('$K_{Y}$'); zlabel('$K_{Z}$');
 end
 
+%% Cartesian to Spherical polar conversion
+% Build k-space counts in the conventional spherical polar system
+% Should be simpler to do correlation analysis in sph pol coord system
+
+% Initialise variable
+halo.k_pol=cell(size(halo.k));
+
+% Cart-SphPol Conversion
+for i=1:2
+    halo.k_pol(:,i)=zxy2pol(halo.k(:,1));   % Polar coord of halo in k-space 
+end
+
 %% Correlation analysis
 % find correlations
 
