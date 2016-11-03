@@ -12,6 +12,7 @@ verbose=2;
 
 % ANALYSIS
 % TODO - usr configurable switches for analysis
+corr.rad_theta.nBin=[100,100];     % number of bins for rad-angular (dr,dtheta)
 
 % mode
 % TODO
@@ -318,8 +319,88 @@ for i=1:2
 end
 
 %% Correlation analysis
-% find correlations
+% define bin edges for correlation binning
+%   {1}: diff radius, {2}: diff angle
+bin_edge{1}=linspace(-1,1,corr.rad_theta.nBin(1)+1);      % TODO: max set to 1 since halo is relatively thin and normalised in k-space
+bin_edge{2}=linspace(0,pi,corr.rad_theta.nBin(2)+1);
 
+%% Cross-halo back-to-back
+nHalo=size(halo.k_pol,1);
+
+G2{1}=zeros(corr.rad_theta.nBin);  % initialise G2 (unnormalised)
+for i=1:nHalo   % iterate shot-to-shot
+    nAtom=size(halo.k_pol{i,1},1);      % number of counts in this halo
+    dk_BB_tmp=[];
+    for j=1:nAtom     % iterate through each atom in halo#1
+        % back-to-back condition
+        atom_ref=halo.k_pol{i,1}(j,:);  % this reference atom in k-pol
+        
+        dk_BB_tmp(:,1)=halo.k_pol{i,2}(:,1)-atom_ref(1);    % dk
+        dk_BB_tmp(:,2)=acos(cos(-atom_ref(3)).*cos(halo.k_pol{i,2}(:,3)).*cos(halo.k_pol{i,2}(:,2)-(atom_ref(2)+pi)) ...
+            +sin(-atom_ref(3)).*sin(halo.k_pol{i,2}(:,3)));     % dtheta
+        
+        count_tmp=histcn(dk_BB_tmp,bin_edge{1},bin_edge{2});
+        G2{1}=G2{1}+count_tmp;
+    end
+end
+
+% Normalisation
+G2_all{1}=zeros(corr.rad_theta.nBin);  % normalisation
+halo_all{1}=vertcat(halo.k_pol{:,1});
+halo_all{2}=vertcat(halo.k_pol{:,2});
+
+nAtom=size(halo_all{1},1);
+dk_BB_tmp=[];
+for j=1:nAtom     % iterate through each atom in halo#1
+    % back-to-back condition
+    atom_ref=halo_all{1}(j,:);  % this reference atom in k-pol
+    
+    dk_BB_tmp(:,1)=halo_all{2}(:,1)-atom_ref(1);    % dk
+    dk_BB_tmp(:,2)=acos(cos(-atom_ref(3)).*cos(halo_all{2}(:,3)).*cos(halo_all{2}(:,2)-(atom_ref(2)+pi)) ...
+        +sin(-atom_ref(3)).*sin(halo_all{2}(:,3)));     % dtheta
+    
+    count_tmp=histcn(dk_BB_tmp,bin_edge{1},bin_edge{2});
+    G2_all{1}=G2_all{1}+count_tmp;
+end
+
+g2{1}=G2{1}./G2_all{1}*nHalo;
+
+% DEBUG PLOT
+figure(11);
+X=0.5*(bin_edge{1}(1:end-1)+bin_edge{1}(2:end));    % bin centers
+Y=0.5*(bin_edge{2}(1:end-1)+bin_edge{2}(2:end));
+[X,Y]=meshgrid(X,Y);
+surf(X',Y',G2{1},'edgecolor','none');
+title('');
+xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{BB(0,1)}$');
+
+figure(12);
+surf(X',Y',g2{1},'edgecolor','none');
+title('');
+xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$g^{(2)}_{BB(0,1)}$');
+
+%% Cross-halo colinear
+G2{2}=zeros(corr.rad_theta.nBin);  % initialise G2 (unnormalised)
+for i=1:nHalo   % iterate shot-to-shot
+    nAtom=size(halo.k_pol{i,1},1);      % number of counts in this halo
+    dk_CL_tmp=[];
+    for j=1:nAtom     % iterate through each atom in halo#1
+        % back-to-back condition
+        atom_ref=halo.k_pol{i,1}(j,:);  % this reference atom in k-pol
+        
+        dk_CL_tmp(:,1)=halo.k_pol{i,2}(:,1)-atom_ref(1);    % dk
+        dk_CL_tmp(:,2)=acos(cos(atom_ref(3)).*cos(halo.k_pol{i,2}(:,3)).*cos(halo.k_pol{i,2}(:,2)-atom_ref(2)) ...
+            +sin(atom_ref(3)).*sin(halo.k_pol{i,2}(:,3)));  % dtheta
+        
+        count_tmp=histcn(dk_CL_tmp,bin_edge{1},bin_edge{2});
+        G2{2}=G2{2}+count_tmp;
+    end
+end
+% DEBUG PLOT
+figure(21);
+surf(X',Y',G2{2},'edgecolor','none');
+title('');
+xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{CL(0,1)}$');
 
 %% end of code %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 toc;
