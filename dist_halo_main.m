@@ -5,15 +5,15 @@ clear all; close all; clc;
 
 %% USER CONFIG
 % GENERAL
-use_saved_data=0;   %if false will remake the fully processed data files used in analysis
+use_saved_data=1;   %if false will remake the fully processed data files used in analysis
 use_txy=1;          %if false will remake the txy_forc files
 
 verbose=2;
 
 % ANALYSIS
 % TODO - usr configurable switches for analysis
-corr.polar.nBin=10*[1,1];     % number of bins for rad-angular (dr,dtheta)
-corr.cart.nBin=50*[1,1,1];    % bins to use for g2 in cartesian (Z,X,Y)
+corr.polar.nBin=100*[1,1];     % number of bins for rad-angular (dr,dtheta)
+corr.cart.nBin=30*[1,1,1];    % bins to use for g2 in cartesian (Z,X,Y)
 
 % mode
 % TODO
@@ -49,6 +49,10 @@ usrconfigs.halo.R{1}=11e-3;     % estimated radius of halo
 usrconfigs.halo.dR{1}=0.25;      % halo fractional thickness each dir (in/out)
 usrconfigs.halo.R{2}=10e-3;
 usrconfigs.halo.dR{2}=0.25;
+
+% POST
+usrconfigs.post.removecap=1;    % remove caps on halo (in Z)
+    usrconfigs.post.zcap=0.5;   % z-cutoff
 
 %% PLOTS
 % 3D real space
@@ -286,7 +290,7 @@ end
 % Plot counts in k-space
 if doplot.kspace.all
     figN=111; dotSize=1;
-    figure(figN); title('All shots (k"-space)');
+    figure(figN);
     scatter_zxy(figN,vertcat(halo.k{:,1}),dotSize,'r');
     scatter_zxy(figN,vertcat(halo.k{:,2}),dotSize,'b');
     scatter_zxy(figN,vertcat(bec.k{:,1}),dotSize,'m');
@@ -306,6 +310,33 @@ if ~isempty(doplot.kspace.ind)
     title(['Selected ',num2str(length(doplot.kspace.ind)),' shots (k-space)']);
     xlabel('$K_{X}$'); ylabel('$K_{Y}$'); zlabel('$K_{Z}$');
 end
+
+%% Cull halo caps
+if configs.post.removecap
+    nShot=size(halo.k,1);
+    for i=1:2
+        for j=1:nShot
+            ind_cap=abs(halo.k{j,i}(:,1))>configs.post.zcap;
+            halo.k{j,i}=halo.k{j,i}(~ind_cap,:);
+        end
+    end
+    
+    % PLOTS
+    figN=121; dotSize=1;
+    figure(figN); title('All shots z-caps removed (k"-space)');
+    scatter_zxy(figN,vertcat(halo.k{:,1}),dotSize,'r');
+    scatter_zxy(figN,vertcat(halo.k{:,2}),dotSize,'b');
+    title('Z-cap removed (k-space)');
+    xlabel('$K_{X}$'); ylabel('$K_{Y}$'); zlabel('$K_{Z}$');
+    
+    figN=122; dotSize=100;
+    figure(figN);
+    scatter_zxy(figN,vertcat(halo.k{doplot.kspace.ind,1}),dotSize,'r');
+    scatter_zxy(figN,vertcat(halo.k{doplot.kspace.ind,2}),dotSize,'b');
+    title(['Z-cap removed Selected ',num2str(length(doplot.kspace.ind)),' shots (k-space)']);
+    xlabel('$K_{X}$'); ylabel('$K_{Y}$'); zlabel('$K_{Z}$');
+end
+
 
 %% Cartesian to Spherical polar conversion
 % Build k-space counts in the conventional spherical polar system
@@ -374,17 +405,24 @@ g2{1}=G2{1}./G2_all{1}*nHalo;
 
 % DEBUG PLOT
 figure(11);
+subplot(1,3,1);
 X=0.5*(bin_edge_pol{1}(1:end-1)+bin_edge_pol{1}(2:end));    % bin centers
 Y=0.5*(bin_edge_pol{2}(1:end-1)+bin_edge_pol{2}(2:end));
 [X,Y]=meshgrid(X,Y);
 surf(X',Y',G2{1},'edgecolor','none');
-title('');
+title('$G^{2}$ cross-species b-b in polar coord (corr shots)');
 xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{BB(0,1)}$');
 
-figure(12);
+subplot(1,3,2);
+surf(X',Y',G2_all{1},'edgecolor','none');
+title('$G^{2}$ cross-species b-b in polar coord (all shots)');
+xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{BB(0,1)}$');
+
+subplot(1,3,3);
 surf(X',Y',g2{1},'edgecolor','none');
-title('');
+title('Normalised $g^{2}$ cross-species b-b in polar coord');
 xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$g^{(2)}_{BB(0,1)}$');
+
 
 %% Cross-halo back-to-back: in Cartesian delta_k
 [G2_bb_cart_shot,G2_bb_cart_all]=G2_cart(halo.k,bin_edge_cart,'BB',2);
