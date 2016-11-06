@@ -5,15 +5,15 @@ clear all; close all; clc;
 
 %% USER CONFIG
 % GENERAL
-use_saved_data=1;   %if false will remake the fully processed data files used in analysis
+use_saved_data=0;   %if false will remake the fully processed data files used in analysis
 use_txy=1;          %if false will remake the txy_forc files
 
 verbose=2;
 
 % ANALYSIS
 % TODO - usr configurable switches for analysis
-corr.rad_theta.nBin_pol=[10,10];     % number of bins for rad-angular (dr,dtheta)
-corr.rad_theta.nBin_cart=50*[1,1,1];    % bins to use for g2 in cartesian (Z,X,Y)
+corr.polar.nBin=10*[1,1];     % number of bins for rad-angular (dr,dtheta)
+corr.cart.nBin=50*[1,1,1];    % bins to use for g2 in cartesian (Z,X,Y)
 
 % mode
 % TODO
@@ -322,17 +322,19 @@ end
 %% Correlation analysis
 % define bin edges for correlation binning
 %   {1}: diff radius, {2}: diff angle
-bin_edge_pol{1}=linspace(-2*configs.halo.dR{1},2*configs.halo.dR{1},corr.rad_theta.nBin_pol(1)+1);      % TODO: max set to 1 since halo is relatively thin and normalised in k-space
-bin_edge_pol{2}=linspace(0,pi,corr.rad_theta.nBin_pol(2)+1);
+bin_edge_pol{1}=linspace(-2*configs.halo.dR{1},2*configs.halo.dR{1},corr.polar.nBin(1)+1);      % TODO: max set to 1 since halo is relatively thin and normalised in k-space
+bin_edge_pol{2}=linspace(0,pi,corr.polar.nBin(2)+1);
 
+bin_lims_cart=[-2*(1+configs.halo.dR{1}),2*(1+configs.halo.dR{1})];
 for i=1:3
-    bin_edge_cart{i}=linspace(-2*(1+configs.halo.dR{1}),2*(1+configs.halo.dR{1}),corr.rad_theta.nBin_cart(i)+1);     % TODO: 
+%     bin_edge_cart{i}=linspace(-2*(1+configs.halo.dR{1}),2*(1+configs.halo.dR{1}),corr.cart.nBin(i)+1);     % TODO: 
+    bin_edge_cart{i}=linspace(bin_lims_cart(1),bin_lims_cart(2),corr.cart.nBin(i)+1);
 end
 
 %% Cross-halo back-to-back: in (dk,dtheta)
 nHalo=size(halo.k_pol,1);
 
-G2{1}=zeros(corr.rad_theta.nBin_pol);  % initialise G2 (unnormalised)
+G2{1}=zeros(corr.polar.nBin);  % initialise G2 (unnormalised)
 for i=1:nHalo   % iterate shot-to-shot
     nAtom=size(halo.k_pol{i,1},1);      % number of counts in this halo
     dk_BB_tmp=[];
@@ -350,7 +352,7 @@ for i=1:nHalo   % iterate shot-to-shot
 end
 
 % Normalisation
-G2_all{1}=zeros(corr.rad_theta.nBin_pol);  % normalisation
+G2_all{1}=zeros(corr.polar.nBin);  % normalisation
 halo_all{1}=vertcat(halo.k_pol{:,1});
 halo_all{2}=vertcat(halo.k_pol{:,2});
 
@@ -385,81 +387,31 @@ title('');
 xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$g^{(2)}_{BB(0,1)}$');
 
 %% Cross-halo back-to-back: in Cartesian delta_k
-nHalo=size(halo.k_pol,1);
-
-G2{3}=zeros(corr.rad_theta.nBin_cart);  % initialise G2 (unnormalised)
-for i=1:nHalo   % iterate shot-to-shot
-    nAtom=size(halo.k{i,1},1);      % number of counts in this halo
-    dk_BB_tmp=[];   
-        atom_ref=halo.k{i,1}(j,:);  % this reference atom in k(Z,X,Y)
-        
-        % set-up dk_BB_tmp in cart coord
-        dk_BB_tmp=halo.k{i,2}-repmat(atom_ref,[size(halo.k{i,2},1),1]);    % dk in cart coord
-        
-        count_tmp=histcn(dk_BB_tmp,bin_edge_cart{1},bin_edge_cart{2},bin_edge_cart{3});
-        G2{3}=G2{3}+count_tmp;
-    end
-end
-
-% Normalisation
-G2_all{3}=zeros(corr.rad_theta.nBin_cart);  % normalisation
-halo_all_cart{1}=vertcat(halo.k{:,1});
-halo_all_cart{2}=vertcat(halo.k{:,2});
-
-nAtom=size(halo_all_cart{1},1);
-dk_BB_tmp=[];
-for j=1:nAtom     % iterate through each atom in halo#1
-    % back-to-back condition
-    atom_ref=halo_all_cart{1}(j,:);  % this reference atom in k(Z,X,Y)
-    
-    % set-up dk_BB_tmp in cart coord
-    dk_BB_tmp=halo_all_cart{2}-repmat(atom_ref,[size(halo_all_cart{2},1),1]);    % dk in cart coord
-    
-    count_tmp=histcn(dk_BB_tmp,bin_edge_cart{1},bin_edge_cart{2},bin_edge_cart{3});
-    G2_all{3}=G2_all{3}+count_tmp;
-end
-
-g2{3}=G2{3}./G2_all{3}*nHalo;
+[G2_bb_cart_shot,G2_bb_cart_all]=G2_cart(halo.k,bin_edge_cart,'BB',2);
+g2_bb_cart=(nHalo-1)*G2_bb_cart_shot./G2_bb_cart_all;   % normalise
 
 % DEBUG PLOT
 Xcart=0.5*(bin_edge_cart{1}(1:end-1)+bin_edge_cart{1}(2:end));    % bin centers
 Ycart=0.5*(bin_edge_cart{2}(1:end-1)+bin_edge_cart{2}(2:end));
 [Xcart,Ycart]=meshgrid(Xcart,Ycart);
 
-mid_slice=round(corr.rad_theta.nBin_cart(1)/2);
+mid_slice=round(corr.cart.nBin(1)/2);     % mid-slice is where diff is zero
 
 figure(31);
-surf(Xcart',Ycart',squeeze(G2{3}(mid_slice,:,:)),'edgecolor','none');
-title('');
+title('Cross-halo back-to-back: in Cartesian $\delta_k$');
+subplot(1,3,1);
+surf(Xcart',Ycart',squeeze(G2_bb_cart_shot(mid_slice,:,:)),'edgecolor','none');
 xlabel('$\delta ki$'); ylabel('$\delta kj$'); zlabel('$G^{(2)}_{BB(0,1)}$');
 
-figure(32);
-surf(Xcart',Ycart',squeeze(g2{3}(mid_slice,:,:)),'edgecolor','none');
-title('');
+subplot(1,3,2);
+surf(Xcart',Ycart',squeeze(G2_bb_cart_all(mid_slice,:,:)),'edgecolor','none');
+xlabel('$\delta ki$'); ylabel('$\delta kj$'); zlabel('$G^{(2)}_{ALL,BB(0,1)}$');
+
+subplot(1,3,3);
+surf(Xcart',Ycart',squeeze(g2_bb_cart(mid_slice,:,:)),'edgecolor','none');
 xlabel('$\delta ki$'); ylabel('$\delta kj$'); zlabel('$g^{(2)}_{BB(0,1)}$');
 
-% %% Cross-halo colinear
-% G2{2}=zeros(corr.rad_theta.nBin_pol);  % initialise G2 (unnormalised)
-% for i=1:nHalo   % iterate shot-to-shot
-%     nAtom=size(halo.k_pol{i,1},1);      % number of counts in this halo
-%     dk_CL_tmp=[];
-%     for j=1:nAtom     % iterate through each atom in halo#1
-%         % back-to-back condition
-%         atom_ref=halo.k_pol{i,1}(j,:);  % this reference atom in k-pol
-%         
-%         dk_CL_tmp(:,1)=halo.k_pol{i,2}(:,1)-atom_ref(1);    % dk
-%         dk_CL_tmp(:,2)=acos(cos(atom_ref(3)).*cos(halo.k_pol{i,2}(:,3)).*cos(halo.k_pol{i,2}(:,2)-atom_ref(2)) ...
-%             +sin(atom_ref(3)).*sin(halo.k_pol{i,2}(:,3)));  % dtheta
-%         
-%         count_tmp=histcn(dk_CL_tmp,bin_edge{1},bin_edge{2});
-%         G2{2}=G2{2}+count_tmp;
-%     end
-% end
-% % DEBUG PLOT
-% figure(21);
-% surf(X',Y',G2{2},'edgecolor','none');
-% title('');
-% xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{CL(0,1)}$');
+%% Cross-halo colinear
 
 %% end of code %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 toc;
