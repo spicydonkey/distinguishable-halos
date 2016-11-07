@@ -105,16 +105,19 @@ for d=1:nd
     end
     edges{d} = ed;
     % Call histc on this dimension
-    [dummy loc(:,d)] = histc(Xd, ed, 1);
+%     [dummy loc(:,d)] = histc(Xd, ed, 1);
+    [~,~, loc(:,d)] = histcounts (Xd, ed);
+    
     % Use sz(d) = length(ed); to create consistent number of bins
     sz(d) = length(ed)-1;
+%     sz(d) = length(ed);
 end % for-loop
 
 % Clean
-clear dummy
+% clear dummy
 
 % This is need for seldome points that hit the right border
-sz = max([sz; max(loc,[],1)]);
+% sz = max([sz; max(loc,[],1)]);    % DEBUG: WHAT?
 
 % Compute the mid points
 mid = cellfun(@(e) 0.5*(e(1:end-1)+e(2:end)), edges, ...

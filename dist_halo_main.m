@@ -46,11 +46,11 @@ usrconfigs.post.removecap=1;    % remove caps on halo (in Z)
 % ANALYSIS
 % g2 correlations
 analysis.corr.run_g2=1;
-    analysis.corr.polar.nBin=20*[1,1];    % num bins (r,theta)
-        analysis.corr.polar.lim{1}=[-0.25,0.25];  % radial lim
-        analysis.corr.polar.lim{2}=[0,pi/4];      % angular lim
-    analysis.corr.cart.nBin=20*[1,1,1];   % num bins (Z,X,Y)
-        analysis.corr.cart.lim=[-0.25,0.25];    % lims (x,y symmetric)
+    analysis.corr.polar.nBin=[10,20];    % num bins (r,theta)
+        analysis.corr.polar.lim{1}=[-0.251,0.251];  % radial lim
+        analysis.corr.polar.lim{2}=[0,0.25];      % angular lim
+    analysis.corr.cart.nBin=10*[1,1,1];   % num bins (Z,X,Y)
+        analysis.corr.cart.lim=[-0.251,0.251];    % lims (x,y symmetric)
         
 %% PLOTS
 % 3D real space
@@ -352,6 +352,20 @@ if configs.post.removecap
     saveas(hfig,[dir_output,'5','.png']);
 end
 
+%% Remove ZERO-halo count shots for analysis
+nShot=size(halo.k,1);
+zeroShot=false(1,nShot);
+for i=1:nShot
+    if size(halo.k{i,1},1)*size(halo.k{i,2},1)==0
+        zeroShot(i)=1;
+    end
+end
+n_zero_shot=sum(zeroShot);
+if n_zero_shot>0
+    warning([num2str(n_zero_shot),' shots had zero-counts after processing. Removing from analysis...']);
+end
+halo.k=halo.k(~zeroShot,:);
+
 %% Cartesian to Spherical polar conversion
 % Build k-space counts in the conventional spherical polar system
 % Should be simpler to do correlation analysis in sph pol coord system
@@ -440,7 +454,9 @@ if analysis.corr.run_g2
     
     saveas(hfig,[dir_output,'7','.png']);
     
-    %% Cross-halo colinear
+    
+    %% Andrew's 1D code
+    
 end
 
 %% end of code %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -80,15 +80,18 @@ if isequal(CORR_INFO,'BB')
     end
     
     % all shots - (includes correlated shots)
-    data_ncorr=vertcat(data2{:}); % collate all shots - including corr
+    data_collate=vertcat(data2{:}); % collate all shots - including corr
+    nTot=size(data_collate,1);
     for i=1:nShot
         nAtom=size(data1{i},1);
         diff_tmp=[];
+        
         for j=1:nAtom
             this_atom=data1{i}(j,:);
-            diff_tmp=data_ncorr-repmat(this_atom,[size(data_ncorr,1),1]);
-            
+            diff_tmp=data_collate-repmat(this_atom,[nTot,1]);
+                
             count_tmp=histcn(diff_tmp,BIN_EDGE{1},BIN_EDGE{2},BIN_EDGE{3});
+
             G2_ALL=G2_ALL+count_tmp;
         end
     end
