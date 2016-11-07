@@ -10,21 +10,9 @@ use_txy=1;          %if false will remake the txy_forc files
 
 verbose=2;
 
-% ANALYSIS
-% TODO - usr configurable switches for analysis
-corr.run_g2=1;
-    corr.polar.nBin=25*[1,1];     % number of bins for rad-angular (dr,dtheta)
-    corr.cart.nBin=10*[1,1,1];    % bins to use for g2 in cartesian (Z,X,Y)
-
-% mode
-% TODO
-% viewall: overlay all shots for first visualisation
-%usrconfigs.mode='viewall';
-
-
 % IN/OUTPUTS
 % files -  data file
-usrconfigs.files.path='..\data\test\d';    % path to unindexed data file (e.g. 'a\b\datadir\datafile')
+usrconfigs.files.path='C:\Users\HE BEC\Documents\lab\halo_analysis\data\dist_halo\5_separated_higherN_short\d';    % path to unindexed data file (e.g. 'a\b\datadir\datafile')
 usrconfigs.files.id=1:100;         % file id numbers to use for analysis
 usrconfigs.files.minCount=100;     % min counts to use for analysis
 
@@ -54,7 +42,16 @@ usrconfigs.halo.dR{2}=0.1;
 % POST
 usrconfigs.post.removecap=1;    % remove caps on halo (in Z)
     usrconfigs.post.zcap=0.5;   % z-cutoff (kspace;abs)
-
+    
+% ANALYSIS
+% g2 correlations
+analysis.corr.run_g2=1;
+    analysis.corr.polar.nBin=25*[1,1];    % num bins (r,theta)
+        analysis.corr.polar.lim{1}=[-0.25,0.25];  % radial lim
+        analysis.corr.polar.lim{2}=[0,pi/4];      % angular lim
+    analysis.corr.cart.nBin=10*[1,1,1];   % num bins (Z,X,Y)
+        analysis.corr.cart.lim=[-0.25,0.25];    % lims (x,y symmetric)
+        
 %% PLOTS
 % 3D real space
 doplot.real.all=1;      % real space
@@ -368,13 +365,11 @@ for i=1:2
 end
 
 %% Correlation analysis
-if corr.run_g2
+if analysis.corr.run_g2
     %% Cross-halo back-to-back: in (dk,dtheta)
     % Set up bins
-    bin_lims_pol{1}=[-0.25,0.25];     % radius
-    bin_lims_pol{2}=[0,pi/4];     % angle
     for i=1:2
-        bin_edge_pol{i}=linspace(bin_lims_pol{i}(1),bin_lims_pol{i}(2),corr.polar.nBin(i)+1);
+        bin_edge_pol{i}=linspace(analysis.corr.polar.lim{i}(1),analysis.corr.polar.lim{i}(2),analysis.corr.polar.nBin(i)+1);
         bin_cent_pol{i}=0.5*(bin_edge_pol{i}(1:end-1)+bin_edge_pol{i}(2:end));
     end    
     
@@ -407,9 +402,8 @@ if corr.run_g2
     
     %% Cross-halo back-to-back: in Cartesian delta_k
     % Set up bins
-    bin_lims_cart=[-0.25,0.25];
     for i=1:3
-        bin_edge_cart{i}=linspace(bin_lims_cart(1),bin_lims_cart(2),corr.cart.nBin(i)+1);
+        bin_edge_cart{i}=linspace(analysis.corr.cart.lim(1),analysis.corr.cart.lim(2),analysis.corr.cart.nBin(i)+1);
         bin_cent_cart{i}=0.5*(bin_edge_cart{i}(1:end-1)+bin_edge_cart{i}(2:end));
     end
     
@@ -419,7 +413,7 @@ if corr.run_g2
     % Plot
     [dX_bin,dY_bin]=meshgrid(bin_cent_cart{2},bin_cent_cart{3});        % create xy-grid for surf
     
-    mid_slice=round(corr.cart.nBin(1)/2);     % TODO: mid-slice is where diff is zero (for symmetric binning)
+    mid_slice=round(analysis.corr.cart.nBin(1)/2);     % TODO: mid-slice is where diff is zero (for symmetric binning)
     
     hfig=figure(31);
     
