@@ -369,82 +369,36 @@ end
 
 %% Correlation analysis
 if corr.run_g2
-    % Initialise
-    % define bin edges for correlation binning
-    %   {1}: diff radius, {2}: diff angle
+    %% Cross-halo back-to-back: in (dk,dtheta)
+    % Set up bins
     bin_lims_pol{1}=[-0.25,0.25];     % radius
     bin_lims_pol{2}=[0,pi/4];     % angle
-%     bin_edge_pol{1}=linspace(-2*configs.halo.dR{1},2*configs.halo.dR{1},corr.polar.nBin(1)+1);      % TODO: max set to 1 since halo is relatively thin and normalised in k-space
-%     bin_edge_pol{2}=linspace(0,pi,corr.polar.nBin(2)+1);
     for i=1:2
         bin_edge_pol{i}=linspace(bin_lims_pol{i}(1),bin_lims_pol{i}(2),corr.polar.nBin(i)+1);
-    end
+        bin_cent_pol{i}=0.5*(bin_edge_pol{i}(1:end-1)+bin_edge_pol{i}(2:end));
+    end    
+    
+    % Evaluate G2 correlation
+    [G2_bb_pol_shot,G2_bb_pol_all]=G2_polar(halo.k_pol,bin_edge_pol,'BB',2);
+    g2_bb_pol=nShot*G2_bb_pol_shot./G2_bb_pol_all;  %normalise
 
-    % bin_lims_cart=[-2*(1+configs.halo.dR{1}),2*(1+configs.halo.dR{1})];
-    bin_lims_cart=[-0.25,0.25];
-    for i=1:3
-        %     bin_edge_cart{i}=linspace(-2*(1+configs.halo.dR{1}),2*(1+configs.halo.dR{1}),corr.cart.nBin(i)+1);     % TODO:
-        bin_edge_cart{i}=linspace(bin_lims_cart(1),bin_lims_cart(2),corr.cart.nBin(i)+1);
-    end
+    % Plot
+    [dR_bin,dtheta_bin]=meshgrid(bin_cent_pol{1},bin_cent_pol{2});  % create xy-grid for surf
     
-    %% Cross-halo back-to-back: in (dk,dtheta)
-    nHalo=size(halo.k_pol,1);
-    
-    G2{1}=zeros(corr.polar.nBin);  % initialise G2 (unnormalised)
-    for i=1:nHalo   % iterate shot-to-shot
-        nAtom=size(halo.k_pol{i,1},1);      % number of counts in this halo
-        dk_BB_tmp=[];
-        for j=1:nAtom     % iterate through each atom in halo#1
-            % back-to-back condition
-            atom_ref=halo.k_pol{i,1}(j,:);  % this reference atom in k-pol
-            
-            dk_BB_tmp(:,1)=halo.k_pol{i,2}(:,1)-atom_ref(1);    % dk
-            dk_BB_tmp(:,2)=acos(cos(-atom_ref(3)).*cos(halo.k_pol{i,2}(:,3)).*cos(halo.k_pol{i,2}(:,2)-(atom_ref(2)+pi)) ...
-                +sin(-atom_ref(3)).*sin(halo.k_pol{i,2}(:,3)));     % dtheta
-            
-            count_tmp=histcn(dk_BB_tmp,bin_edge_pol{1},bin_edge_pol{2});
-            G2{1}=G2{1}+count_tmp;
-        end
-    end
-    
-    % Normalisation
-    G2_all{1}=zeros(corr.polar.nBin);  % normalisation
-    halo_all{1}=vertcat(halo.k_pol{:,1});
-    halo_all{2}=vertcat(halo.k_pol{:,2});
-    
-    nAtom=size(halo_all{1},1);
-    dk_BB_tmp=[];
-    for j=1:nAtom     % iterate through each atom in halo#1
-        % back-to-back condition
-        atom_ref=halo_all{1}(j,:);  % this reference atom in k-pol
-        
-        dk_BB_tmp(:,1)=halo_all{2}(:,1)-atom_ref(1);    % dk
-        dk_BB_tmp(:,2)=acos(cos(-atom_ref(3)).*cos(halo_all{2}(:,3)).*cos(halo_all{2}(:,2)-(atom_ref(2)+pi)) ...
-            +sin(-atom_ref(3)).*sin(halo_all{2}(:,3)));     % dtheta
-        
-        count_tmp=histcn(dk_BB_tmp,bin_edge_pol{1},bin_edge_pol{2});
-        G2_all{1}=G2_all{1}+count_tmp;
-    end
-    
-    g2{1}=G2{1}./G2_all{1}*nHalo;
-    
-    % DEBUG PLOT
     hfig=figure(11);
+    
     subplot(1,3,1);
-    X=0.5*(bin_edge_pol{1}(1:end-1)+bin_edge_pol{1}(2:end));    % bin centers
-    Y=0.5*(bin_edge_pol{2}(1:end-1)+bin_edge_pol{2}(2:end));
-    [X,Y]=meshgrid(X,Y);
-    surf(X',Y',G2{1},'edgecolor','none');
+    surf(dR_bin',dtheta_bin',G2_bb_pol_shot,'edgecolor','none');
     title('X-halo,BB,$\delta \vec{k}$ (pol),shots');
     xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{BB(0,1)}$');
     
     subplot(1,3,2);
-    surf(X',Y',G2_all{1},'edgecolor','none');
+    surf(dR_bin',dtheta_bin',G2_bb_pol_all,'edgecolor','none');
     title('X-halo,BB,$\delta \vec{k}$ (pol),collated');
     xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{BB(0,1)}$');
     
     subplot(1,3,3);
-    surf(X',Y',g2{1},'edgecolor','none');
+    surf(dR_bin',dtheta_bin',g2_bb_pol,'edgecolor','none');
     title('X-halo,BB,$\delta \vec{k}$ (pol),normalised');
     xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$g^{(2)}_{BB(0,1)}$');
     
@@ -452,30 +406,35 @@ if corr.run_g2
     
     
     %% Cross-halo back-to-back: in Cartesian delta_k
+    % Set up bins
+    bin_lims_cart=[-0.25,0.25];
+    for i=1:3
+        bin_edge_cart{i}=linspace(bin_lims_cart(1),bin_lims_cart(2),corr.cart.nBin(i)+1);
+        bin_cent_cart{i}=0.5*(bin_edge_cart{i}(1:end-1)+bin_edge_cart{i}(2:end));
+    end
+    
     [G2_bb_cart_shot,G2_bb_cart_all]=G2_cart(halo.k,bin_edge_cart,'BB',2);
-    g2_bb_cart=(nHalo-1)*G2_bb_cart_shot./G2_bb_cart_all;   % normalise
+    g2_bb_cart=nShot*G2_bb_cart_shot./G2_bb_cart_all;   % normalise
     
-    % DEBUG PLOT
-    Xcart=0.5*(bin_edge_cart{1}(1:end-1)+bin_edge_cart{1}(2:end));    % bin centers
-    Ycart=0.5*(bin_edge_cart{2}(1:end-1)+bin_edge_cart{2}(2:end));
-    [Xcart,Ycart]=meshgrid(Xcart,Ycart);
+    % Plot
+    [dX_bin,dY_bin]=meshgrid(bin_cent_cart{2},bin_cent_cart{3});        % create xy-grid for surf
     
-    mid_slice=round(corr.cart.nBin(1)/2);     % mid-slice is where diff is zero
+    mid_slice=round(corr.cart.nBin(1)/2);     % TODO: mid-slice is where diff is zero (for symmetric binning)
     
     hfig=figure(31);
     
     subplot(1,3,1);
-    surf(Xcart',Ycart',squeeze(G2_bb_cart_shot(mid_slice,:,:)),'edgecolor','none');
+    surf(dX_bin',dY_bin',squeeze(G2_bb_cart_shot(mid_slice,:,:)),'edgecolor','none');
     title('X-halo,BB,$\delta \vec{k}$ (cart),shots');
     xlabel('$\delta k_i$'); ylabel('$\delta k_j$'); zlabel('$G^{(2)}_{BB(0,1)}$');
     
     subplot(1,3,2);
-    surf(Xcart',Ycart',squeeze(G2_bb_cart_all(mid_slice,:,:)),'edgecolor','none');
+    surf(dX_bin',dY_bin',squeeze(G2_bb_cart_all(mid_slice,:,:)),'edgecolor','none');
     title('X-halo,BB,$\delta \vec{k}$ (cart),collated');
     xlabel('$\delta k_i$'); ylabel('$\delta k_j$'); zlabel('$G^{(2)}_{ALL,BB(0,1)}$');
     
     subplot(1,3,3);
-    surf(Xcart',Ycart',squeeze(g2_bb_cart(mid_slice,:,:)),'edgecolor','none');
+    surf(dX_bin',dY_bin',squeeze(g2_bb_cart(mid_slice,:,:)),'edgecolor','none');
     title('X-halo,BB,$\delta \vec{k}$ (cart),normalised');
     xlabel('$\delta k_i$'); ylabel('$\delta k_j$'); zlabel('$g^{(2)}_{BB(0,1)}$');
     
