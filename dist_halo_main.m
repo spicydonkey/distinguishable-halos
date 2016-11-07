@@ -386,16 +386,19 @@ if analysis.corr.run_g2
     surf(dR_bin',dtheta_bin',G2_bb_pol_shot,'edgecolor','none');
     title('X-halo,BB,$\delta \vec{k}$ (pol),shots');
     xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{BB(0,1)}$');
+    axis tight;
     
     subplot(1,3,2);
     surf(dR_bin',dtheta_bin',G2_bb_pol_all,'edgecolor','none');
     title('X-halo,BB,$\delta \vec{k}$ (pol),collated');
     xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{BB(0,1)}$');
+    axis tight;
     
     subplot(1,3,3);
     surf(dR_bin',dtheta_bin',g2_bb_pol,'edgecolor','none');
     title('X-halo,BB,$\delta \vec{k}$ (pol),normalised');
     xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$g^{(2)}_{BB(0,1)}$');
+    axis tight;
     
     saveas(hfig,[dir_output,'6','.png']);
     
@@ -421,16 +424,19 @@ if analysis.corr.run_g2
     surf(dX_bin',dY_bin',squeeze(G2_bb_cart_shot(mid_slice,:,:)),'edgecolor','none');
     title('X-halo,BB,$\delta \vec{k}$ (cart),shots');
     xlabel('$\delta k_i$'); ylabel('$\delta k_j$'); zlabel('$G^{(2)}_{BB(0,1)}$');
+    axis tight;
     
     subplot(1,3,2);
     surf(dX_bin',dY_bin',squeeze(G2_bb_cart_all(mid_slice,:,:)),'edgecolor','none');
     title('X-halo,BB,$\delta \vec{k}$ (cart),collated');
     xlabel('$\delta k_i$'); ylabel('$\delta k_j$'); zlabel('$G^{(2)}_{ALL,BB(0,1)}$');
+    axis tight;
     
     subplot(1,3,3);
     surf(dX_bin',dY_bin',squeeze(g2_bb_cart(mid_slice,:,:)),'edgecolor','none');
     title('X-halo,BB,$\delta \vec{k}$ (cart),normalised');
     xlabel('$\delta k_i$'); ylabel('$\delta k_j$'); zlabel('$g^{(2)}_{BB(0,1)}$');
+    axis tight;
     
     saveas(hfig,[dir_output,'7','.png']);
     
