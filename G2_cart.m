@@ -80,9 +80,9 @@ if isequal(CORR_INFO,'BB')
     end
     
     % all shots - (includes correlated shots)
+    data_ncorr=vertcat(data2{:}); % collate all shots - including corr
     for i=1:nShot
         nAtom=size(data1{i},1);
-        data_ncorr=vertcat(data2{:}); % collate all shots - including corr
         diff_tmp=[];
         for j=1:nAtom
             this_atom=data1{i}(j,:);
