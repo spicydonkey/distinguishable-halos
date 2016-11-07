@@ -68,15 +68,17 @@ if isequal(CORR_INFO,'BB')
     for i=1:nShot
         nAtom=size(data1{i},1); % number of counts in DATA1
         diff_tmp=[];   % diff vectors for pair search
-        
         for j=1:nAtom
             % back-to-back condition
             this_atom=data1{i}(j,:);
+            this_atom(2)=mod(this_atom(2)+pi,2*pi);
+            if this_atom(2)>pi, this_atom(2)=this_atom(2)-pi;, end
+            this_atom(3)=-this_atom(3);
             
             % diff for BB in polar
             diff_tmp(:,1)=data2{i}(:,1)-this_atom(1);   % diff in norm
-            diff_tmp(:,2)=acos(cos(this_atom(3)).*cos(data2{i}(:,3)).*cos(data2{i}(:,2)-(this_atom(2)+pi)) ...
-                + sin(-this_atom(3)).*sin(data2{i}(:,3)));  % diff angle
+            diff_tmp(:,2)=acos(cos(this_atom(3)).*cos(data2{i}(:,3)).*cos(data2{i}(:,2)-this_atom(2)) ...
+                + sin(this_atom(3)).*sin(data2{i}(:,3)));  % diff angle
             
             count_tmp=histcn(diff_tmp,BIN_EDGE{1},BIN_EDGE{2});
             G2_SINGLE=G2_SINGLE+count_tmp;
@@ -87,7 +89,6 @@ if isequal(CORR_INFO,'BB')
     data_ncorr=vertcat(data2{:}); % collate all shots - including corr
     for i=1:nShot
         nAtom=size(data1{i},1);
-        
         diff_tmp=[];
         for j=1:nAtom
             this_atom=data1{i}(j,:);
