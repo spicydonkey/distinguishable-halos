@@ -12,8 +12,8 @@ verbose=2;
 
 % IN/OUTPUTS
 % files -  data file
-usrconfigs.files.path='C:\Users\HE BEC\Documents\lab\halo_analysis\data\dist_halo\5_separated_higherN_short\d';    % path to unindexed data file (e.g. 'a\b\datadir\datafile')
-usrconfigs.files.id=1:100;         % file id numbers to use for analysis
+usrconfigs.files.path='C:\Users\HE BEC\Documents\lab\halo_analysis\data\dist_halo\4_separated_lownum\d';    % path to unindexed data file (e.g. 'a\b\datadir\datafile')
+usrconfigs.files.id=1:3000;         % file id numbers to use for analysis
 usrconfigs.files.minCount=100;     % min counts to use for analysis
 
 % MISCELLANEOUS
@@ -46,19 +46,19 @@ usrconfigs.post.removecap=1;    % remove caps on halo (in Z)
 % ANALYSIS
 % g2 correlations
 analysis.corr.run_g2=1;
-    analysis.corr.polar.nBin=25*[1,1];    % num bins (r,theta)
+    analysis.corr.polar.nBin=20*[1,1];    % num bins (r,theta)
         analysis.corr.polar.lim{1}=[-0.25,0.25];  % radial lim
         analysis.corr.polar.lim{2}=[0,pi/4];      % angular lim
-    analysis.corr.cart.nBin=10*[1,1,1];   % num bins (Z,X,Y)
+    analysis.corr.cart.nBin=20*[1,1,1];   % num bins (Z,X,Y)
         analysis.corr.cart.lim=[-0.25,0.25];    % lims (x,y symmetric)
         
 %% PLOTS
 % 3D real space
-doplot.real.all=1;      % real space
+doplot.real.all=0;      % real space
 doplot.real.ind=1:3;    % plots the selection of shots
 
 % 3D k-space (normed)   TODO
-doplot.kspace.all=1;    % k-space
+doplot.kspace.all=0;    % k-space
 doplot.kspace.ind=1:3;  % plots the selection of shots
 
 %% Output management
@@ -361,7 +361,7 @@ halo.k_pol=cell(size(halo.k));
 
 % Cart-SphPol Conversion
 for i=1:2
-    halo.k_pol(:,i)=zxy2pol(halo.k(:,1));   % Polar coord of halo in k-space 
+    halo.k_pol(:,i)=zxy2pol(halo.k(:,i));   % Polar coord of halo in k-space 
 end
 
 %% Correlation analysis
