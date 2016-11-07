@@ -12,8 +12,9 @@ verbose=2;
 
 % ANALYSIS
 % TODO - usr configurable switches for analysis
-corr.polar.nBin=100*[1,1];     % number of bins for rad-angular (dr,dtheta)
-corr.cart.nBin=30*[1,1,1];    % bins to use for g2 in cartesian (Z,X,Y)
+corr.run_g2=1;
+    corr.polar.nBin=25*[1,1];     % number of bins for rad-angular (dr,dtheta)
+    corr.cart.nBin=10*[1,1,1];    % bins to use for g2 in cartesian (Z,X,Y)
 
 % mode
 % TODO
@@ -46,13 +47,13 @@ usrconfigs.bec.Rmax{2}=7e-3;
 usrconfigs.bec.dR_tail{2}=0.3;
 
 usrconfigs.halo.R{1}=11e-3;     % estimated radius of halo
-usrconfigs.halo.dR{1}=0.25;      % halo fractional thickness each dir (in/out)
+usrconfigs.halo.dR{1}=0.1;      % halo fractional thickness each dir (in/out)
 usrconfigs.halo.R{2}=10e-3;
-usrconfigs.halo.dR{2}=0.25;
+usrconfigs.halo.dR{2}=0.1;
 
 % POST
 usrconfigs.post.removecap=1;    % remove caps on halo (in Z)
-    usrconfigs.post.zcap=0.5;   % z-cutoff
+    usrconfigs.post.zcap=0.5;   % z-cutoff (kspace;abs)
 
 %% PLOTS
 % 3D real space
@@ -62,6 +63,13 @@ doplot.real.ind=1:3;    % plots the selection of shots
 % 3D k-space (normed)   TODO
 doplot.kspace.all=1;    % k-space
 doplot.kspace.ind=1:3;  % plots the selection of shots
+
+%% Output management
+dir_output=[usrconfigs.files.path,'_output\'];
+if ~isdir(dir_output)
+    warning(['output directory "',dir_output,'" does not exist. Creating directory...']);
+    mkdir(dir_output);
+end
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%% MAIN %%%%%%%%%%%%%%%%%%%%%%%%%%
 tic;
@@ -235,7 +243,7 @@ end
 % Plot processed counts
 if doplot.real.all
     figN=101; dotSize=1;
-    figure(figN);
+    hfig=figure(figN);
     scatter_zxy(figN,vertcat(halo.zxy{:,1}),dotSize,'r');
     scatter_zxy(figN,vertcat(halo.zxy{:,2}),dotSize,'b');
     scatter_zxy(figN,vertcat(bec.zxy{:,1}),dotSize,'m');
@@ -246,10 +254,12 @@ if doplot.real.all
     
     title('All shots (real space)');
     xlabel('X'); ylabel('Y'); zlabel('Z');
+    
+    saveas(hfig,[dir_output,'1','.png']);
 end
 if ~isempty(doplot.real.ind)
     figN=102; dotSize=100;
-    figure(figN);
+    hfig=figure(figN);
     scatter_zxy(figN,vertcat(halo.zxy{doplot.real.ind,1}),dotSize,'r');
     scatter_zxy(figN,vertcat(halo.zxy{doplot.real.ind,2}),dotSize,'b');
     scatter_zxy(figN,vertcat(bec.zxy{doplot.real.ind,1}),dotSize,'m');
@@ -260,6 +270,8 @@ if ~isempty(doplot.real.ind)
     
     title(['Selected ',num2str(length(doplot.real.ind)),' shots (real space)']);
     xlabel('X'); ylabel('Y'); zlabel('Z');
+    
+    saveas(hfig,[dir_output,'2','.png']);
 end
 
 %% k-space conversion
@@ -290,7 +302,7 @@ end
 % Plot counts in k-space
 if doplot.kspace.all
     figN=111; dotSize=1;
-    figure(figN);
+    hfig=figure(figN);
     scatter_zxy(figN,vertcat(halo.k{:,1}),dotSize,'r');
     scatter_zxy(figN,vertcat(halo.k{:,2}),dotSize,'b');
     scatter_zxy(figN,vertcat(bec.k{:,1}),dotSize,'m');
@@ -298,10 +310,12 @@ if doplot.kspace.all
     
     title('All halos and BEC (k-space)');
     xlabel('$K_{X}$'); ylabel('$K_{Y}$'); zlabel('$K_{Z}$');
+    
+    saveas(hfig,[dir_output,'3','.png']);
 end
 if ~isempty(doplot.kspace.ind)
     figN=112; dotSize=100;
-    figure(figN); title('All shots (k"-space)');
+    hfig=figure(figN);
     scatter_zxy(figN,vertcat(halo.k{doplot.kspace.ind,1}),dotSize,'r');
     scatter_zxy(figN,vertcat(halo.k{doplot.kspace.ind,2}),dotSize,'b');
     scatter_zxy(figN,vertcat(bec.k{doplot.kspace.ind,1}),dotSize,'m');
@@ -309,6 +323,8 @@ if ~isempty(doplot.kspace.ind)
     
     title(['Selected ',num2str(length(doplot.kspace.ind)),' shots (k-space)']);
     xlabel('$K_{X}$'); ylabel('$K_{Y}$'); zlabel('$K_{Z}$');
+    
+    saveas(hfig,[dir_output,'4','.png']);
 end
 
 %% Cull halo caps
@@ -323,7 +339,7 @@ if configs.post.removecap
     
     % PLOTS
     figN=121; dotSize=1;
-    figure(figN); title('All shots z-caps removed (k"-space)');
+    hfig=figure(figN);
     scatter_zxy(figN,vertcat(halo.k{:,1}),dotSize,'r');
     scatter_zxy(figN,vertcat(halo.k{:,2}),dotSize,'b');
     title('Z-cap removed (k-space)');
@@ -335,8 +351,9 @@ if configs.post.removecap
     scatter_zxy(figN,vertcat(halo.k{doplot.kspace.ind,2}),dotSize,'b');
     title(['Z-cap removed Selected ',num2str(length(doplot.kspace.ind)),' shots (k-space)']);
     xlabel('$K_{X}$'); ylabel('$K_{Y}$'); zlabel('$K_{Z}$');
+    
+    saveas(hfig,[dir_output,'5','.png']);
 end
-
 
 %% Cartesian to Spherical polar conversion
 % Build k-space counts in the conventional spherical polar system
@@ -351,105 +368,121 @@ for i=1:2
 end
 
 %% Correlation analysis
-% define bin edges for correlation binning
-%   {1}: diff radius, {2}: diff angle
-bin_edge_pol{1}=linspace(-2*configs.halo.dR{1},2*configs.halo.dR{1},corr.polar.nBin(1)+1);      % TODO: max set to 1 since halo is relatively thin and normalised in k-space
-bin_edge_pol{2}=linspace(0,pi,corr.polar.nBin(2)+1);
+if corr.run_g2
+    % Initialise
+    % define bin edges for correlation binning
+    %   {1}: diff radius, {2}: diff angle
+    bin_lims_pol{1}=[-0.25,0.25];     % radius
+    bin_lims_pol{2}=[0,pi/4];     % angle
+%     bin_edge_pol{1}=linspace(-2*configs.halo.dR{1},2*configs.halo.dR{1},corr.polar.nBin(1)+1);      % TODO: max set to 1 since halo is relatively thin and normalised in k-space
+%     bin_edge_pol{2}=linspace(0,pi,corr.polar.nBin(2)+1);
+    for i=1:2
+        bin_edge_pol{i}=linspace(bin_lims_pol{i}(1),bin_lims_pol{i}(2),corr.polar.nBin(i)+1);
+    end
 
-bin_lims_cart=[-2*(1+configs.halo.dR{1}),2*(1+configs.halo.dR{1})];
-for i=1:3
-%     bin_edge_cart{i}=linspace(-2*(1+configs.halo.dR{1}),2*(1+configs.halo.dR{1}),corr.cart.nBin(i)+1);     % TODO: 
-    bin_edge_cart{i}=linspace(bin_lims_cart(1),bin_lims_cart(2),corr.cart.nBin(i)+1);
-end
-
-%% Cross-halo back-to-back: in (dk,dtheta)
-nHalo=size(halo.k_pol,1);
-
-G2{1}=zeros(corr.polar.nBin);  % initialise G2 (unnormalised)
-for i=1:nHalo   % iterate shot-to-shot
-    nAtom=size(halo.k_pol{i,1},1);      % number of counts in this halo
+    % bin_lims_cart=[-2*(1+configs.halo.dR{1}),2*(1+configs.halo.dR{1})];
+    bin_lims_cart=[-0.25,0.25];
+    for i=1:3
+        %     bin_edge_cart{i}=linspace(-2*(1+configs.halo.dR{1}),2*(1+configs.halo.dR{1}),corr.cart.nBin(i)+1);     % TODO:
+        bin_edge_cart{i}=linspace(bin_lims_cart(1),bin_lims_cart(2),corr.cart.nBin(i)+1);
+    end
+    
+    %% Cross-halo back-to-back: in (dk,dtheta)
+    nHalo=size(halo.k_pol,1);
+    
+    G2{1}=zeros(corr.polar.nBin);  % initialise G2 (unnormalised)
+    for i=1:nHalo   % iterate shot-to-shot
+        nAtom=size(halo.k_pol{i,1},1);      % number of counts in this halo
+        dk_BB_tmp=[];
+        for j=1:nAtom     % iterate through each atom in halo#1
+            % back-to-back condition
+            atom_ref=halo.k_pol{i,1}(j,:);  % this reference atom in k-pol
+            
+            dk_BB_tmp(:,1)=halo.k_pol{i,2}(:,1)-atom_ref(1);    % dk
+            dk_BB_tmp(:,2)=acos(cos(-atom_ref(3)).*cos(halo.k_pol{i,2}(:,3)).*cos(halo.k_pol{i,2}(:,2)-(atom_ref(2)+pi)) ...
+                +sin(-atom_ref(3)).*sin(halo.k_pol{i,2}(:,3)));     % dtheta
+            
+            count_tmp=histcn(dk_BB_tmp,bin_edge_pol{1},bin_edge_pol{2});
+            G2{1}=G2{1}+count_tmp;
+        end
+    end
+    
+    % Normalisation
+    G2_all{1}=zeros(corr.polar.nBin);  % normalisation
+    halo_all{1}=vertcat(halo.k_pol{:,1});
+    halo_all{2}=vertcat(halo.k_pol{:,2});
+    
+    nAtom=size(halo_all{1},1);
     dk_BB_tmp=[];
     for j=1:nAtom     % iterate through each atom in halo#1
         % back-to-back condition
-        atom_ref=halo.k_pol{i,1}(j,:);  % this reference atom in k-pol
+        atom_ref=halo_all{1}(j,:);  % this reference atom in k-pol
         
-        dk_BB_tmp(:,1)=halo.k_pol{i,2}(:,1)-atom_ref(1);    % dk
-        dk_BB_tmp(:,2)=acos(cos(-atom_ref(3)).*cos(halo.k_pol{i,2}(:,3)).*cos(halo.k_pol{i,2}(:,2)-(atom_ref(2)+pi)) ...
-            +sin(-atom_ref(3)).*sin(halo.k_pol{i,2}(:,3)));     % dtheta
+        dk_BB_tmp(:,1)=halo_all{2}(:,1)-atom_ref(1);    % dk
+        dk_BB_tmp(:,2)=acos(cos(-atom_ref(3)).*cos(halo_all{2}(:,3)).*cos(halo_all{2}(:,2)-(atom_ref(2)+pi)) ...
+            +sin(-atom_ref(3)).*sin(halo_all{2}(:,3)));     % dtheta
         
         count_tmp=histcn(dk_BB_tmp,bin_edge_pol{1},bin_edge_pol{2});
-        G2{1}=G2{1}+count_tmp;
+        G2_all{1}=G2_all{1}+count_tmp;
     end
-end
-
-% Normalisation
-G2_all{1}=zeros(corr.polar.nBin);  % normalisation
-halo_all{1}=vertcat(halo.k_pol{:,1});
-halo_all{2}=vertcat(halo.k_pol{:,2});
-
-nAtom=size(halo_all{1},1);
-dk_BB_tmp=[];
-for j=1:nAtom     % iterate through each atom in halo#1
-    % back-to-back condition
-    atom_ref=halo_all{1}(j,:);  % this reference atom in k-pol
     
-    dk_BB_tmp(:,1)=halo_all{2}(:,1)-atom_ref(1);    % dk
-    dk_BB_tmp(:,2)=acos(cos(-atom_ref(3)).*cos(halo_all{2}(:,3)).*cos(halo_all{2}(:,2)-(atom_ref(2)+pi)) ...
-        +sin(-atom_ref(3)).*sin(halo_all{2}(:,3)));     % dtheta
+    g2{1}=G2{1}./G2_all{1}*nHalo;
     
-    count_tmp=histcn(dk_BB_tmp,bin_edge_pol{1},bin_edge_pol{2});
-    G2_all{1}=G2_all{1}+count_tmp;
+    % DEBUG PLOT
+    hfig=figure(11);
+    subplot(1,3,1);
+    X=0.5*(bin_edge_pol{1}(1:end-1)+bin_edge_pol{1}(2:end));    % bin centers
+    Y=0.5*(bin_edge_pol{2}(1:end-1)+bin_edge_pol{2}(2:end));
+    [X,Y]=meshgrid(X,Y);
+    surf(X',Y',G2{1},'edgecolor','none');
+    title('X-halo,BB,$\delta \vec{k}$ (pol),shots');
+    xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{BB(0,1)}$');
+    
+    subplot(1,3,2);
+    surf(X',Y',G2_all{1},'edgecolor','none');
+    title('X-halo,BB,$\delta \vec{k}$ (pol),collated');
+    xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{BB(0,1)}$');
+    
+    subplot(1,3,3);
+    surf(X',Y',g2{1},'edgecolor','none');
+    title('X-halo,BB,$\delta \vec{k}$ (pol),normalised');
+    xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$g^{(2)}_{BB(0,1)}$');
+    
+    saveas(hfig,[dir_output,'6','.png']);
+    
+    
+    %% Cross-halo back-to-back: in Cartesian delta_k
+    [G2_bb_cart_shot,G2_bb_cart_all]=G2_cart(halo.k,bin_edge_cart,'BB',2);
+    g2_bb_cart=(nHalo-1)*G2_bb_cart_shot./G2_bb_cart_all;   % normalise
+    
+    % DEBUG PLOT
+    Xcart=0.5*(bin_edge_cart{1}(1:end-1)+bin_edge_cart{1}(2:end));    % bin centers
+    Ycart=0.5*(bin_edge_cart{2}(1:end-1)+bin_edge_cart{2}(2:end));
+    [Xcart,Ycart]=meshgrid(Xcart,Ycart);
+    
+    mid_slice=round(corr.cart.nBin(1)/2);     % mid-slice is where diff is zero
+    
+    hfig=figure(31);
+    
+    subplot(1,3,1);
+    surf(Xcart',Ycart',squeeze(G2_bb_cart_shot(mid_slice,:,:)),'edgecolor','none');
+    title('X-halo,BB,$\delta \vec{k}$ (cart),shots');
+    xlabel('$\delta k_i$'); ylabel('$\delta k_j$'); zlabel('$G^{(2)}_{BB(0,1)}$');
+    
+    subplot(1,3,2);
+    surf(Xcart',Ycart',squeeze(G2_bb_cart_all(mid_slice,:,:)),'edgecolor','none');
+    title('X-halo,BB,$\delta \vec{k}$ (cart),collated');
+    xlabel('$\delta k_i$'); ylabel('$\delta k_j$'); zlabel('$G^{(2)}_{ALL,BB(0,1)}$');
+    
+    subplot(1,3,3);
+    surf(Xcart',Ycart',squeeze(g2_bb_cart(mid_slice,:,:)),'edgecolor','none');
+    title('X-halo,BB,$\delta \vec{k}$ (cart),normalised');
+    xlabel('$\delta k_i$'); ylabel('$\delta k_j$'); zlabel('$g^{(2)}_{BB(0,1)}$');
+    
+    saveas(hfig,[dir_output,'7','.png']);
+    
+    %% Cross-halo colinear
 end
-
-g2{1}=G2{1}./G2_all{1}*nHalo;
-
-% DEBUG PLOT
-figure(11);
-subplot(1,3,1);
-X=0.5*(bin_edge_pol{1}(1:end-1)+bin_edge_pol{1}(2:end));    % bin centers
-Y=0.5*(bin_edge_pol{2}(1:end-1)+bin_edge_pol{2}(2:end));
-[X,Y]=meshgrid(X,Y);
-surf(X',Y',G2{1},'edgecolor','none');
-title('$G^{2}$ cross-species b-b in polar coord (corr shots)');
-xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{BB(0,1)}$');
-
-subplot(1,3,2);
-surf(X',Y',G2_all{1},'edgecolor','none');
-title('$G^{2}$ cross-species b-b in polar coord (all shots)');
-xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{BB(0,1)}$');
-
-subplot(1,3,3);
-surf(X',Y',g2{1},'edgecolor','none');
-title('Normalised $g^{2}$ cross-species b-b in polar coord');
-xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$g^{(2)}_{BB(0,1)}$');
-
-
-%% Cross-halo back-to-back: in Cartesian delta_k
-[G2_bb_cart_shot,G2_bb_cart_all]=G2_cart(halo.k,bin_edge_cart,'BB',2);
-g2_bb_cart=(nHalo-1)*G2_bb_cart_shot./G2_bb_cart_all;   % normalise
-
-% DEBUG PLOT
-Xcart=0.5*(bin_edge_cart{1}(1:end-1)+bin_edge_cart{1}(2:end));    % bin centers
-Ycart=0.5*(bin_edge_cart{2}(1:end-1)+bin_edge_cart{2}(2:end));
-[Xcart,Ycart]=meshgrid(Xcart,Ycart);
-
-mid_slice=round(corr.cart.nBin(1)/2);     % mid-slice is where diff is zero
-
-figure(31);
-title('Cross-halo back-to-back: in Cartesian $\delta_k$');
-subplot(1,3,1);
-surf(Xcart',Ycart',squeeze(G2_bb_cart_shot(mid_slice,:,:)),'edgecolor','none');
-xlabel('$\delta ki$'); ylabel('$\delta kj$'); zlabel('$G^{(2)}_{BB(0,1)}$');
-
-subplot(1,3,2);
-surf(Xcart',Ycart',squeeze(G2_bb_cart_all(mid_slice,:,:)),'edgecolor','none');
-xlabel('$\delta ki$'); ylabel('$\delta kj$'); zlabel('$G^{(2)}_{ALL,BB(0,1)}$');
-
-subplot(1,3,3);
-surf(Xcart',Ycart',squeeze(g2_bb_cart(mid_slice,:,:)),'edgecolor','none');
-xlabel('$\delta ki$'); ylabel('$\delta kj$'); zlabel('$g^{(2)}_{BB(0,1)}$');
-
-%% Cross-halo colinear
 
 %% end of code %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 toc;
