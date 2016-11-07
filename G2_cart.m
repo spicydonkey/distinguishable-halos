@@ -79,10 +79,10 @@ if isequal(CORR_INFO,'BB')
         end
     end
     
-    % all shots - BUT NOT SELF
+    % all shots - (includes correlated shots)
     for i=1:nShot
         nAtom=size(data1{i},1);
-        data_ncorr=vertcat(data2{[1:i-1,i+1:end]}); % collate all uncorrelated shots
+        data_ncorr=vertcat(data2{:}); % collate all shots - including corr
         diff_tmp=[];
         for j=1:nAtom
             this_atom=data1{i}(j,:);
