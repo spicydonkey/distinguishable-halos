@@ -57,7 +57,7 @@ end
 
 % Initialise variables
 nShot=size(data1,1);     % number of shots in data
-if VERBOSE>1,disp([num2str(nShot),' shots to analyse for G2 (polar)...']);,end
+if VERBOSE>1,disp([num2str(nShot),' shots to analyse for G2 (polar)...']);,end;
 G2_SINGLE=zeros(nBin);
 G2_ALL=zeros(nBin);
 
@@ -69,19 +69,19 @@ if isequal(CORR_INFO,'BB')
         nAtom=size(data1{i},1); % number of counts in DATA1
         diff_tmp=[];   % diff vectors for pair search
         for j=1:nAtom
-            % back-to-back condition
-            this_atom=data1{i}(j,:);
-            this_atom(2)=mod(this_atom(2)+pi,2*pi);
-            if this_atom(2)>pi, this_atom(2)=this_atom(2)-pi;, end
-            this_atom(3)=-this_atom(3);
+            % back-to-back condition (invert ref vector)
+            this_atom=data1{i}(j,:);    % polar-vector for this atom (to find pairs)
+            this_atom(2)=mod(this_atom(2)+pi,2*pi);     % theta-->theta+pi (mod 2pi)
+            if this_atom(2)>pi, this_atom(2)=this_atom(2)-pi;, end;
+            this_atom(3)=-this_atom(3);     % phi--> -phi
             
             % diff for BB in polar
             diff_tmp(:,1)=data2{i}(:,1)-this_atom(1);   % diff in norm
             diff_tmp(:,2)=acos(cos(this_atom(3)).*cos(data2{i}(:,3)).*cos(data2{i}(:,2)-this_atom(2)) ...
-                + sin(this_atom(3)).*sin(data2{i}(:,3)));  % diff angle
+                + sin(this_atom(3)).*sin(data2{i}(:,3)));  % diff angle (see dot-product in polar coord)
             
-            count_tmp=histcn(diff_tmp,BIN_EDGE{1},BIN_EDGE{2});
-            G2_SINGLE=G2_SINGLE+count_tmp;
+            count_tmp=nhist(diff_tmp,BIN_EDGE);     % n-dim histogram count
+            G2_SINGLE=G2_SINGLE+count_tmp;      % update G2
         end
     end
     
@@ -91,15 +91,19 @@ if isequal(CORR_INFO,'BB')
         nAtom=size(data1{i},1);
         diff_tmp=[];
         for j=1:nAtom
+            % back-to-back condition (invert ref vector)
             this_atom=data1{i}(j,:);
+            this_atom(2)=mod(this_atom(2)+pi,2*pi);
+            if this_atom(2)>pi, this_atom(2)=this_atom(2)-pi;, end;
+            this_atom(3)=-this_atom(3);
             
             % diff for BB in polar
             diff_tmp(:,1)=data_ncorr(:,1)-this_atom(1);   % diff in norm
-            diff_tmp(:,2)=acos(cos(this_atom(3)).*cos(data_ncorr(:,3)).*cos(data_ncorr(:,2)-(this_atom(2)+pi)) ...
-                + sin(-this_atom(3)).*sin(data_ncorr(:,3)));  % diff angle
+            diff_tmp(:,2)=acos(cos(this_atom(3)).*cos(data_ncorr(:,3)).*cos(data_ncorr(:,2)-this_atom(2)) ...
+                + sin(this_atom(3)).*sin(data_ncorr(:,3)));  % diff angle (see dot-product in polar coord)
             
-            count_tmp=histcn(diff_tmp,BIN_EDGE{1},BIN_EDGE{2});
-            G2_ALL=G2_ALL+count_tmp;
+            count_tmp=nhist(diff_tmp,BIN_EDGE);     % n-dim histogram count
+            G2_ALL=G2_ALL+count_tmp;        % update G2
         end
     end
     

@@ -56,7 +56,7 @@ end
 
 % Initialise variables
 nShot=size(data1,1);     % number of shots in data
-if VERBOSE>1,disp([num2str(nShot),' shots to analyse for G2 (cart)...']);,end
+if VERBOSE>1,disp([num2str(nShot),' shots to analyse for G2 (cart)...']);,end;
 G2_SINGLE=zeros(nBin);
 G2_ALL=zeros(nBin);
 
@@ -70,29 +70,27 @@ if isequal(CORR_INFO,'BB')
         
         for j=1:nAtom
             % back-to-back condition
-            this_atom=data1{i}(j,:);
-            
+            this_atom=data1{i}(j,:);    % ZXY-vector for this atom (to find pairs)
             diff_tmp=data2{i}-repmat(this_atom,[size(data2{i},1),1]);   % diff for BB
             
-            count_tmp=histcn(diff_tmp,BIN_EDGE{1},BIN_EDGE{2},BIN_EDGE{3});
-            G2_SINGLE=G2_SINGLE+count_tmp;
+            count_tmp=nhist(diff_tmp,BIN_EDGE);     % n-dim histogram count
+            G2_SINGLE=G2_SINGLE+count_tmp;          % update G2
         end
     end
     
     % all shots - (includes correlated shots)
     data_collate=vertcat(data2{:}); % collate all shots - including corr
-    nTot=size(data_collate,1);
+    nTot=size(data_collate,1);  % total number of counts in the cross-species
     for i=1:nShot
         nAtom=size(data1{i},1);
         diff_tmp=[];
-        
         for j=1:nAtom
+            % back-to-back condition
             this_atom=data1{i}(j,:);
-            diff_tmp=data_collate-repmat(this_atom,[nTot,1]);
+            diff_tmp=data_collate-repmat(this_atom,[nTot,1]);   % diff for BB
                 
-            count_tmp=histcn(diff_tmp,BIN_EDGE{1},BIN_EDGE{2},BIN_EDGE{3});
-
-            G2_ALL=G2_ALL+count_tmp;
+            count_tmp=nhist(diff_tmp,BIN_EDGE);     % n-dim histogram count
+            G2_ALL=G2_ALL+count_tmp;                % update G2
         end
     end
     
