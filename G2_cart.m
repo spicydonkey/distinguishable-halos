@@ -71,7 +71,7 @@ if isequal(CORR_INFO,'BB')
         for j=1:nAtom
             % back-to-back condition
             this_atom=data1{i}(j,:);    % ZXY-vector for this atom (to find pairs)
-            diff_tmp=data2{i}-repmat(this_atom,[size(data2{i},1),1]);   % diff for BB
+            diff_tmp=data2{i}+repmat(this_atom,[size(data2{i},1),1]);   % sum for diff_BB in k-space
             
             count_tmp=nhist(diff_tmp,BIN_EDGE);     % n-dim histogram count
             G2_SINGLE=G2_SINGLE+count_tmp;          % update G2
