@@ -54,12 +54,12 @@ analysis.corr.run_g2=1;
         
 %% PLOTS
 % 3D real space
-doplot.real.all=0;      % real space
-doplot.real.ind=[];    % plots the selection of shots
+doplot.real.all=1;      % real space
+doplot.real.ind=[1:20];    % plots the selection of shots
 
 % 3D k-space (normed)   TODO
-doplot.kspace.all=0;    % k-space
-doplot.kspace.ind=[];  % plots the selection of shots
+doplot.kspace.all=1;    % k-space
+doplot.kspace.ind=[1:20];  % plots the selection of shots
 
 %% CONSTANTS
 W_BB_GI=4e-4;   % g2 bb correlation length as determined from RIK's GI
@@ -329,9 +329,8 @@ end
 
 %% Cull halo caps
 if configs.post.removecap
-    nShot=size(halo.k,1);
     for i=1:2
-        for j=1:nShot
+        for j=1:size(halo.k,1)
             ind_cap=abs(halo.k{j,i}(:,1))>configs.post.zcap;
             halo.k{j,i}=halo.k{j,i}(~ind_cap,:);
         end
@@ -362,9 +361,8 @@ if configs.post.removecap
 end
 
 %% Remove ZERO-halo count shots for analysis
-nShot=size(halo.k,1);
-zeroShot=false(1,nShot);
-for i=1:nShot
+zeroShot=false(1,size(halo.k,1));
+for i=1:size(halo.k,1)
     if size(halo.k{i,1},1)*size(halo.k{i,2},1)==0
         zeroShot(i)=1;
     end
@@ -375,6 +373,22 @@ if n_zero_shot>0
 end
 halo.k=halo.k(~zeroShot,:);
 
+%% Summarise count numbers in halos for analysis
+halo_count=zeros(size(halo.k));
+for i=1:size(halo.k,1)
+    for j=1:size(halo.k,2)
+        halo_count(i,j)=size(halo.k{i,j},1);    % get halo counts
+    end
+end
+
+% Summary for post processed halos
+if verbose>0
+    disp('=================POST PROCESSING SUMMARY=================');
+    disp(['Total shots suitable for analysis: ',num2str(size(halo.k,1))]);
+    disp(['Counts per halo: [',num2str(mean(halo_count,1)),']±[',num2str(std(halo_count,1)),']']);
+    disp(['Total counts: ',num2str(sum(sum((halo_count)))),': [',num2str(sum(halo_count,1)),']']);
+    disp('=========================================================');
+end
 
 %% Create test data to force BB particles
 % Mirror the non-magnetic halo (#1) around origin which is more spherical and
@@ -413,7 +427,7 @@ if analysis.corr.run_g2
     
     % Evaluate G2 correlation
     [G2_bb_pol_shot,G2_bb_pol_all]=G2_polar(halo.k_pol,bin_edge_pol,'BB',2);
-    g2_bb_pol=nShot*G2_bb_pol_shot./G2_bb_pol_all;  %normalise
+    g2_bb_pol=size(halo.k,1)*G2_bb_pol_shot./G2_bb_pol_all;  %normalise
 
     % Plot
     [dR_bin,dtheta_bin]=meshgrid(bin_cent_pol{1},bin_cent_pol{2});  % create xy-grid for surf
@@ -450,7 +464,7 @@ if analysis.corr.run_g2
     
     [G2_bb_cart_shot,G2_bb_cart_all]=G2_cart(halo.k,bin_edge_cart,'BB',2);
 %     [G2_bb_cart_shot,G2_bb_cart_all]=G2_cart(halo_inv_pair,bin_edge_cart,'BB',2);  % TESTING
-    g2_bb_cart=nShot*G2_bb_cart_shot./G2_bb_cart_all;   % normalise
+    g2_bb_cart=size(halo.k,1)*G2_bb_cart_shot./G2_bb_cart_all;   % normalise
     
     % Plot
     [dX_bin,dY_bin]=meshgrid(bin_cent_cart{2},bin_cent_cart{3});        % create xy-grid for surf
@@ -480,23 +494,23 @@ if analysis.corr.run_g2
     saveas(hfig,[dir_output,'8','.png']);
     
     
-    %% Andrew's 1D-code G2 with Bryce's CalcCorr function
-    % configure g2 analysis
-    corr_1d.norm=1;
-    corr_1d.fit=0;
-    corr_1d.yy=linspace(-1,1,10);
-    corr_1d.dx=0.5;    % TODO: use corr-length for halos as determined by Roman in k-space
-    corr_1d.dt=0.5;
-    
-    % Combine two species
-    halo_combined=cell(size(halo.k,1),1);
-    for i=1:size(halo.k,1)
-        halo_combined{i}=vertcat(halo.k{i,:});
-    end
-    
-    % Get 1D-correlations
-    [g2_1d,~]=CalcCorr(halo_combined,corr_1d,1);
-    [g2_1d_inv,~]=CalcCorr(halo_invert_combined,corr_1d,1);
+%     %% Andrew's 1D-code G2 with Bryce's CalcCorr function
+%     % configure g2 analysis
+%     corr_1d.norm=1;
+%     corr_1d.fit=0;
+%     corr_1d.yy=linspace(-1,1,10);
+%     corr_1d.dx=0.5;    % TODO: use corr-length for halos as determined by Roman in k-space
+%     corr_1d.dt=0.5;
+%     
+%     % Combine two species
+%     halo_combined=cell(size(halo.k,1),1);
+%     for i=1:size(halo.k,1)
+%         halo_combined{i}=vertcat(halo.k{i,:});
+%     end
+%     
+%     % Get 1D-correlations
+%     [g2_1d,~]=CalcCorr(halo_combined,corr_1d,1);
+%     [g2_1d_inv,~]=CalcCorr(halo_invert_combined,corr_1d,1);
     
 end
 
