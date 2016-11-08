@@ -46,20 +46,23 @@ usrconfigs.post.removecap=1;    % remove caps on halo (in Z)
 % ANALYSIS
 % g2 correlations
 analysis.corr.run_g2=1;
-    analysis.corr.polar.nBin=[10,20];    % num bins (r,theta)
-        analysis.corr.polar.lim{1}=[-0.251,0.251];  % radial lim
-        analysis.corr.polar.lim{2}=[0,0.25];      % angular lim
-    analysis.corr.cart.nBin=10*[1,1,1];   % num bins (Z,X,Y)
-        analysis.corr.cart.lim=[-0.251,0.251];    % lims (x,y symmetric)
+    analysis.corr.polar.nBin=[11,51];    % num bins (r,theta) (USE ODD)
+        analysis.corr.polar.lim{1}=[-0.25,0.25];  % radial lim
+        analysis.corr.polar.lim{2}=[0,pi];      % angular lim
+    analysis.corr.cart.nBin=11*[1,1,1];   % num bins (Z,X,Y) (USE ODD)
+        analysis.corr.cart.lim=[-0.5,0.5];    % lims (x,y symmetric)
         
 %% PLOTS
 % 3D real space
 doplot.real.all=0;      % real space
-doplot.real.ind=1:3;    % plots the selection of shots
+doplot.real.ind=[];    % plots the selection of shots
 
 % 3D k-space (normed)   TODO
 doplot.kspace.all=0;    % k-space
-doplot.kspace.ind=1:3;  % plots the selection of shots
+doplot.kspace.ind=[];  % plots the selection of shots
+
+%% CONSTANTS
+W_BB_GI=4e-4;   % g2 bb correlation length as determined from RIK's GI
 
 %% Output management
 dir_output=[usrconfigs.files.path,'_output\'];
@@ -232,7 +235,7 @@ if verbose>0
         disp(['BEC ',num2str(i_mj),' centres: [',num2str(mean(vertcat(bec.cent{:,i_mj}))),']±[',num2str(std(vertcat(bec.cent{:,i_mj}))),']']);
         %disp(['HALO ',num2str(i_mj),' centres: [',num2str(mean(vertcat(halo.cent{:,i_mj}))),']±[',num2str(std(vertcat(halo.cent{:,i_mj}))),']']);   % not really useful with this algorithm
         % TODO - with optimisation, report halo radii
-        disp(['Halo ',num2str(i_mj),' radius: [',num2str(mean(vertcat(halo.R{:,i_mj}))),']±[',num2str(std(vertcat(halo.R{:,i_mj}))),']']);
+        disp(['Halo ',num2str(i_mj),' (R,dR_rms): [',num2str(mean(vertcat(halo.R{:,i_mj}))),']±[',num2str(std(vertcat(halo.R{:,i_mj}))),']']);
     end
     disp('====================================================');
 end
@@ -335,21 +338,27 @@ if configs.post.removecap
     end
     
     % PLOTS
-    figN=121; dotSize=1;
-    hfig=figure(figN);
-    scatter_zxy(figN,vertcat(halo.k{:,1}),dotSize,'r');
-    scatter_zxy(figN,vertcat(halo.k{:,2}),dotSize,'b');
-    title('Z-cap removed (k-space)');
-    xlabel('$K_{X}$'); ylabel('$K_{Y}$'); zlabel('$K_{Z}$');
+    if doplot.kspace.all
+        figN=121; dotSize=1;
+        hfig=figure(figN);
+        scatter_zxy(figN,vertcat(halo.k{:,1}),dotSize,'r');
+        scatter_zxy(figN,vertcat(halo.k{:,2}),dotSize,'b');
+        title('Z-cap removed (k-space)');
+        xlabel('$K_{X}$'); ylabel('$K_{Y}$'); zlabel('$K_{Z}$');
+        
+        saveas(hfig,[dir_output,'5','.png']);
+    end
     
-    figN=122; dotSize=100;
-    figure(figN);
-    scatter_zxy(figN,vertcat(halo.k{doplot.kspace.ind,1}),dotSize,'r');
-    scatter_zxy(figN,vertcat(halo.k{doplot.kspace.ind,2}),dotSize,'b');
-    title(['Z-cap removed Selected ',num2str(length(doplot.kspace.ind)),' shots (k-space)']);
-    xlabel('$K_{X}$'); ylabel('$K_{Y}$'); zlabel('$K_{Z}$');
-    
-    saveas(hfig,[dir_output,'5','.png']);
+    if ~isempty(doplot.kspace.ind)
+        figN=122; dotSize=100;
+        hfig=figure(figN);
+        scatter_zxy(figN,vertcat(halo.k{doplot.kspace.ind,1}),dotSize,'r');
+        scatter_zxy(figN,vertcat(halo.k{doplot.kspace.ind,2}),dotSize,'b');
+        title(['Z-cap removed Selected ',num2str(length(doplot.kspace.ind)),' shots (k-space)']);
+        xlabel('$K_{X}$'); ylabel('$K_{Y}$'); zlabel('$K_{Z}$');
+        
+        saveas(hfig,[dir_output,'6','.png']);
+    end
 end
 
 %% Remove ZERO-halo count shots for analysis
@@ -366,6 +375,21 @@ if n_zero_shot>0
 end
 halo.k=halo.k(~zeroShot,:);
 
+
+%% Create test data to force BB particles
+% Mirror the non-magnetic halo (#1) around origin which is more spherical and
+% captured better - creates completely "entangled" data, even for
+% noises and background
+halo_invert=cell(size(halo.k,1),1);
+halo_invert_combined=cell(size(halo.k,1),1);
+for i=1:size(halo.k,1)
+    halo_invert{i}=-halo.k{i,1};    % mirror (inverted) image of halo#1
+    halo_invert_combined{i}=vertcat(halo.k{i,1},-halo.k{i,1});  % self combined with mirror image
+end
+halo_inv_pair=cell(size(halo.k,1),2);
+halo_inv_pair(:,1)=halo.k(:,1);
+halo_inv_pair(:,2)=halo_invert;
+    
 %% Cartesian to Spherical polar conversion
 % Build k-space counts in the conventional spherical polar system
 % Should be simpler to do correlation analysis in sph pol coord system
@@ -414,7 +438,7 @@ if analysis.corr.run_g2
     xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$g^{(2)}_{BB(0,1)}$');
     axis tight;
     
-    saveas(hfig,[dir_output,'6','.png']);
+    saveas(hfig,[dir_output,'7','.png']);
     
     
     %% Cross-halo back-to-back: in Cartesian delta_k
@@ -425,12 +449,13 @@ if analysis.corr.run_g2
     end
     
     [G2_bb_cart_shot,G2_bb_cart_all]=G2_cart(halo.k,bin_edge_cart,'BB',2);
+%     [G2_bb_cart_shot,G2_bb_cart_all]=G2_cart(halo_inv_pair,bin_edge_cart,'BB',2);  % TESTING
     g2_bb_cart=nShot*G2_bb_cart_shot./G2_bb_cart_all;   % normalise
     
     % Plot
     [dX_bin,dY_bin]=meshgrid(bin_cent_cart{2},bin_cent_cart{3});        % create xy-grid for surf
     
-    mid_slice=round(analysis.corr.cart.nBin(1)/2);     % TODO: mid-slice is where diff is zero (for symmetric binning)
+    mid_slice=round((analysis.corr.cart.nBin(1)+1)/2);     % TODO: mid-slice is where diff is zero (for symmetric binning)
     
     hfig=figure(31);
     
@@ -452,10 +477,26 @@ if analysis.corr.run_g2
     xlabel('$\delta k_i$'); ylabel('$\delta k_j$'); zlabel('$g^{(2)}_{BB(0,1)}$');
     axis tight;
     
-    saveas(hfig,[dir_output,'7','.png']);
+    saveas(hfig,[dir_output,'8','.png']);
     
     
-    %% Andrew's 1D code
+    %% Andrew's 1D-code G2 with Bryce's CalcCorr function
+    % configure g2 analysis
+    corr_1d.norm=1;
+    corr_1d.fit=0;
+    corr_1d.yy=linspace(-1,1,10);
+    corr_1d.dx=0.5;    % TODO: use corr-length for halos as determined by Roman in k-space
+    corr_1d.dt=0.5;
+    
+    % Combine two species
+    halo_combined=cell(size(halo.k,1),1);
+    for i=1:size(halo.k,1)
+        halo_combined{i}=vertcat(halo.k{i,:});
+    end
+    
+    % Get 1D-correlations
+    [g2_1d,~]=CalcCorr(halo_combined,corr_1d,1);
+    [g2_1d_inv,~]=CalcCorr(halo_invert_combined,corr_1d,1);
     
 end
 
