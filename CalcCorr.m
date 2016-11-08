@@ -130,7 +130,7 @@ end
 
 corr_fit_params=[];
  
-figure(3)
+figure();
 subplot(2,2,1)
 plot(corr.yy,  g2_normed(3,:))
 if corr.fit
