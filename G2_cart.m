@@ -81,33 +81,18 @@ if isequal(CORR_INFO,'BB')
         end
     end
     
-%     % all shots - (includes correlated shots)
-%     collated_corr=vertcat(data2{:}); % collate all shots - including corr
-%     nTot=size(collated_corr,1);  % total number of counts in the cross-species
-%     for i=1:nShot
-%         nAtom=size(data1{i},1);
-%         diff_tmp=[];
-%         for j=1:nAtom
-%             % back-to-back condition
-%             this_atom=data1{i}(j,:);
-%             diff_tmp=collated_corr+repmat(this_atom,[nTot,1]);   % diff for BB
-%                 
-%             count_tmp=nhist(diff_tmp,BIN_EDGE);     % n-dim histogram count
-%             G2_ALL=G2_ALL+count_tmp;                % update G2
-%         end
-%     end
-    
     % all shots - except self
     for i=1:nShot
-        collated_ncorr=vertcat(data2{[1:i-1,i+1:end]}); % collate all shots - including corr
-        Ntotpair=size(collated_ncorr,1);  % total number of counts in the cross-species
+        data_collated=vertcat(data2{[1:i-1,i+1:end]});  % except self
+        %data_collated=vertcat(data2{:}); % collate all shots inc. self
+        Ntotpair=size(data_collated,1);  % total number of counts in the cross-species
         nAtom=size(data1{i},1);
         diff_tmp=[];
         
         for j=1:nAtom
             % back-to-back condition
             this_atom=data1{i}(j,:);
-            diff_tmp=collated_ncorr+repmat(this_atom,[Ntotpair,1]);   % diff for BB
+            diff_tmp=data_collated+repmat(this_atom,[Ntotpair,1]);   % diff for BB
                 
             count_tmp=nhist(diff_tmp,BIN_EDGE);     % n-dim histogram count
             G2_ALL=G2_ALL+count_tmp;                % update G2
