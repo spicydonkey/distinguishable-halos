@@ -42,10 +42,12 @@ data1=DATA(:,1);
 if size(DATA,2)==2
      % cross-data G2
     data2=DATA(:,2);
-else
+elseif size(DATA,2)==1
     % ordinary G2 for single component
     warning('CRITICAL BUG: Currently includes self to do G2!');
     data2=data1;
+else
+    error('DATA must be a 1 or 2 column cell');
 end
 clear DATA;
 
@@ -87,7 +89,7 @@ if isequal(CORR_INFO,'BB')
         for j=1:nAtom
             % back-to-back condition
             this_atom=data1{i}(j,:);
-            diff_tmp=data_collate-repmat(this_atom,[nTot,1]);   % diff for BB
+            diff_tmp=data_collate+repmat(this_atom,[nTot,1]);   % diff for BB
                 
             count_tmp=nhist(diff_tmp,BIN_EDGE);     % n-dim histogram count
             G2_ALL=G2_ALL+count_tmp;                % update G2
