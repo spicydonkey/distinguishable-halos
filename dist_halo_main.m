@@ -53,14 +53,14 @@ analysis.corr.run_g2=1;
         analysis.corr.polar.lim{1}=[-0.2,0.2];  % radial lim
         analysis.corr.polar.lim{2}=[0,pi];      % angular lim
     analysis.corr.cart.nBin=21*[1,1,1];   % num bins (Z,X,Y) (USE ODD)
-        analysis.corr.cart.lim=[-0.2,0.2];    % lims (x,y symmetric)
+        analysis.corr.cart.lim=[-0.4,0.4];    % lims (x,y symmetric)
         
 %% PLOTS
 % 3D real space
 doplot.real.all=0;      % real space
 doplot.real.ind=[];    % plots the selection of shots
 
-% 3D k-space (normed)   TODO
+% 3D k-space (normed)
 doplot.kspace.all=0;    % k-space
 doplot.kspace.ind=[];  % plots the selection of shots
 
@@ -405,10 +405,8 @@ end
 % noises and background
 if use_inverted_pairs
     halo_invert=cell(size(halo.k,1),1);
-%     halo_invert_combined=cell(size(halo.k,1),1);
     for i=1:size(halo.k,1)
         halo_invert{i}=-halo.k{i,1};    % mirror (inverted) image of halo#1
-%         halo_invert_combined{i}=vertcat(halo.k{i,1},-halo.k{i,1});  % self combined with mirror image
     end
     halo_inv_pair=cell(size(halo.k,1),2);
     halo_inv_pair(:,1)=halo.k(:,1);
@@ -427,6 +425,15 @@ halo.k_pol=cell(size(halo.k));
 for i=1:2
     halo.k_pol(:,i)=zxy2pol(halo.k(:,i));   % Polar coord of halo in k-space 
 end
+
+% DEBUG - manipulating halos
+% for i=1:size(halo.k_pol,1)
+% %     % scale halo 1
+% %     halo.k_pol{i,1}(:,1)=1.1*halo.k_pol{i,1}(:,1);
+%     
+% %     % rotate halo 1
+% %     halo.k_pol{i,1}(:,2)=halo.k_pol{i,1}(:,2)+pi/10;
+% end
 
 if use_inverted_pairs
     halo_inv_pair_pol=cell(size(halo.k));
@@ -529,24 +536,6 @@ if analysis.corr.run_g2
     
     saveas(hfig,[dir_output,'8','.fig']);
     saveas(hfig,[dir_output,'8','.png']);
-    
-%     %% Andrew's 1D-code G2 with Bryce's CalcCorr function
-%     % configure g2 analysis
-%     corr_1d.norm=1;
-%     corr_1d.fit=0;
-%     corr_1d.yy=linspace(-1,1,10);
-%     corr_1d.dx=0.5;    % TODO: use corr-length for halos as determined by Roman in k-space
-%     corr_1d.dt=0.5;
-%     
-%     % Combine two species
-%     halo_combined=cell(size(halo.k,1),1);
-%     for i=1:size(halo.k,1)
-%         halo_combined{i}=vertcat(halo.k{i,:});
-%     end
-%     
-%     % Get 1D-correlations
-%     [g2_1d,~]=CalcCorr(halo_combined,corr_1d,1);
-%     [g2_1d_inv,~]=CalcCorr(halo_invert_combined,corr_1d,1);
 end
 
 %% end of code %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
