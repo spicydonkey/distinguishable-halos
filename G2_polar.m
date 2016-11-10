@@ -77,8 +77,10 @@ if isequal(CORR_INFO,'BB')
             
             % diff for BB in polar
             diff_tmp(:,1)=data2{i}(:,1)-this_atom(1);   % diff in norm
-            diff_tmp(:,2)=acos(cos(this_atom(3)).*cos(data2{i}(:,3)).*cos(data2{i}(:,2)-this_atom(2)) ...
-                + sin(this_atom(3)).*sin(data2{i}(:,3)));  % diff angle (see dot-product in polar coord)
+            
+            % fix for returning 'complex' number with im=0
+            diff_tmp(:,2)=real(acos(cos(this_atom(3)).*cos(data2{i}(:,3)).*cos(data2{i}(:,2)-this_atom(2)) ...
+                + sin(this_atom(3)).*sin(data2{i}(:,3))));  % diff angle (see dot-product in polar coord)
             
             count_tmp=nhist(diff_tmp,BIN_EDGE);     % n-dim histogram count
             G2_SINGLE=G2_SINGLE+count_tmp;      % update G2
@@ -98,9 +100,11 @@ if isequal(CORR_INFO,'BB')
             this_atom(3)=-this_atom(3);
             
             % diff for BB in polar
-            diff_tmp(:,1)=data_ncorr(:,1)-this_atom(1);   % diff in norm
-            diff_tmp(:,2)=acos(cos(this_atom(3)).*cos(data_ncorr(:,3)).*cos(data_ncorr(:,2)-this_atom(2)) ...
-                + sin(this_atom(3)).*sin(data_ncorr(:,3)));  % diff angle (see dot-product in polar coord)
+            diff_tmp(:,1)=data_ncorr(:,1)-this_atom(1);   % diff in norm+
+            
+            % fix for returning 'complex' number with im=0
+            diff_tmp(:,2)=real(acos(cos(this_atom(3)).*cos(data_ncorr(:,3)).*cos(data_ncorr(:,2)-this_atom(2)) ...
+                + sin(this_atom(3)).*sin(data_ncorr(:,3))));  % diff angle (see dot-product in polar coord)
             
             count_tmp=nhist(diff_tmp,BIN_EDGE);     % n-dim histogram count
             G2_ALL=G2_ALL+count_tmp;        % update G2
