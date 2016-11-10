@@ -87,11 +87,36 @@ if isequal(CORR_INFO,'BB')
         end
     end
     
-    % all shots - (includes correlated shots)
-    data_ncorr=vertcat(data2{:}); % collate all shots - including corr
+%     % all shots - (includes correlated shots)
+%     collated_corr=vertcat(data2{:}); % collate all shots - including corr
+%     for i=1:nShot
+%         nAtom=size(data1{i},1);
+%         diff_tmp=[];
+%         for j=1:nAtom
+%             % back-to-back condition (invert ref vector)
+%             this_atom=data1{i}(j,:);
+%             this_atom(2)=mod(this_atom(2)+pi,2*pi);
+%             if this_atom(2)>pi, this_atom(2)=this_atom(2)-pi;, end;
+%             this_atom(3)=-this_atom(3);
+%             
+%             % diff for BB in polar
+%             diff_tmp(:,1)=collated_corr(:,1)-this_atom(1);   % diff in norm+
+%             
+%             % fix for returning 'complex' number with im=0
+%             diff_tmp(:,2)=real(acos(cos(this_atom(3)).*cos(collated_corr(:,3)).*cos(collated_corr(:,2)-this_atom(2)) ...
+%                 + sin(this_atom(3)).*sin(collated_corr(:,3))));  % diff angle (see dot-product in polar coord)
+%             
+%             count_tmp=nhist(diff_tmp,BIN_EDGE);     % n-dim histogram count
+%             G2_ALL=G2_ALL+count_tmp;        % update G2
+%         end
+%     end
+    
+    % all shots - except self
     for i=1:nShot
+        collated_ncorr=vertcat(data2{[1:i-1,i+1:end]}); % collate all shots - including corr
         nAtom=size(data1{i},1);
         diff_tmp=[];
+        
         for j=1:nAtom
             % back-to-back condition (invert ref vector)
             this_atom=data1{i}(j,:);
@@ -100,11 +125,11 @@ if isequal(CORR_INFO,'BB')
             this_atom(3)=-this_atom(3);
             
             % diff for BB in polar
-            diff_tmp(:,1)=data_ncorr(:,1)-this_atom(1);   % diff in norm+
+            diff_tmp(:,1)=collated_ncorr(:,1)-this_atom(1);   % diff in norm
             
             % fix for returning 'complex' number with im=0
-            diff_tmp(:,2)=real(acos(cos(this_atom(3)).*cos(data_ncorr(:,3)).*cos(data_ncorr(:,2)-this_atom(2)) ...
-                + sin(this_atom(3)).*sin(data_ncorr(:,3))));  % diff angle (see dot-product in polar coord)
+            diff_tmp(:,2)=real(acos(cos(this_atom(3)).*cos(collated_ncorr(:,3)).*cos(collated_ncorr(:,2)-this_atom(2)) ...
+                + sin(this_atom(3)).*sin(collated_ncorr(:,3))));  % diff angle (see dot-product in polar coord)
             
             count_tmp=nhist(diff_tmp,BIN_EDGE);     % n-dim histogram count
             G2_ALL=G2_ALL+count_tmp;        % update G2

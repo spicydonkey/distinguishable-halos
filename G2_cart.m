@@ -68,34 +68,51 @@ if isequal(CORR_INFO,'BB')
     % Back-to-back G2 analysis
     for i=1:nShot
         nAtom=size(data1{i},1); % number of counts in DATA1
+        Npairs=size(data2{i},1);
         diff_tmp=[];   % diff vectors for pair search
         
         for j=1:nAtom
             % back-to-back condition
             this_atom=data1{i}(j,:);    % ZXY-vector for this atom (to find pairs)
-            diff_tmp=data2{i}+repmat(this_atom,[size(data2{i},1),1]);   % sum for diff_BB in k-space
+            diff_tmp=data2{i}+repmat(this_atom,[Npairs,1]);   % sum for diff_BB in k-space
             
             count_tmp=nhist(diff_tmp,BIN_EDGE);     % n-dim histogram count
             G2_SINGLE=G2_SINGLE+count_tmp;          % update G2
         end
     end
     
-    % all shots - (includes correlated shots)
-    data_collate=vertcat(data2{:}); % collate all shots - including corr
-    nTot=size(data_collate,1);  % total number of counts in the cross-species
+%     % all shots - (includes correlated shots)
+%     collated_corr=vertcat(data2{:}); % collate all shots - including corr
+%     nTot=size(collated_corr,1);  % total number of counts in the cross-species
+%     for i=1:nShot
+%         nAtom=size(data1{i},1);
+%         diff_tmp=[];
+%         for j=1:nAtom
+%             % back-to-back condition
+%             this_atom=data1{i}(j,:);
+%             diff_tmp=collated_corr+repmat(this_atom,[nTot,1]);   % diff for BB
+%                 
+%             count_tmp=nhist(diff_tmp,BIN_EDGE);     % n-dim histogram count
+%             G2_ALL=G2_ALL+count_tmp;                % update G2
+%         end
+%     end
+    
+    % all shots - except self
     for i=1:nShot
+        collated_ncorr=vertcat(data2{[1:i-1,i+1:end]}); % collate all shots - including corr
+        Ntotpair=size(collated_ncorr,1);  % total number of counts in the cross-species
         nAtom=size(data1{i},1);
         diff_tmp=[];
+        
         for j=1:nAtom
             % back-to-back condition
             this_atom=data1{i}(j,:);
-            diff_tmp=data_collate+repmat(this_atom,[nTot,1]);   % diff for BB
+            diff_tmp=collated_ncorr+repmat(this_atom,[Ntotpair,1]);   % diff for BB
                 
             count_tmp=nhist(diff_tmp,BIN_EDGE);     % n-dim histogram count
             G2_ALL=G2_ALL+count_tmp;                % update G2
         end
-    end
-    
+    end 
 elseif isequal(CORR_INFO,'CL')
     error('CL is not set up yet');
 else
