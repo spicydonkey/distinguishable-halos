@@ -5,18 +5,18 @@ clear all; close all; clc;
 
 %% USER CONFIG
 % GENERAL
-use_saved_data=1;   %if false will remake the fully processed data files used in analysis
+use_saved_data=1;   %if false will remake the fully processed data files used in analysis (takes a while)
 use_txy=1;          %if false will remake the txy_forc files
 
 verbose=2;
 
 % DEBUG MODE
-use_inverted_pairs=1;
+use_inverted_pairs=0;
 
 % IN/OUTPUTS
 % files -  data file
-usrconfigs.files.path='C:\Users\HE BEC\Documents\lab\halo_analysis\data\test\d';    % path to unindexed data file (e.g. 'a\b\datadir\$DATA_FNAME_TOKEN$')
-usrconfigs.files.id=1:100;         % file id numbers to use for analysis
+usrconfigs.files.path='C:\Users\HE BEC\Documents\lab\halo_analysis\data\dist_halo\4_separated_lownum\d';    % path to unindexed data file (e.g. 'a\b\datadir\$DATA_FNAME_TOKEN$')
+usrconfigs.files.id=1:3000;         % file id numbers to use for analysis
 usrconfigs.files.minCount=100;     % min counts to use for analysis
 
 % MISCELLANEOUS
@@ -49,20 +49,20 @@ usrconfigs.post.removecap=1;    % remove caps on halo (in Z)
 % ANALYSIS
 % g2 correlations
 analysis.corr.run_g2=1;
-    analysis.corr.polar.nBin=[21,31];    % num bins (r,theta) (USE ODD)
-        analysis.corr.polar.lim{1}=[-0.5,0.5];  % radial lim
+    analysis.corr.polar.nBin=[21,51];    % num bins (r,theta) (USE ODD)
+        analysis.corr.polar.lim{1}=[-0.2,0.2];  % radial lim
         analysis.corr.polar.lim{2}=[0,pi];      % angular lim
-    analysis.corr.cart.nBin=11*[1,1,1];   % num bins (Z,X,Y) (USE ODD)
-        analysis.corr.cart.lim=[-0.5,0.5];    % lims (x,y symmetric)
+    analysis.corr.cart.nBin=21*[1,1,1];   % num bins (Z,X,Y) (USE ODD)
+        analysis.corr.cart.lim=[-0.2,0.2];    % lims (x,y symmetric)
         
 %% PLOTS
 % 3D real space
-doplot.real.all=1;      % real space
-doplot.real.ind=[1:30];    % plots the selection of shots
+doplot.real.all=0;      % real space
+doplot.real.ind=[];    % plots the selection of shots
 
 % 3D k-space (normed)   TODO
-doplot.kspace.all=1;    % k-space
-doplot.kspace.ind=[1:30];  % plots the selection of shots
+doplot.kspace.all=0;    % k-space
+doplot.kspace.ind=[];  % plots the selection of shots
 
 %% CONSTANTS
 W_BB_GI=4e-4;   % g2 bb correlation length as determined from RIK's GI
@@ -258,6 +258,7 @@ if doplot.real.all
     title('All shots (real space)');
     xlabel('X'); ylabel('Y'); zlabel('Z');
     
+    saveas(hfig,[dir_output,'1','.fig']);
     saveas(hfig,[dir_output,'1','.png']);
 end
 if ~isempty(doplot.real.ind)
@@ -274,6 +275,7 @@ if ~isempty(doplot.real.ind)
     title(['Selected ',num2str(length(doplot.real.ind)),' shots (real space)']);
     xlabel('X'); ylabel('Y'); zlabel('Z');
     
+    saveas(hfig,[dir_output,'2','.fig']);
     saveas(hfig,[dir_output,'2','.png']);
 end
 
@@ -314,6 +316,7 @@ if doplot.kspace.all
     title('All halos and BEC (k-space)');
     xlabel('$K_{X}$'); ylabel('$K_{Y}$'); zlabel('$K_{Z}$');
     
+    saveas(hfig,[dir_output,'3','.fig']);
     saveas(hfig,[dir_output,'3','.png']);
 end
 if ~isempty(doplot.kspace.ind)
@@ -327,6 +330,7 @@ if ~isempty(doplot.kspace.ind)
     title(['Selected ',num2str(length(doplot.kspace.ind)),' shots (k-space)']);
     xlabel('$K_{X}$'); ylabel('$K_{Y}$'); zlabel('$K_{Z}$');
     
+    saveas(hfig,[dir_output,'4','.fig']);
     saveas(hfig,[dir_output,'4','.png']);
 end
 
@@ -349,6 +353,7 @@ if configs.post.removecap
         xlabel('$K_{X}$'); ylabel('$K_{Y}$'); zlabel('$K_{Z}$');
         
         saveas(hfig,[dir_output,'5','.png']);
+        saveas(hfig,[dir_output,'5','.fig']);
     end
     
     if ~isempty(doplot.kspace.ind)
@@ -360,6 +365,7 @@ if configs.post.removecap
         xlabel('$K_{X}$'); ylabel('$K_{Y}$'); zlabel('$K_{Z}$');
         
         saveas(hfig,[dir_output,'6','.png']);
+        saveas(hfig,[dir_output,'6','.fig']);
     end
 end
 
@@ -474,8 +480,8 @@ if analysis.corr.run_g2
     axis tight;
     shading interp;
     
+    saveas(hfig,[dir_output,'7','.fig']);
     saveas(hfig,[dir_output,'7','.png']);
-    
     
     %% Cross-halo back-to-back: in Cartesian delta_k
     % Set up bins
@@ -521,6 +527,7 @@ if analysis.corr.run_g2
     axis tight;
     shading interp;
     
+    saveas(hfig,[dir_output,'8','.fig']);
     saveas(hfig,[dir_output,'8','.png']);
     
 %     %% Andrew's 1D-code G2 with Bryce's CalcCorr function
