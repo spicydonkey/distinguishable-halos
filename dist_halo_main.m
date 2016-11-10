@@ -10,10 +10,13 @@ use_txy=1;          %if false will remake the txy_forc files
 
 verbose=2;
 
+% DEBUG MODE
+use_inverted_pairs=1;
+
 % IN/OUTPUTS
 % files -  data file
-usrconfigs.files.path='C:\Users\HE BEC\Documents\lab\halo_analysis\data\dist_halo\4_separated_lownum\d';    % path to unindexed data file (e.g. 'a\b\datadir\datafile')
-usrconfigs.files.id=1:3000;         % file id numbers to use for analysis
+usrconfigs.files.path='C:\Users\HE BEC\Documents\lab\halo_analysis\data\test\d';    % path to unindexed data file (e.g. 'a\b\datadir\$DATA_FNAME_TOKEN$')
+usrconfigs.files.id=1:100;         % file id numbers to use for analysis
 usrconfigs.files.minCount=100;     % min counts to use for analysis
 
 % MISCELLANEOUS
@@ -46,8 +49,8 @@ usrconfigs.post.removecap=1;    % remove caps on halo (in Z)
 % ANALYSIS
 % g2 correlations
 analysis.corr.run_g2=1;
-    analysis.corr.polar.nBin=[11,51];    % num bins (r,theta) (USE ODD)
-        analysis.corr.polar.lim{1}=[-0.25,0.25];  % radial lim
+    analysis.corr.polar.nBin=[21,31];    % num bins (r,theta) (USE ODD)
+        analysis.corr.polar.lim{1}=[-0.5,0.5];  % radial lim
         analysis.corr.polar.lim{2}=[0,pi];      % angular lim
     analysis.corr.cart.nBin=11*[1,1,1];   % num bins (Z,X,Y) (USE ODD)
         analysis.corr.cart.lim=[-0.5,0.5];    % lims (x,y symmetric)
@@ -55,11 +58,11 @@ analysis.corr.run_g2=1;
 %% PLOTS
 % 3D real space
 doplot.real.all=1;      % real space
-doplot.real.ind=[1:20];    % plots the selection of shots
+doplot.real.ind=[1:30];    % plots the selection of shots
 
 % 3D k-space (normed)   TODO
 doplot.kspace.all=1;    % k-space
-doplot.kspace.ind=[1:20];  % plots the selection of shots
+doplot.kspace.ind=[1:30];  % plots the selection of shots
 
 %% CONSTANTS
 W_BB_GI=4e-4;   % g2 bb correlation length as determined from RIK's GI
@@ -394,16 +397,19 @@ end
 % Mirror the non-magnetic halo (#1) around origin which is more spherical and
 % captured better - creates completely "entangled" data, even for
 % noises and background
-halo_invert=cell(size(halo.k,1),1);
-halo_invert_combined=cell(size(halo.k,1),1);
-for i=1:size(halo.k,1)
-    halo_invert{i}=-halo.k{i,1};    % mirror (inverted) image of halo#1
-    halo_invert_combined{i}=vertcat(halo.k{i,1},-halo.k{i,1});  % self combined with mirror image
+if use_inverted_pairs
+    halo_invert=cell(size(halo.k,1),1);
+%     halo_invert_combined=cell(size(halo.k,1),1);
+    for i=1:size(halo.k,1)
+        halo_invert{i}=-halo.k{i,1};    % mirror (inverted) image of halo#1
+%         halo_invert_combined{i}=vertcat(halo.k{i,1},-halo.k{i,1});  % self combined with mirror image
+    end
+    halo_inv_pair=cell(size(halo.k,1),2);
+    halo_inv_pair(:,1)=halo.k(:,1);
+    halo_inv_pair(:,2)=halo_invert;
+    clear halo_invert;
 end
-halo_inv_pair=cell(size(halo.k,1),2);
-halo_inv_pair(:,1)=halo.k(:,1);
-halo_inv_pair(:,2)=halo_invert;
-    
+
 %% Cartesian to Spherical polar conversion
 % Build k-space counts in the conventional spherical polar system
 % Should be simpler to do correlation analysis in sph pol coord system
@@ -416,6 +422,13 @@ for i=1:2
     halo.k_pol(:,i)=zxy2pol(halo.k(:,i));   % Polar coord of halo in k-space 
 end
 
+if use_inverted_pairs
+    halo_inv_pair_pol=cell(size(halo.k));
+    for i=1:2
+        halo_inv_pair_pol(:,i)=zxy2pol(halo_inv_pair(:,i));
+    end
+end
+
 %% Correlation analysis
 if analysis.corr.run_g2
     %% Cross-halo back-to-back: in (dk,dtheta)
@@ -426,7 +439,13 @@ if analysis.corr.run_g2
     end    
     
     % Evaluate G2 correlation
-    [G2_bb_pol_shot,G2_bb_pol_all]=G2_polar(halo.k_pol,bin_edge_pol,'BB',2);
+    if use_inverted_pairs
+        % this is to check g2 for ideal, completely B-B paired halos (but
+        % possibly with many pair occupations)
+        [G2_bb_pol_shot,G2_bb_pol_all]=G2_polar(halo_inv_pair_pol,bin_edge_pol,'BB',2);
+    else
+        [G2_bb_pol_shot,G2_bb_pol_all]=G2_polar(halo.k_pol,bin_edge_pol,'BB',2);
+    end
     g2_bb_pol=size(halo.k,1)*G2_bb_pol_shot./G2_bb_pol_all;  %normalise
 
     % Plot
@@ -439,18 +458,21 @@ if analysis.corr.run_g2
     title('X-halo,BB,$\delta \vec{k}$ (pol),shots');
     xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{BB(0,1)}$');
     axis tight;
+    shading interp;
     
     subplot(1,3,2);
     surf(dR_bin',dtheta_bin',G2_bb_pol_all,'edgecolor','none');
     title('X-halo,BB,$\delta \vec{k}$ (pol),collated');
     xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{BB(0,1)}$');
     axis tight;
+    shading interp;
     
     subplot(1,3,3);
     surf(dR_bin',dtheta_bin',g2_bb_pol,'edgecolor','none');
     title('X-halo,BB,$\delta \vec{k}$ (pol),normalised');
     xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$g^{(2)}_{BB(0,1)}$');
     axis tight;
+    shading interp;
     
     saveas(hfig,[dir_output,'7','.png']);
     
@@ -462,37 +484,44 @@ if analysis.corr.run_g2
         bin_cent_cart{i}=0.5*(bin_edge_cart{i}(1:end-1)+bin_edge_cart{i}(2:end));
     end
     
-    [G2_bb_cart_shot,G2_bb_cart_all]=G2_cart(halo.k,bin_edge_cart,'BB',2);
-%     [G2_bb_cart_shot,G2_bb_cart_all]=G2_cart(halo_inv_pair,bin_edge_cart,'BB',2);  % TESTING
+    if use_inverted_pairs
+        % this is to check g2 for ideal, completely B-B paired halos (but
+        % possibly with many pair occupations)
+        [G2_bb_cart_shot,G2_bb_cart_all]=G2_cart(halo_inv_pair,bin_edge_cart,'BB',2);
+    else
+        [G2_bb_cart_shot,G2_bb_cart_all]=G2_cart(halo.k,bin_edge_cart,'BB',2);
+    end
     g2_bb_cart=size(halo.k,1)*G2_bb_cart_shot./G2_bb_cart_all;   % normalise
-    
+
     % Plot
     [dX_bin,dY_bin]=meshgrid(bin_cent_cart{2},bin_cent_cart{3});        % create xy-grid for surf
     
     mid_slice=round((analysis.corr.cart.nBin(1)+1)/2);     % TODO: mid-slice is where diff is zero (for symmetric binning)
     
-    hfig=figure(31);
+    hfig=figure(21);
     
     subplot(1,3,1);
     surf(dX_bin',dY_bin',squeeze(G2_bb_cart_shot(mid_slice,:,:)),'edgecolor','none');
     title('X-halo,BB,$\delta \vec{k}$ (cart),shots');
     xlabel('$\delta k_i$'); ylabel('$\delta k_j$'); zlabel('$G^{(2)}_{BB(0,1)}$');
     axis tight;
+    shading interp;
     
     subplot(1,3,2);
     surf(dX_bin',dY_bin',squeeze(G2_bb_cart_all(mid_slice,:,:)),'edgecolor','none');
     title('X-halo,BB,$\delta \vec{k}$ (cart),collated');
     xlabel('$\delta k_i$'); ylabel('$\delta k_j$'); zlabel('$G^{(2)}_{ALL,BB(0,1)}$');
     axis tight;
+    shading interp;
     
     subplot(1,3,3);
     surf(dX_bin',dY_bin',squeeze(g2_bb_cart(mid_slice,:,:)),'edgecolor','none');
     title('X-halo,BB,$\delta \vec{k}$ (cart),normalised');
     xlabel('$\delta k_i$'); ylabel('$\delta k_j$'); zlabel('$g^{(2)}_{BB(0,1)}$');
     axis tight;
+    shading interp;
     
     saveas(hfig,[dir_output,'8','.png']);
-    
     
 %     %% Andrew's 1D-code G2 with Bryce's CalcCorr function
 %     % configure g2 analysis
@@ -511,7 +540,6 @@ if analysis.corr.run_g2
 %     % Get 1D-correlations
 %     [g2_1d,~]=CalcCorr(halo_combined,corr_1d,1);
 %     [g2_1d_inv,~]=CalcCorr(halo_invert_combined,corr_1d,1);
-    
 end
 
 %% end of code %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
