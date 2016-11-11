@@ -662,8 +662,8 @@ if analysis.corr.run_g2
     xlabel('$\Delta\theta$'); ylabel('$\bar{g}^{(2)}$');
     legend({'(0,1)','(0,0)'},'Location','northwest');
     
-    saveas(hfig,[dir_output,'12','.fig']);
-    saveas(hfig,[dir_output,'12','.png']);
+    saveas(hfig,[dir_output,'11','.fig']);
+    saveas(hfig,[dir_output,'11','.png']);
     
 end
 
