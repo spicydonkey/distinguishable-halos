@@ -550,9 +550,44 @@ if analysis.corr.run_g2
     % single collision source
     
     % Halo 1
-%     [G2_bb_solo_pol_shot,G2_bb_solo_pol_all]=G2_polar(halo.k_pol(:,1),bin_edge_pol,'BB',2);
-    
+	[G2_bb_solo_pol_shot,G2_bb_solo_pol_all]=G2_polar(halo.k_pol(:,1),bin_edge_pol,'BB',2);
+    g2_bb_solo_pol=size(halo.k_pol,1)*G2_bb_solo_pol_shot./G2_bb_solo_pol_all;  %normalise
 
+    % plot
+    hfig=figure(31);
+    
+    subplot(1,3,1);
+    surf(dR_bin',dtheta_bin',G2_bb_solo_pol_shot,'edgecolor','none');
+    title('Single-halo,BB,$\delta \vec{k}$ (pol),shots');
+    xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{BB(0,0)}$');
+    axis tight;
+    shading interp;
+    
+    subplot(1,3,2);
+    surf(dR_bin',dtheta_bin',G2_bb_solo_pol_all,'edgecolor','none');
+    title('Single-halo,BB,$\delta \vec{k}$ (pol),collated');
+    xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{BB(0,0)}$');
+    axis tight;
+    shading interp;
+    
+    subplot(1,3,3);
+    surf(dR_bin',dtheta_bin',g2_bb_solo_pol,'edgecolor','none');
+    title('Single-halo,BB,$\delta \vec{k}$ (pol),normalised');
+    xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$g^{(2)}_{BB(0,0)}$');
+    axis tight;
+    shading interp;
+    
+    saveas(hfig,[dir_output,'9','.fig']);
+    saveas(hfig,[dir_output,'9','.png']);
+    
+    % dk-integrated g2(dtheta)
+    g2_dtheta_solo=size(halo.k_pol,1)*sum(G2_bb_solo_pol_shot,1)./sum(G2_bb_solo_pol_all,1);
+    hfig=figure(32);
+    plot(bin_cent_pol{2},g2_dtheta_solo,'*');
+    
+    saveas(hfig,[dir_output,'9_2','.fig']);
+    saveas(hfig,[dir_output,'9_2','.png']);
+    
     %% Solo BB (cartesian)
     % Back-to-back g2 correlations in the single s-wave scatterer source
     
@@ -561,31 +596,31 @@ if analysis.corr.run_g2
     g2_bb_solo_cart=size(halo.k,1)*G2_bb_solo_cart_shot./G2_bb_solo_cart_all;   % normalise
     
     % plot
-    hfig=figure(31);
+    hfig=figure(41);
     
     subplot(1,3,1);
     surf(dX_bin',dY_bin',squeeze(G2_bb_solo_cart_shot(mid_slice,:,:)),'edgecolor','none');
     title('Single-halo,BB,$\delta \vec{k}$ (cart),shots');
-    xlabel('$\delta k_i$'); ylabel('$\delta k_j$'); zlabel('$G^{(2)}_{BB(0,1)}$');
+    xlabel('$\delta k_i$'); ylabel('$\delta k_j$'); zlabel('$G^{(2)}_{BB(0,0)}$');
     axis tight;
     shading interp;
     
     subplot(1,3,2);
     surf(dX_bin',dY_bin',squeeze(G2_bb_solo_cart_all(mid_slice,:,:)),'edgecolor','none');
     title('Single-halo,BB,$\delta \vec{k}$ (cart),collated');
-    xlabel('$\delta k_i$'); ylabel('$\delta k_j$'); zlabel('$G^{(2)}_{ALL,BB(0,1)}$');
+    xlabel('$\delta k_i$'); ylabel('$\delta k_j$'); zlabel('$G^{(2)}_{ALL,BB(0,0)}$');
     axis tight;
     shading interp;
     
     subplot(1,3,3);
     surf(dX_bin',dY_bin',squeeze(g2_bb_solo_cart(mid_slice,:,:)),'edgecolor','none');
     title('Single-halo,BB,$\delta \vec{k}$ (cart),normalised');
-    xlabel('$\delta k_i$'); ylabel('$\delta k_j$'); zlabel('$g^{(2)}_{BB(0,1)}$');
+    xlabel('$\delta k_i$'); ylabel('$\delta k_j$'); zlabel('$g^{(2)}_{BB(0,0)}$');
     axis tight;
     shading interp;
     
-    saveas(hfig,[dir_output,'9','.fig']);
-    saveas(hfig,[dir_output,'9','.png']);
+    saveas(hfig,[dir_output,'10','.fig']);
+    saveas(hfig,[dir_output,'10','.png']);
 end
 
 %% end of code %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
