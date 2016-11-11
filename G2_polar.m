@@ -118,47 +118,36 @@ elseif ncomp==1
             diff_tmp=[];   % diff vectors for pair search
             
             for j=1:nAtom
-                % back-to-back condition (invert ref vector)
+                % back-to-back condition
                 this_atom=shot_tmp(j,:);    % polar-vector for this atom (to find pairs)
-                this_atom(2)=mod(this_atom(2)+pi,2*pi);     % theta-->theta+pi (mod 2pi)
-                if this_atom(2)>pi, this_atom(2)=this_atom(2)-2*pi;, end; % theta range:(-pi,pi]
-                this_atom(3)=-this_atom(3);     % phi--> -phi
+                other_tmp=shot_tmp([1:j-1,j+1:end],:);  % all other counts
                 
                 % diff for BB in polar
-                diff_tmp(:,1)=data2{i}(:,1)-this_atom(1);   % diff in norm
+                diff_tmp(:,1)=other_tmp(:,1)-this_atom(1);   % diff in norm
+                diff_tmp(:,2)=real(acos(cos(this_atom(3)).*cos(other_tmp(:,3)).*cos(other_tmp(:,2)-this_atom(2)) ...
+                    + sin(this_atom(3)).*sin(other_tmp(:,3))));  % diff angle (see dot-product in polar coord)
                 
-                % fix for returning 'complex' number with im=0
-                diff_tmp(:,2)=real(acos(cos(this_atom(3)).*cos(data2{i}(:,3)).*cos(data2{i}(:,2)-this_atom(2)) ...
-                    + sin(this_atom(3)).*sin(data2{i}(:,3))));  % diff angle (see dot-product in polar coord)
-                
-                count_tmp=nhist(diff_tmp,BIN_EDGE);     % n-dim histogram count
-                G2_SINGLE=G2_SINGLE+count_tmp;      % update G2
+                G2_SINGLE=G2_SINGLE+nhist(diff_tmp,BIN_EDGE);	% update G2
             end
         end
         
         % all shots - except self
         for i=1:nShot
-            data_collated=vertcat(data2{[1:i-1,i+1:end]}); % collate all except self
+            data_collated=vertcat(data1{[1:i-1,i+1:end]}); % collate all except self
             %data_collated=vertcat(data2{:}); % collate all shots inc. self
             nAtom=size(data1{i},1);
             diff_tmp=[];
             
             for j=1:nAtom
-                % back-to-back condition (invert ref vector)
+                % back-to-back condition
                 this_atom=data1{i}(j,:);
-                this_atom(2)=mod(this_atom(2)+pi,2*pi);
-                if this_atom(2)>pi, this_atom(2)=this_atom(2)-pi;, end;
-                this_atom(3)=-this_atom(3);
                 
                 % diff for BB in polar
                 diff_tmp(:,1)=data_collated(:,1)-this_atom(1);   % diff in norm
-                
-                % fix for returning 'complex' number with im=0
                 diff_tmp(:,2)=real(acos(cos(this_atom(3)).*cos(data_collated(:,3)).*cos(data_collated(:,2)-this_atom(2)) ...
                     + sin(this_atom(3)).*sin(data_collated(:,3))));  % diff angle (see dot-product in polar coord)
                 
-                count_tmp=nhist(diff_tmp,BIN_EDGE);     % n-dim histogram count
-                G2_ALL=G2_ALL+count_tmp;        % update G2
+                G2_ALL=G2_ALL+nhist(diff_tmp,BIN_EDGE);     % update G2
             end
         end
         
