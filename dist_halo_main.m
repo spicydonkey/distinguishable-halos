@@ -495,6 +495,10 @@ if analysis.corr.run_g2
     hfig=figure(12);
     plot(bin_cent_pol{2},g2_dtheta,'*');
     
+    title('$\Delta k$-integrated X-halo BB correlation');
+    xlabel('$\Delta\theta$'); ylabel('$\bar{g}^{(2)}_{BB,(0,1)}$');
+    xlim([0,pi]); ylim auto;
+    
     saveas(hfig,[dir_output,'7_2','.fig']);
     saveas(hfig,[dir_output,'7_2','.png']);
     
@@ -584,6 +588,10 @@ if analysis.corr.run_g2
     g2_dtheta_solo=size(halo.k_pol,1)*sum(G2_bb_solo_pol_shot,1)./sum(G2_bb_solo_pol_all,1);
     hfig=figure(32);
     plot(bin_cent_pol{2},g2_dtheta_solo,'*');
+    
+    title('$\Delta k$-integrated Single-halo BB correlation');
+    xlabel('$\Delta\theta$'); ylabel('$\bar{g}^{(2)}_{BB,(0,0)}$');
+    xlim([0,pi]); ylim auto;
     
     saveas(hfig,[dir_output,'9_2','.fig']);
     saveas(hfig,[dir_output,'9_2','.png']);
