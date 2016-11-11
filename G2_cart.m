@@ -81,8 +81,7 @@ if ncomp==2
                 this_atom=data1{i}(j,:);    % ZXY-vector for this atom (to find pairs)
                 diff_tmp=data2{i}+repmat(this_atom,[Npairs,1]);   % sum for diff_BB in k-space
                 
-                count_tmp=nhist(diff_tmp,BIN_EDGE);     % n-dim histogram count
-                G2_SINGLE=G2_SINGLE+count_tmp;          % update G2
+                G2_SINGLE=G2_SINGLE+nhist(diff_tmp,BIN_EDGE);	% update G2
             end
         end
         
@@ -99,8 +98,7 @@ if ncomp==2
                 this_atom=data1{i}(j,:);
                 diff_tmp=data_collated+repmat(this_atom,[Ntotpair,1]);   % diff for BB
                 
-                count_tmp=nhist(diff_tmp,BIN_EDGE);     % n-dim histogram count
-                G2_ALL=G2_ALL+count_tmp;                % update G2
+                G2_ALL=G2_ALL+nhist(diff_tmp,BIN_EDGE);     % update G2
             end
         end
     elseif isequal(CORR_INFO,'CL')
@@ -115,26 +113,25 @@ elseif ncomp==1
         % Back-to-back G2 analysis
         for i=1:nShot
             shot_tmp=data1{i};
-            nAtom=size(shot_tmp,1); % number of counts
-%             Npairs=nAtom
+            nAtom=size(shot_tmp,1); % number of counts in this shot
             diff_tmp=[];   % diff vectors for pair search
             
             for j=1:nAtom
                 % back-to-back condition
                 this_atom=shot_tmp(j,:);    % ZXY-vector for this atom (to find pairs)
-                diff_tmp=data2{i}+repmat(this_atom,[Npairs,1]);   % sum for diff_BB in k-space
+                % Get BB-diff vectors for all pairs except self
+                diff_tmp=shot_tmp([1:j-1,j+1:end],:)+repmat(this_atom,[nAtom-1,1]);     % BB-diff condition
                 
-                count_tmp=nhist(diff_tmp,BIN_EDGE);     % n-dim histogram count
-                G2_SINGLE=G2_SINGLE+count_tmp;          % update G2
+                G2_SINGLE=G2_SINGLE+nhist(diff_tmp,BIN_EDGE);   % update G2
             end
         end
         
         % all shots - except self
         for i=1:nShot
-            data_collated=vertcat(data2{[1:i-1,i+1:end]});  % except self
-            %data_collated=vertcat(data2{:}); % collate all shots inc. self
-            Ntotpair=size(data_collated,1);  % total number of counts in the cross-species
-            nAtom=size(data1{i},1);
+            data_collated=vertcat(data1{[1:i-1,i+1:end]});  % all shots except self
+            %data_collated=vertcat(data2{:});   % collate all shots inc. self
+            Ntotpair=size(data_collated,1);     % total number of counts to search pairs
+            nAtom=size(data1{i},1);     % counts in this shot
             diff_tmp=[];
             
             for j=1:nAtom
@@ -142,8 +139,7 @@ elseif ncomp==1
                 this_atom=data1{i}(j,:);
                 diff_tmp=data_collated+repmat(this_atom,[Ntotpair,1]);   % diff for BB
                 
-                count_tmp=nhist(diff_tmp,BIN_EDGE);     % n-dim histogram count
-                G2_ALL=G2_ALL+count_tmp;                % update G2
+                G2_ALL=G2_ALL+nhist(diff_tmp,BIN_EDGE); % update G2
             end
         end
     elseif isequal(CORR_INFO,'CL')
