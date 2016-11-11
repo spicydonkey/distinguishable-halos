@@ -45,8 +45,6 @@ if size(DATA,2)==2
     ncomp=2;    % number of components
 elseif size(DATA,2)==1
     % single-component G2
-%     warning('CRITICAL BUG: Currently includes self to do G2!');
-%     data2=data1;
     data1=DATA;
     ncomp=1;
 else
@@ -68,7 +66,7 @@ G2_ALL=zeros(nBin);
 % Branch G2 analysis so that condition is out of loop: just add other
 %   conditions as a conditional branch following one as template
 if ncomp==2
-    % 2 component G(2) analysis
+    %% 2 component G(2) analysis
     if isequal(CORR_INFO,'BB')
         % Back-to-back G2 analysis
         for i=1:nShot
@@ -108,7 +106,7 @@ if ncomp==2
     end
     
 elseif ncomp==1
-    % Single component G(2) analysis
+    %% Single component G(2) analysis
     if isequal(CORR_INFO,'BB')
         % Back-to-back G2 analysis
         for i=1:nShot
