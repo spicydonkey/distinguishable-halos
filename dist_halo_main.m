@@ -490,6 +490,14 @@ if analysis.corr.run_g2
     saveas(hfig,[dir_output,'7','.fig']);
     saveas(hfig,[dir_output,'7','.png']);
     
+    % dk-integrated g2(dtheta)
+    g2_dtheta=size(halo.k_pol,1)*sum(G2_bb_pol_shot,1)./sum(G2_bb_pol_all,1);
+    hfig=figure(12);
+    plot(bin_cent_pol{2},g2_dtheta,'*');
+    
+    saveas(hfig,[dir_output,'7_2','.fig']);
+    saveas(hfig,[dir_output,'7_2','.png']);
+    
     %% Cross-halo back-to-back: in Cartesian delta_k
     % Set up bins
     for i=1:3
@@ -542,8 +550,9 @@ if analysis.corr.run_g2
     % single collision source
     
     % Halo 1
+%     [G2_bb_solo_pol_shot,G2_bb_solo_pol_all]=G2_polar(halo.k_pol(:,1),bin_edge_pol,'BB',2);
     
-    
+
     %% Solo BB (cartesian)
     % Back-to-back g2 correlations in the single s-wave scatterer source
     
