@@ -49,11 +49,11 @@ usrconfigs.post.removecap=1;    % remove caps on halo (in Z)
 % ANALYSIS
 % g2 correlations
 analysis.corr.run_g2=1;
-    analysis.corr.polar.nBin=[21,51];    % num bins (r,theta) (USE ODD)
-        analysis.corr.polar.lim{1}=[-0.2,0.2];  % radial lim
+    analysis.corr.polar.nBin=[11,51];    % num bins (r,theta) (USE ODD)
+        analysis.corr.polar.lim{1}=0.3*[-1,1];  % radial lim
         analysis.corr.polar.lim{2}=[0,pi];      % angular lim
-    analysis.corr.cart.nBin=21*[1,1,1];   % num bins (Z,X,Y) (USE ODD)
-        analysis.corr.cart.lim=[-0.4,0.4];    % lims (x,y symmetric)
+    analysis.corr.cart.nBin=[51,13,13];   % num bins (Z,X,Y) (USE ODD)
+        analysis.corr.cart.lim=0.8*[-1,1];    % lims (z,x,y symmetric)
         
 %% PLOTS
 % 3D real space
@@ -451,6 +451,9 @@ if analysis.corr.run_g2
         bin_cent_pol{i}=0.5*(bin_edge_pol{i}(1:end-1)+bin_edge_pol{i}(2:end));
     end    
     
+    % TODO for asymetric binning?
+    ind_zero_pol=round((analysis.corr.polar.nBin+1)/2); % zero-cent'd bin index for sampling 2D-g2 (dr-dtheta)
+    
     % Evaluate G2 correlation
     if use_inverted_pairs
         % this is to check g2 for ideal, completely B-B paired halos (but
@@ -521,26 +524,27 @@ if analysis.corr.run_g2
     % Plot
     [dX_bin,dY_bin]=meshgrid(bin_cent_cart{2},bin_cent_cart{3});        % create xy-grid for surf
     
-    mid_slice=round((analysis.corr.cart.nBin(1)+1)/2);     % TODO: mid-slice is where diff is zero (for symmetric binning)
+    % TODO for asymetric binning?
+    ind_zero_cart=round((analysis.corr.cart.nBin+1)/2); % zero-cent'd bin index for sampling 3D-g2 
     
     hfig=figure(21);
     
     subplot(1,3,1);
-    surf(dX_bin',dY_bin',squeeze(G2_bb_cart_shot(mid_slice,:,:)),'edgecolor','none');
+    surf(dX_bin',dY_bin',squeeze(G2_bb_cart_shot(ind_zero_cart(1),:,:)),'edgecolor','none');
     title('X-halo,BB,$\delta \vec{k}$ (cart),shots');
     xlabel('$\delta k_i$'); ylabel('$\delta k_j$'); zlabel('$G^{(2)}_{BB(0,1)}$');
     axis tight;
     shading interp;
     
     subplot(1,3,2);
-    surf(dX_bin',dY_bin',squeeze(G2_bb_cart_all(mid_slice,:,:)),'edgecolor','none');
+    surf(dX_bin',dY_bin',squeeze(G2_bb_cart_all(ind_zero_cart(1),:,:)),'edgecolor','none');
     title('X-halo,BB,$\delta \vec{k}$ (cart),collated');
     xlabel('$\delta k_i$'); ylabel('$\delta k_j$'); zlabel('$G^{(2)}_{ALL,BB(0,1)}$');
     axis tight;
     shading interp;
     
     subplot(1,3,3);
-    surf(dX_bin',dY_bin',squeeze(g2_bb_cart(mid_slice,:,:)),'edgecolor','none');
+    surf(dX_bin',dY_bin',squeeze(g2_bb_cart(ind_zero_cart(1),:,:)),'edgecolor','none');
     title('X-halo,BB,$\delta \vec{k}$ (cart),normalised');
     xlabel('$\delta k_i$'); ylabel('$\delta k_j$'); zlabel('$g^{(2)}_{BB(0,1)}$');
     axis tight;
@@ -548,6 +552,15 @@ if analysis.corr.run_g2
     
     saveas(hfig,[dir_output,'8','.fig']);
     saveas(hfig,[dir_output,'8','.png']);
+    
+    % 1-D g2 in Z
+    hfig=figure(22);
+    plot(bin_cent_cart{1},g2_bb_cart(:,ind_zero_cart(2),ind_zero_cart(3)),'*');
+    title('X-halo BB correlations in $Z$-axis');
+    xlabel('$\Delta K_z$'); ylabel('$g^{(2)}_{BB,(0,1)}$');
+    
+    saveas(hfig,[dir_output,'8_1','.fig']);
+    saveas(hfig,[dir_output,'8_1','.png']);
     
     %% Solo BB (polar)
     % Back-to-back g2 correlations in the s-wave scattered particles of
@@ -607,21 +620,21 @@ if analysis.corr.run_g2
     hfig=figure(41);
     
     subplot(1,3,1);
-    surf(dX_bin',dY_bin',squeeze(G2_bb_solo_cart_shot(mid_slice,:,:)),'edgecolor','none');
+    surf(dX_bin',dY_bin',squeeze(G2_bb_solo_cart_shot(ind_zero_cart(1),:,:)),'edgecolor','none');
     title('Single-halo,BB,$\delta \vec{k}$ (cart),shots');
     xlabel('$\delta k_i$'); ylabel('$\delta k_j$'); zlabel('$G^{(2)}_{BB(0,0)}$');
     axis tight;
     shading interp;
     
     subplot(1,3,2);
-    surf(dX_bin',dY_bin',squeeze(G2_bb_solo_cart_all(mid_slice,:,:)),'edgecolor','none');
+    surf(dX_bin',dY_bin',squeeze(G2_bb_solo_cart_all(ind_zero_cart(1),:,:)),'edgecolor','none');
     title('Single-halo,BB,$\delta \vec{k}$ (cart),collated');
     xlabel('$\delta k_i$'); ylabel('$\delta k_j$'); zlabel('$G^{(2)}_{ALL,BB(0,0)}$');
     axis tight;
     shading interp;
     
     subplot(1,3,3);
-    surf(dX_bin',dY_bin',squeeze(g2_bb_solo_cart(mid_slice,:,:)),'edgecolor','none');
+    surf(dX_bin',dY_bin',squeeze(g2_bb_solo_cart(ind_zero_cart(1),:,:)),'edgecolor','none');
     title('Single-halo,BB,$\delta \vec{k}$ (cart),normalised');
     xlabel('$\delta k_i$'); ylabel('$\delta k_j$'); zlabel('$g^{(2)}_{BB(0,0)}$');
     axis tight;
@@ -629,6 +642,29 @@ if analysis.corr.run_g2
     
     saveas(hfig,[dir_output,'10','.fig']);
     saveas(hfig,[dir_output,'10','.png']);
+    
+   	% 1-D g2 in Z
+    hfig=figure(42);
+    plot(bin_cent_cart{1},g2_bb_solo_cart(:,ind_zero_cart(2),ind_zero_cart(3)),'*');
+    title('Single-halo BB correlations in $Z$-axis');
+    xlabel('$\Delta K_z$'); ylabel('$g^{(2)}_{BB,(0,0)}$');
+    
+    saveas(hfig,[dir_output,'10_1','.fig']);
+    saveas(hfig,[dir_output,'10_1','.png']);
+    
+    %% Compare g2 between scattering partners to non
+    hfig=figure(51);
+    plot(bin_cent_pol{2},g2_bb_pol(ind_zero_pol(1),:),'-*');
+    hold on;
+    plot(bin_cent_pol{2},g2_bb_solo_pol(ind_zero_pol(1),:),'-*');
+    xlim([0,pi]);   ylim auto;
+    title('Correlations in distinguishable $s$-wave scattering');
+    xlabel('$\Delta\theta$'); ylabel('$\bar{g}^{(2)}$');
+    legend({'(0,1)','(0,0)'},'Location','northwest');
+    
+    saveas(hfig,[dir_output,'12','.fig']);
+    saveas(hfig,[dir_output,'12','.png']);
+    
 end
 
 %% end of code %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
