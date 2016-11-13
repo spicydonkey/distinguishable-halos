@@ -13,7 +13,6 @@ function [G2_SINGLE,G2_ALL]=G2_cart(DATA,BIN_EDGE,CORR_INFO,VERBOSE)
 % G2_SINGLE - G2 summed for each shot
 % G2_ALL - G2 for all data collated (for normalisation)
 %
-% TODO: CRITICAL - self-G2 includes own count
 
 % Input check
 % DATA
