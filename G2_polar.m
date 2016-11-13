@@ -23,6 +23,12 @@ end
 if ~iscell(BIN_EDGE)
     error('BIN_EDGE should be a cell of bin edges');
 end
+
+if ~isequal(size(BIN_EDGE),[1,2])
+    %error('BIN_EDGE should be a 1x2 cell of radial and angular separation bin edges.');
+    % TODO
+end
+
 % CORR_INFO
 if ~exist('CORR_INFO','var')  % missing arg - default
     warning('CORR_INFO is not set by user: default to back-to-back (BB) G(2) analysis');
@@ -37,9 +43,9 @@ if ~exist('VERBOSE','var')
 end
 
 % Parse inputs
-data1=DATA(:,1);
 if size(DATA,2)==2
     % cross-data G2
+    data1=DATA(:,1);
     data2=DATA(:,2);
     ncomp=2;    % number of components
 elseif size(DATA,2)==1
@@ -51,14 +57,14 @@ else
 end
 clear DATA;
 
-nBin=[];
+nBin=zeros(1,length(BIN_EDGE));
 for i=1:length(BIN_EDGE)
     nBin(i)=length(BIN_EDGE{i})-1;  % number of bins from bin edges
 end
 
 % Initialise variables
 nShot=size(data1,1);     % number of shots in data
-if VERBOSE>1,disp([num2str(nShot),' shots to analyse for G2 (polar)...']);,end;
+if VERBOSE>1,disp([num2str(nShot),' shots to analyse for G2_polar...']);,end;
 G2_SINGLE=zeros(nBin);
 G2_ALL=zeros(nBin);
 
