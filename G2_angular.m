@@ -87,7 +87,7 @@ if ncomp==2
         
         % Progress report
         if VERBOSE>1
-            prog_msg=sprintf('Progress: %4.1f',100*i/nShot);
+            prog_msg=sprintf('[1/2]: %4.1f',100*i/nShot);
             fprintf([erase_str,prog_msg]);
             erase_str=repmat(sprintf('\b'),1,length(prog_msg));
         end
@@ -120,7 +120,7 @@ if ncomp==2
         
         % Progress report
         if VERBOSE>1
-            prog_msg=sprintf('Progress: %4.1f',100*i/nShot);
+            prog_msg=sprintf('[2/2]: %4.1f',100*i/nShot);
             fprintf([erase_str,prog_msg]);
             erase_str=repmat(sprintf('\b'),1,length(prog_msg));
         end
@@ -155,7 +155,7 @@ elseif ncomp==1
         
         % Progress report
         if VERBOSE>1
-            prog_msg=sprintf('Progress: %4.1f',100*i/nShot);
+            prog_msg=sprintf('[1/2]: %4.1f',100*i/nShot);
             fprintf([erase_str,prog_msg]);
             erase_str=repmat(sprintf('\b'),1,length(prog_msg));
         end
@@ -190,7 +190,7 @@ elseif ncomp==1
         
         % Progress report
         if VERBOSE>1
-            prog_msg=sprintf('Progress: %4.1f',100*i/nShot);
+            prog_msg=sprintf('[2/2]: %4.1f',100*i/nShot);
             fprintf([erase_str,prog_msg]);
             erase_str=repmat(sprintf('\b'),1,length(prog_msg));
         end
