@@ -508,6 +508,7 @@ if analysis.corr.run_g2
     %% TEST
     [G2test1,G2test2]=G2_angular(halo.k,bin_edge_pol,verbose);
     g2test=size(halo.k,1)*G2test1./G2test2;
+    
     hfig=figure(13);
     
     subplot(1,3,1);
@@ -634,6 +635,33 @@ if analysis.corr.run_g2
     
     saveas(hfig,[dir_output,'9_2','.fig']);
     saveas(hfig,[dir_output,'9_2','.png']);
+    
+    %% TEST - single component angular G2
+    [G2testsolo1,G2testsolo2]=G2_angular(halo.k(:,1),bin_edge_pol,verbose);
+    g2testsolo=size(halo.k,1)*G2testsolo1./G2testsolo2;
+    
+    hfig=figure(33);
+    
+    subplot(1,3,1);
+    surf(dR_bin',dtheta_bin',G2testsolo1,'edgecolor','none');
+    title('Single-halo,BB,$\delta \vec{k}$ (pol),shots');
+    xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{BB(0,0)}$');
+    axis tight;
+    shading interp;
+    
+    subplot(1,3,2);
+    surf(dR_bin',dtheta_bin',G2testsolo2,'edgecolor','none');
+    title('Single-halo,BB,$\delta \vec{k}$ (pol),collated');
+    xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{BB(0,0)}$');
+    axis tight;
+    shading interp;
+    
+    subplot(1,3,3);
+    surf(dR_bin',dtheta_bin',g2testsolo,'edgecolor','none');
+    title('Single-halo,BB,$\delta \vec{k}$ (pol),normalised');
+    xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$g^{(2)}_{BB(0,0)}$');
+    axis tight;
+    shading interp;
     
     %% Solo BB (cartesian)
     % Back-to-back g2 correlations in the single s-wave scatterer source
