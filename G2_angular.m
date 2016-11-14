@@ -54,16 +54,20 @@ end
 
 % Initialise variables
 nShot=size(data1,1);     % number of shots in data
-if VERBOSE>1,disp([num2str(nShot),' shots to analyse in G2_angular...']);,end;
+if VERBOSE>0
+    disp('----------------------------------------------');
+    disp([num2str(nShot),' shots to analyse in G2_angular...']);
+end
 G2_SINGLE=zeros(nBin);
 G2_ALL=zeros(nBin);
 
 
 % Branch G2 analysis so that condition is out of loop: just add other
 %   conditions as a conditional branch following one as template
+erase_str='';   % initialise for progress reporting
 if ncomp==2
     %% 2 component G(2) analysis
-    % Single-shot correlations
+    % Single-shot correlations    
     for i=1:nShot
         nAtom=size(data1{i},1);     % number of counts in DATA1
         Npairs=size(data2{i},1);    % number of 'pairable' counts in counterpart
@@ -80,6 +84,18 @@ if ncomp==2
             
             G2_SINGLE=G2_SINGLE+nhist(diff_tmp,BIN_EDGE);	% update G2
         end
+        
+        % Progress report
+        if VERBOSE>1
+            prog_msg=sprintf('Progress: %4.1f',100*i/nShot);
+            fprintf([erase_str,prog_msg]);
+            erase_str=repmat(sprintf('\b'),1,length(prog_msg));
+        end
+    end
+    
+    if VERBOSE>1
+        fprintf('\n');
+        erase_str='';   % reset to null
     end
     
     % all shots - except self
@@ -101,7 +117,20 @@ if ncomp==2
             
             G2_ALL=G2_ALL+nhist(diff_tmp,BIN_EDGE);     % update G2
         end
+        
+        % Progress report
+        if VERBOSE>1
+            prog_msg=sprintf('Progress: %4.1f',100*i/nShot);
+            fprintf([erase_str,prog_msg]);
+            erase_str=repmat(sprintf('\b'),1,length(prog_msg));
+        end
     end
+    
+    if VERBOSE>1
+        % new-line at the end of report
+        fprintf('\n');
+    end
+    
 elseif ncomp==1
     %% Single component G(2) analysis
     for i=1:nShot
@@ -122,6 +151,13 @@ elseif ncomp==1
             diff_tmp(:,2)=real(acos(dotp_tmp./(norm_this_atom*norm_tmp)));
 
             G2_SINGLE=G2_SINGLE+nhist(diff_tmp,BIN_EDGE);   % update G2
+        end
+        
+        % Progress report
+        if VERBOSE>1
+            prog_msg=sprintf('Progress: %4.1f',100*i/nShot);
+            fprintf([erase_str,prog_msg]);
+            erase_str=repmat(sprintf('\b'),1,length(prog_msg));
         end
     end
     
@@ -146,10 +182,24 @@ elseif ncomp==1
             
             G2_ALL=G2_ALL+nhist(diff_tmp,BIN_EDGE); % update G2
         end
+        
+        % Progress report
+        if VERBOSE>1
+            prog_msg=sprintf('Progress: %4.1f',100*i/nShot);
+            fprintf([erase_str,prog_msg]);
+            erase_str=repmat(sprintf('\b'),1,length(prog_msg));
+        end
     end
+    
+    if VERBOSE>1
+        % new-line at the end of report
+        fprintf('\n');
+    end
+    
 end
 
 if VERBOSE>0
     t_fun_end=toc(t_fun_start);
     fprintf('Total elapsed time (s): %7.2f\n',t_fun_end);
+    disp('----------------------------------------------');
 end
