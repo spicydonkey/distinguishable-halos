@@ -70,8 +70,8 @@ if ncomp==2
             norm_tmp=sqrt(sum(data2{i}.^2,2));  % norm of counterpart atoms (same shot)
             
             diff_tmp(:,1)=norm_tmp-norm_this_atom;   % radial diff
-            dotp_tmp=sum(norm_tmp.*repmat(this_atom,[Npairs,1]),2); % dot product
-            diff_tmp(:,2)=acos(dotp_tmp./(norm_this_atom*norm_tmp));    % angular diff
+            dotp_tmp=sum(data2{i}.*repmat(this_atom,[Npairs,1]),2); % dot product
+            diff_tmp(:,2)=real(acos(dotp_tmp./(norm_this_atom*norm_tmp)));    % angular diff
             
             G2_SINGLE=G2_SINGLE+nhist(diff_tmp,BIN_EDGE);	% update G2
         end
@@ -91,8 +91,8 @@ if ncomp==2
             norm_tmp=sqrt(sum(data_collated.^2,2));  % norm of counterpart atoms (same shot)
             
             diff_tmp(:,1)=norm_tmp-norm_this_atom;   % radial diff
-            dotp_tmp=sum(norm_tmp.*repmat(this_atom,[Ntotpair,1]),2); % dot product
-            diff_tmp(:,2)=acos(dotp_tmp./(norm_this_atom*norm_tmp));    % angular diff
+            dotp_tmp=sum(data_collated.*repmat(this_atom,[Ntotpair,1]),2); % dot product           
+            diff_tmp(:,2)=real(acos(dotp_tmp./(norm_this_atom*norm_tmp)));    % angular diff
             
             G2_ALL=G2_ALL+nhist(diff_tmp,BIN_EDGE);     % update G2
         end
