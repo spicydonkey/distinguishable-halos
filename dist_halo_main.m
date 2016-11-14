@@ -15,8 +15,8 @@ use_inverted_pairs=0;
 
 % IN/OUTPUTS
 % files -  data file
-usrconfigs.files.path='C:\Users\HE BEC\Documents\lab\halo_analysis\data\dist_halo\4_separated_lownum\d';    % path to unindexed data file (e.g. 'a\b\datadir\$DATA_FNAME_TOKEN$')
-usrconfigs.files.id=1:3000;         % file id numbers to use for analysis
+usrconfigs.files.path='C:\Users\HE BEC\Documents\lab\halo_analysis\data\dist_halo\7\d';    % path to unindexed data file (e.g. 'a\b\datadir\$DATA_FNAME_TOKEN$')
+usrconfigs.files.id=1:7000;         % file id numbers to use for analysis
 usrconfigs.files.minCount=100;     % min counts to use for analysis
 
 % MISCELLANEOUS
@@ -58,11 +58,11 @@ analysis.corr.run_g2=1;
 %% PLOTS
 % 3D real space
 doplot.real.all=0;      % real space
-doplot.real.ind=[];    % plots the selection of shots
+doplot.real.ind=[1:30];    % plots the selection of shots
 
 % 3D k-space (normed)
 doplot.kspace.all=0;    % k-space
-doplot.kspace.ind=[];  % plots the selection of shots
+doplot.kspace.ind=[1:30];  % plots the selection of shots
 
 %% CONSTANTS
 W_BB_GI=4e-4;   % g2 bb correlation length as determined from RIK's GI
@@ -458,14 +458,14 @@ if analysis.corr.run_g2
     if use_inverted_pairs
         % this is to check g2 for ideal, completely B-B paired halos (but
         % possibly with many pair occupations)
-        [G2_bb_pol_shot,G2_bb_pol_all]=G2_polar(halo_inv_pair_pol,bin_edge_pol,'BB',2);
+        [G2_bb_pol_shot,G2_bb_pol_all]=G2_angular(halo_inv_pair,bin_edge_pol,verbose);
     else
-        [G2_bb_pol_shot,G2_bb_pol_all]=G2_polar(halo.k_pol,bin_edge_pol,'BB',2);
+        [G2_bb_pol_shot,G2_bb_pol_all]=G2_angular(halo.k,bin_edge_pol,verbose);
     end
     g2_bb_pol=size(halo.k,1)*G2_bb_pol_shot./G2_bb_pol_all;  %normalise
 
     % Plot
-    [dR_bin,dtheta_bin]=meshgrid(bin_cent_pol{1},bin_cent_pol{2});  % create xy-grid for surf
+    [dR_bin,dtheta_bin]=meshgrid(bin_cent_pol{1},bin_cent_pol{2});  % create domain grid for surf
     
     hfig=figure(11);
     
@@ -494,7 +494,7 @@ if analysis.corr.run_g2
     saveas(hfig,[dir_output,'7','.png']);
     
     % dk-integrated g2(dtheta)
-    g2_dtheta=size(halo.k_pol,1)*sum(G2_bb_pol_shot,1)./sum(G2_bb_pol_all,1);
+    g2_dtheta=size(halo.k,1)*sum(G2_bb_pol_shot,1)./sum(G2_bb_pol_all,1);
     hfig=figure(12);
     plot(bin_cent_pol{2},g2_dtheta,'*');
     
@@ -504,33 +504,6 @@ if analysis.corr.run_g2
     
     saveas(hfig,[dir_output,'7_2','.fig']);
     saveas(hfig,[dir_output,'7_2','.png']);
-    
-    %% TEST
-    [G2test1,G2test2]=G2_angular(halo.k,bin_edge_pol,verbose);
-    g2test=size(halo.k,1)*G2test1./G2test2;
-    
-    hfig=figure(13);
-    
-    subplot(1,3,1);
-    surf(dR_bin',dtheta_bin',G2test1,'edgecolor','none');
-    title('X-halo,BB,$\delta \vec{k}$ (pol),shots');
-    xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{BB(0,1)}$');
-    axis tight;
-    shading interp;
-    
-    subplot(1,3,2);
-    surf(dR_bin',dtheta_bin',G2test2,'edgecolor','none');
-    title('X-halo,BB,$\delta \vec{k}$ (pol),collated');
-    xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{BB(0,1)}$');
-    axis tight;
-    shading interp;
-    
-    subplot(1,3,3);
-    surf(dR_bin',dtheta_bin',g2test,'edgecolor','none');
-    title('X-halo,BB,$\delta \vec{k}$ (pol),normalised');
-    xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$g^{(2)}_{BB(0,1)}$');
-    axis tight;
-    shading interp;
     
     %% Cross-halo back-to-back: in Cartesian delta_k
     % Set up bins
@@ -594,8 +567,8 @@ if analysis.corr.run_g2
     % single collision source
     
     % Halo 1
-	[G2_bb_solo_pol_shot,G2_bb_solo_pol_all]=G2_polar(halo.k_pol(:,1),bin_edge_pol,'BB',2);
-    g2_bb_solo_pol=size(halo.k_pol,1)*G2_bb_solo_pol_shot./G2_bb_solo_pol_all;  %normalise
+    [G2_bb_solo_pol_shot,G2_bb_solo_pol_all]=G2_angular(halo.k(:,1),bin_edge_pol,verbose);
+    g2_bb_solo_pol=size(halo.k,1)*G2_bb_solo_pol_shot./G2_bb_solo_pol_all;  %normalise
 
     % plot
     hfig=figure(31);
@@ -625,7 +598,7 @@ if analysis.corr.run_g2
     saveas(hfig,[dir_output,'9','.png']);
     
     % dk-integrated g2(dtheta)
-    g2_dtheta_solo=size(halo.k_pol,1)*sum(G2_bb_solo_pol_shot,1)./sum(G2_bb_solo_pol_all,1);
+    g2_dtheta_solo=size(halo.k,1)*sum(G2_bb_solo_pol_shot,1)./sum(G2_bb_solo_pol_all,1);
     hfig=figure(32);
     plot(bin_cent_pol{2},g2_dtheta_solo,'*');
     
@@ -635,33 +608,6 @@ if analysis.corr.run_g2
     
     saveas(hfig,[dir_output,'9_2','.fig']);
     saveas(hfig,[dir_output,'9_2','.png']);
-    
-    %% TEST - single component angular G2
-    [G2testsolo1,G2testsolo2]=G2_angular(halo.k(:,1),bin_edge_pol,verbose);
-    g2testsolo=size(halo.k,1)*G2testsolo1./G2testsolo2;
-    
-    hfig=figure(33);
-    
-    subplot(1,3,1);
-    surf(dR_bin',dtheta_bin',G2testsolo1,'edgecolor','none');
-    title('Single-halo,BB,$\delta \vec{k}$ (pol),shots');
-    xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{BB(0,0)}$');
-    axis tight;
-    shading interp;
-    
-    subplot(1,3,2);
-    surf(dR_bin',dtheta_bin',G2testsolo2,'edgecolor','none');
-    title('Single-halo,BB,$\delta \vec{k}$ (pol),collated');
-    xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{BB(0,0)}$');
-    axis tight;
-    shading interp;
-    
-    subplot(1,3,3);
-    surf(dR_bin',dtheta_bin',g2testsolo,'edgecolor','none');
-    title('Single-halo,BB,$\delta \vec{k}$ (pol),normalised');
-    xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$g^{(2)}_{BB(0,0)}$');
-    axis tight;
-    shading interp;
     
     %% Solo BB (cartesian)
     % Back-to-back g2 correlations in the single s-wave scatterer source
