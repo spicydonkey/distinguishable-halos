@@ -25,8 +25,7 @@ if ~iscell(BIN_EDGE)
 end
 
 if ~isequal(size(BIN_EDGE),[1,2])
-    %error('BIN_EDGE should be a 1x2 cell of radial and angular separation bin edges.');
-    % TODO
+    error('BIN_EDGE should be a 1x2 cell of bin edges in radial and angular separation.');
 end
 
 % CORR_INFO

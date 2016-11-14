@@ -24,8 +24,7 @@ if ~iscell(BIN_EDGE)
     error('BIN_EDGE should be a cell of bin edges');
 end
 if ~isequal(size(BIN_EDGE),[1,3])
-    %error('BIN_EDGE should be a 1x3 cell of zxy bin edges.');
-    % TODO
+    error('BIN_EDGE should be a 1x3 cell of bin edges in Z,X,Y axis.');
 end
 
 % CORR_INFO
