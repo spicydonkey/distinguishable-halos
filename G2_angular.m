@@ -1,5 +1,6 @@
 function [G2_SINGLE,G2_ALL]=G2_angular(DATA,BIN_EDGE,VERBOSE)
-% Unnormalised G2 calculator in 2D radial-angular separation
+% Unnormalised G2 calculator in 2D radial-angular separation with cartesian
+%   count format
 % DKS 14/11/16
 %
 % INPUT
@@ -20,7 +21,7 @@ if ~iscell(BIN_EDGE)
     error('BIN_EDGE should be a cell of bin edges');
 end
 if ~isequal(size(BIN_EDGE),[1,2])
-    error('BIN_EDGE should be a 1x2 cell of radial and angular separation bin edges.');
+    error('BIN_EDGE should be a 1x2 cell of bin edges in radial and angular separation.');
 end
 % VERBOSE
 if ~exist('VERBOSE','var')
@@ -98,5 +99,48 @@ if ncomp==2
         end
     end
 elseif ncomp==1
-    %TODO
+    %% Single component G(2) analysis
+    for i=1:nShot
+        shot_tmp=data1{i};
+        nAtom=size(shot_tmp,1); % number of counts in this shot
+        diff_tmp=[];   % diff vectors for pair search
+        
+        for j=1:nAtom
+            this_atom=shot_tmp(j,:);    % ZXY-vector for this atom (to find pairs)
+            other_tmp=shot_tmp([1:j-1,j+1:end],:);  % all other counts in shot
+            
+            % Get rad/angular diff vectors for all pairs except self
+            norm_this_atom=sqrt(sum(this_atom.^2,2));
+            norm_tmp=sqrt(sum(other_tmp.^2,2));
+            
+            diff_tmp(:,1)=norm_tmp-norm_this_atom;
+            dotp_tmp=sum(other_tmp.*repmat(this_atom,[nAtom-1,1]),2);
+            diff_tmp(:,2)=real(acos(dotp_tmp./(norm_this_atom*norm_tmp)));
+
+            G2_SINGLE=G2_SINGLE+nhist(diff_tmp,BIN_EDGE);   % update G2
+        end
+    end
+    
+    % all shots - except self
+    for i=1:nShot
+        data_collated=vertcat(data1{[1:i-1,i+1:end]});  % all shots except self
+        %data_collated=vertcat(data2{:});   % collate all shots inc. self
+        Ntotpair=size(data_collated,1);     % total number of counts to search pairs
+        nAtom=size(data1{i},1);     % counts in this shot
+        diff_tmp=[];
+        
+        for j=1:nAtom
+            this_atom=data1{i}(j,:);
+            
+            % Get rad/angular diff vectors for all pairs
+            norm_this_atom=sqrt(sum(this_atom.^2,2));
+            norm_tmp=sqrt(sum(data_collated.^2,2));
+            
+            diff_tmp(:,1)=norm_tmp-norm_this_atom;
+            dotp_tmp=sum(data_collated.*repmat(this_atom,[Ntotpair,1]),2);
+            diff_tmp(:,2)=real(acos(dotp_tmp./(norm_this_atom*norm_tmp)));
+            
+            G2_ALL=G2_ALL+nhist(diff_tmp,BIN_EDGE); % update G2
+        end
+    end
 end
