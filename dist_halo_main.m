@@ -15,8 +15,8 @@ use_inverted_pairs=0;
 
 % IN/OUTPUTS
 % files -  data file
-usrconfigs.files.path='C:\Users\HE BEC\Documents\lab\halo_analysis\data\dist_halo\7\d';    % path to unindexed data file (e.g. 'a\b\datadir\$DATA_FNAME_TOKEN$')
-usrconfigs.files.id=1:7000;         % file id numbers to use for analysis
+usrconfigs.files.path='C:\Users\HE BEC\Documents\lab\halo_analysis\data\dist_halo\4_separated_lownum\d';    % path to unindexed data file (e.g. 'a\b\datadir\$DATA_FNAME_TOKEN$')
+usrconfigs.files.id=1:3000;         % file id numbers to use for analysis
 usrconfigs.files.minCount=100;     % min counts to use for analysis
 
 % MISCELLANEOUS
@@ -107,7 +107,7 @@ if use_saved_data
             use_saved_data=0;
         elseif ~isequal(usrconfigs,S_data.usrconfigs)
             % Check consistency of requested analysis configs and saved data
-            warning('Previously saved data contains settings (windows, files) different to requested - setting use_saved_data=0 and continue...');
+            warning('Previously saved data contains settings (e.g. windows, files) different to requested - setting use_saved_data=0 and continue...');
             use_saved_data=0;
         else
             % OK load all vars in file
@@ -444,7 +444,7 @@ end
 
 %% Correlation analysis
 if analysis.corr.run_g2
-    %% Cross-halo back-to-back: in (dk,dtheta)
+    %% Cross-halo: angular correlations (dk,dtheta)
     % Set up bins
     for i=1:2
         bin_edge_pol{i}=linspace(analysis.corr.polar.lim{i}(1),analysis.corr.polar.lim{i}(2),analysis.corr.polar.nBin(i)+1);
@@ -471,21 +471,21 @@ if analysis.corr.run_g2
     
     subplot(1,3,1);
     surf(dR_bin',dtheta_bin',G2_bb_pol_shot,'edgecolor','none');
-    title('X-halo,BB,$\delta \vec{k}$ (pol),shots');
+    title('X-halo,$\delta \vec{k}$ (pol),shots');
     xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{BB(0,1)}$');
     axis tight;
     shading interp;
     
     subplot(1,3,2);
     surf(dR_bin',dtheta_bin',G2_bb_pol_all,'edgecolor','none');
-    title('X-halo,BB,$\delta \vec{k}$ (pol),collated');
+    title('X-halo,$\delta \vec{k}$ (pol),collated');
     xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{BB(0,1)}$');
     axis tight;
     shading interp;
     
     subplot(1,3,3);
     surf(dR_bin',dtheta_bin',g2_bb_pol,'edgecolor','none');
-    title('X-halo,BB,$\delta \vec{k}$ (pol),normalised');
+    title('X-halo,$\delta \vec{k}$ (pol),normalised');
     xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$g^{(2)}_{BB(0,1)}$');
     axis tight;
     shading interp;
@@ -497,10 +497,17 @@ if analysis.corr.run_g2
     g2_dtheta=size(halo.k,1)*sum(G2_bb_pol_shot,1)./sum(G2_bb_pol_all,1);
     hfig=figure(12);
     plot(bin_cent_pol{2},g2_dtheta,'*');
+    hold on;
+    ax=gca;
     
-    title('$\Delta k$-integrated X-halo BB correlation');
-    xlabel('$\Delta\theta$'); ylabel('$\bar{g}^{(2)}_{BB,(0,1)}$');
+    title('$\Delta k$-integrated X-halo correlation');
+    xlabel('$\Delta\theta$'); ylabel('$\bar{g}^{(2)}_{(0,1)}$');
     xlim([0,pi]); ylim auto;
+    
+    % Gaussian fit 
+    param0=[4,pi,0.1,1];     % fit estimate [amp,mu,sigma,offset]
+    [fitparam_g2_dtheta,fit_g2_dtheta]=gaussfit(bin_cent_pol{2},g2_dtheta,param0,verbose);
+    plot(ax,fit_g2_dtheta.x,fit_g2_dtheta.y,'r');     % plot the fit
     
     saveas(hfig,[dir_output,'7_2','.fig']);
     saveas(hfig,[dir_output,'7_2','.png']);
@@ -555,9 +562,16 @@ if analysis.corr.run_g2
     
     % 1-D g2 in Z
     hfig=figure(22);
+    ax=gca;
     plot(bin_cent_cart{1},g2_bb_cart(:,ind_zero_cart(2),ind_zero_cart(3)),'*');
+    hold on;
     title('X-halo BB correlations in $Z$-axis');
     xlabel('$\Delta K_z$'); ylabel('$g^{(2)}_{BB,(0,1)}$');
+    
+    % Gaussian fit 
+    param0=[4,0,0.1,1];     % fit estimate [amp,mu,sigma,offset]
+    [fitparam_g2_bb_cart,fit_g2_bb_cart]=gaussfit(bin_cent_cart{1},g2_bb_cart(:,ind_zero_cart(2),ind_zero_cart(3)),param0,verbose);
+    plot(ax,fit_g2_bb_cart.x,fit_g2_bb_cart.y,'r');     % plot the fit
     
     saveas(hfig,[dir_output,'8_1','.fig']);
     saveas(hfig,[dir_output,'8_1','.png']);
@@ -575,21 +589,21 @@ if analysis.corr.run_g2
     
     subplot(1,3,1);
     surf(dR_bin',dtheta_bin',G2_bb_solo_pol_shot,'edgecolor','none');
-    title('Single-halo,BB,$\delta \vec{k}$ (pol),shots');
+    title('Single-halo,$\delta \vec{k}$ (pol),shots');
     xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{BB(0,0)}$');
     axis tight;
     shading interp;
     
     subplot(1,3,2);
     surf(dR_bin',dtheta_bin',G2_bb_solo_pol_all,'edgecolor','none');
-    title('Single-halo,BB,$\delta \vec{k}$ (pol),collated');
+    title('Single-halo,$\delta \vec{k}$ (pol),collated');
     xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{BB(0,0)}$');
     axis tight;
     shading interp;
     
     subplot(1,3,3);
     surf(dR_bin',dtheta_bin',g2_bb_solo_pol,'edgecolor','none');
-    title('Single-halo,BB,$\delta \vec{k}$ (pol),normalised');
+    title('Single-halo,$\delta \vec{k}$ (pol),normalised');
     xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$g^{(2)}_{BB(0,0)}$');
     axis tight;
     shading interp;
@@ -602,8 +616,8 @@ if analysis.corr.run_g2
     hfig=figure(32);
     plot(bin_cent_pol{2},g2_dtheta_solo,'*');
     
-    title('$\Delta k$-integrated Single-halo BB correlation');
-    xlabel('$\Delta\theta$'); ylabel('$\bar{g}^{(2)}_{BB,(0,0)}$');
+    title('$\Delta k$-integrated Single-halo correlation');
+    xlabel('$\Delta\theta$'); ylabel('$\bar{g}^{(2)}_{(0,0)}$');
     xlim([0,pi]); ylim auto;
     
     saveas(hfig,[dir_output,'9_2','.fig']);
@@ -671,4 +685,4 @@ end
 t_main_end=toc(t_main_start);
 disp('-----------------------------------------------');
 fprintf('Total elapsed time (s): %7.1f\n',t_main_end);
-disp('-------------------COMPLETED-------------------');
+disp('===================ALL TASKS COMPLETED===================');
