@@ -66,12 +66,16 @@ end
 
 % Initialise variables
 nShot=size(data1,1);     % number of shots in data
-if VERBOSE>1,disp([num2str(nShot),' shots to analyse for G2_cart...']);,end;
+if VERBOSE>0
+    disp('----------------------------------------------');
+    disp([num2str(nShot),' shots to analyse for G2_cart...']);
+end
 G2_SINGLE=zeros(nBin);
 G2_ALL=zeros(nBin);
 
 % Branch G2 analysis so that condition is out of loop: just add other
 %   conditions as a conditional branch following one as template
+erase_str='';   % initialise for progress reporting
 if ncomp==2
     %% 2 component G(2) analysis
     if isequal(CORR_INFO,'BB')
@@ -88,6 +92,18 @@ if ncomp==2
                 
                 G2_SINGLE=G2_SINGLE+nhist(diff_tmp,BIN_EDGE);	% update G2
             end
+            
+            % Progress report
+            if VERBOSE>1
+                prog_msg=sprintf('Progress: %4.1f',100*i/nShot);
+                fprintf([erase_str,prog_msg]);
+                erase_str=repmat(sprintf('\b'),1,length(prog_msg));
+            end
+        end
+        
+        if VERBOSE>1
+            fprintf('\n');
+            erase_str='';   % reset to null
         end
         
         % all shots - except self
@@ -105,11 +121,23 @@ if ncomp==2
                 
                 G2_ALL=G2_ALL+nhist(diff_tmp,BIN_EDGE);     % update G2
             end
+            
+            % Progress report
+            if VERBOSE>1
+                prog_msg=sprintf('Progress: %4.1f',100*i/nShot);
+                fprintf([erase_str,prog_msg]);
+                erase_str=repmat(sprintf('\b'),1,length(prog_msg));
+            end
         end
     elseif isequal(CORR_INFO,'CL')
         error('CL is not set up yet');
     else
         error('BUG: CORR_INFO must be BB or CL at this point: this line should never be called.');
+    end
+    
+    if VERBOSE>1
+        % new-line at the end of report
+        fprintf('\n');
     end
     
 elseif ncomp==1
@@ -129,6 +157,18 @@ elseif ncomp==1
                 
                 G2_SINGLE=G2_SINGLE+nhist(diff_tmp,BIN_EDGE);   % update G2
             end
+            
+            % Progress report
+            if VERBOSE>1
+                prog_msg=sprintf('Progress: %4.1f',100*i/nShot);
+                fprintf([erase_str,prog_msg]);
+                erase_str=repmat(sprintf('\b'),1,length(prog_msg));
+            end
+        end
+        
+        if VERBOSE>1
+            fprintf('\n');
+            erase_str='';   % reset to null
         end
         
         % all shots - except self
@@ -146,15 +186,28 @@ elseif ncomp==1
                 
                 G2_ALL=G2_ALL+nhist(diff_tmp,BIN_EDGE); % update G2
             end
+            
+            % Progress report
+            if VERBOSE>1
+                prog_msg=sprintf('Progress: %4.1f',100*i/nShot);
+                fprintf([erase_str,prog_msg]);
+                erase_str=repmat(sprintf('\b'),1,length(prog_msg));
+            end
         end
     elseif isequal(CORR_INFO,'CL')
         error('CL is not set up yet');
     else
         error('BUG: CORR_INFO must be BB or CL at this point: this line should never be called.');
     end
+    
+    if VERBOSE>1
+        % new-line at the end of report
+        fprintf('\n');
+    end
 end
 
 if VERBOSE>0
     t_fun_end=toc(t_fun_start);
     fprintf('Total elapsed time (s): %7.2f\n',t_fun_end);
+    disp('----------------------------------------------');
 end

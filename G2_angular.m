@@ -161,6 +161,11 @@ elseif ncomp==1
         end
     end
     
+    if VERBOSE>1
+        fprintf('\n');
+        erase_str='';   % reset to null
+    end
+    
     % all shots - except self
     for i=1:nShot
         data_collated=vertcat(data1{[1:i-1,i+1:end]});  % all shots except self
