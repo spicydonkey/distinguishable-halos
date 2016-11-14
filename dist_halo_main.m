@@ -75,7 +75,7 @@ if ~isdir(dir_output)
 end
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%% MAIN %%%%%%%%%%%%%%%%%%%%%%%%%%
-tic;
+t_main_start=tic;
 
 %initalize variables
 configs=usrconfigs;    % create an alias to avoid overwriting user's config
@@ -722,4 +722,7 @@ if analysis.corr.run_g2
 end
 
 %% end of code %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-toc;
+t_main_end=toc(t_main_start);
+disp('-----------------------------------------------');
+fprintf('Total elapsed time (s): %7.1f\n',t_main_end);
+disp('-------------------COMPLETED-------------------');
