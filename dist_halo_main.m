@@ -505,6 +505,32 @@ if analysis.corr.run_g2
     saveas(hfig,[dir_output,'7_2','.fig']);
     saveas(hfig,[dir_output,'7_2','.png']);
     
+    %% TEST
+    [G2test1,G2test2]=G2_angular(halo.k,bin_edge_pol,verbose);
+    g2test=size(halo.k,1)*G2test1./G2test2;
+    hfig=figure(13);
+    
+    subplot(1,3,1);
+    surf(dR_bin',dtheta_bin',G2test1,'edgecolor','none');
+    title('X-halo,BB,$\delta \vec{k}$ (pol),shots');
+    xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{BB(0,1)}$');
+    axis tight;
+    shading interp;
+    
+    subplot(1,3,2);
+    surf(dR_bin',dtheta_bin',G2test2,'edgecolor','none');
+    title('X-halo,BB,$\delta \vec{k}$ (pol),collated');
+    xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{BB(0,1)}$');
+    axis tight;
+    shading interp;
+    
+    subplot(1,3,3);
+    surf(dR_bin',dtheta_bin',g2test,'edgecolor','none');
+    title('X-halo,BB,$\delta \vec{k}$ (pol),normalised');
+    xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$g^{(2)}_{BB(0,1)}$');
+    axis tight;
+    shading interp;
+    
     %% Cross-halo back-to-back: in Cartesian delta_k
     % Set up bins
     for i=1:3
