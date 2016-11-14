@@ -11,6 +11,10 @@ function [G2_SINGLE,G2_ALL]=G2_angular(DATA,BIN_EDGE,VERBOSE)
 % G2_SINGLE - G2 summed for each shot
 % G2_ALL - G2 for all data collated (for normalisation)
 
+if VERBOSE>0
+    t_fun_start=tic;
+end
+
 % Input check
 % DATA
 if ~iscell(DATA)
@@ -143,4 +147,9 @@ elseif ncomp==1
             G2_ALL=G2_ALL+nhist(diff_tmp,BIN_EDGE); % update G2
         end
     end
+end
+
+if VERBOSE>0
+    t_fun_end=toc(t_fun_start);
+    fprintf('Total elapsed time (s): %7.2f\n',t_fun_end);
 end

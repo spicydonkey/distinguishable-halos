@@ -14,6 +14,10 @@ function [G2_SINGLE,G2_ALL]=G2_polar(DATA,BIN_EDGE,CORR_INFO,VERBOSE)
 % G2_SINGLE - G2 summed for each shot
 % G2_ALL - G2 for all data collated (for normalisation)
 
+if VERBOSE>0
+    t_fun_start=tic;
+end
+
 % Input check
 % DATA
 if ~iscell(DATA)
@@ -159,4 +163,9 @@ elseif ncomp==1
     else
         error('BUG: CORR_INFO must be BB or CL at this point: this line should never be called.');
     end
+end
+
+if VERBOSE>0
+    t_fun_end=toc(t_fun_start);
+    fprintf('Total elapsed time (s): %7.2f\n',t_fun_end);
 end
