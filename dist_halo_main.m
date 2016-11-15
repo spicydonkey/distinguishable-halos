@@ -59,9 +59,45 @@ analysis.corr.run=1;
     % 1. Cross-halo rad/angular correlations
     analysis.corr.type{1}.comp=[1,2];           % components to analysis: cross halo 1,2
     analysis.corr.type{1}.coord='angular';      % angular coordinate
-        analysis.corr.lim{1}{1}=0.3*[-1,1];  % bin limits - radial separation
-        analysis.corr.lim{1}{2}=[0,pi];      % bin limits - angular separation
-        analysis.corr.nBin{1}=[11,51];          % number of bins
+    analysis.corr.type{1}.opt=[];               % 'angular' has no optional feature atm
+    analysis.corr.lim{1}{1}=0.3*[-1,1];  % bin limits - radial separation
+    analysis.corr.lim{1}{2}=[0,pi];      % bin limits - angular separation
+    analysis.corr.nBin{1}=[11,51];          % number of bins
+    
+    % 2. Cross-halo cartesian BB-correlations
+    analysis.corr.type{2}.comp=[1,2];           % components to analysis: cross halo 1,2
+    analysis.corr.type{2}.coord='cart';         % Cartesian (ZXY)
+    analysis.corr.type{2}.opt='BB';             % BB / CL
+    analysis.corr.lim{2}{1}=0.8*[-1,1]; % bin limits - Z
+    analysis.corr.lim{2}{2}=0.8*[-1,1]; % bin limits - X
+    analysis.corr.lim{2}{3}=0.8*[-1,1]; % bin limits - Y
+    analysis.corr.nBin{2}=[51,13,13];   % number of bins
+
+    % 3. Single-halo (1) rad/angular correlations
+    analysis.corr.type{3}.comp=1;           % single component
+    analysis.corr.type{3}.coord='angular';
+    analysis.corr.type{3}.opt=[];         
+    analysis.corr.lim{3}{1}=0.3*[-1,1];  % bin limits - radial separation
+    analysis.corr.lim{3}{2}=[0,pi];      % bin limits - angular separation
+    analysis.corr.nBin{3}=[11,51];          % number of bins
+    
+    
+%     % #. <TEMPLATE ANGULAR>
+%     analysis.corr.type{#}.comp=[1,2];           % components to analysis: cross halo 1,2
+%     analysis.corr.type{#}.coord='angular';      % angular coordinate
+%     analysis.corr.type{#}.opt=[];               % 'angular' has no optional feature atm
+%     analysis.corr.lim{#}{1}=0.3*[-1,1];  % bin limits - radial separation
+%     analysis.corr.lim{#}{2}=[0,pi];      % bin limits - angular separation
+%     analysis.corr.nBin{#}=[11,51];          % number of bins
+%    
+%     % #. <TEMPLATE CARTESIAN>
+%     analysis.corr.type{#}.comp=[1,2];           % components to analysis: cross halo 1,2
+%     analysis.corr.type{#}.coord='cart';         % Cartesian (ZXY)
+%     analysis.corr.type{#}.opt='BB';             % BB / CL
+%     analysis.corr.lim{#}{1}=0.8*[-1,1]; % bin limits - Z
+%     analysis.corr.lim{#}{2}=0.8*[-1,1]; % bin limits - X
+%     analysis.corr.lim{#}{3}=0.8*[-1,1]; % bin limits - Y
+%     analysis.corr.nBin{#}=[51,13,13];   % number of bins
     
 %% PLOTS
 % 3D real space
@@ -470,12 +506,12 @@ if analysis.corr.run
     end    
     
     % TODO - asymetric binning case if ignore, then optimise histogram code?
-    ind_zero_pol=round((analysis.corr.nBin{i_analysis}+1)/2); % zero-cent'd bin index for sampling 2D-g2 (dr-dtheta)
+    ind_zero_tmp=round((analysis.corr.nBin{i_analysis}+1)/2); % zero-cent'd bin index for sampling 2D-g2 (dr-dtheta)
     
     % Evaluate G2 correlation
     % TODO - debug code for G2 and halo.k modifiers
     [G2_shot_tmp,G2_all_tmp]=G2_caller(halo.k(:,analysis.corr.type{i_analysis}.comp),...
-        bin_edge_tmp,analysis.corr.type{i_analysis}.coord,verbose);
+        bin_edge_tmp,analysis.corr.type{i_analysis}.coord,analysis.corr.type{i_analysis}.opt,verbose);
     g2_tmp=size(halo.k,1)*G2_shot_tmp./G2_all_tmp;      % normalise g2
 
     % TODO - plots are not generalised yet
@@ -529,45 +565,49 @@ if analysis.corr.run
     saveas(hfig,[dir_output,'7_2','.png']);
     
     %% Cross-halo back-to-back: in Cartesian delta_k
-    % Set up bins
-    for i=1:3
-        bin_edge_cart{i}=linspace(analysis.corr.cart.lim(1),analysis.corr.cart.lim(2),analysis.corr.cart.nBin(i)+1);
-        bin_cent_cart{i}=0.5*(bin_edge_cart{i}(1:end-1)+bin_edge_cart{i}(2:end));
-    end
+    i_analysis=2;
     
-    if use_inverted_pairs
-        % this is to check g2 for ideal, completely B-B paired halos (but
-        % possibly with many pair occupations)
-        [G2_bb_cart_shot,G2_bb_cart_all]=G2_cart(halo_inv_pair,bin_edge_cart,'BB',2);
-    else
-        [G2_bb_cart_shot,G2_bb_cart_all]=G2_cart(halo.k,bin_edge_cart,'BB',2);
-    end
-    g2_bb_cart=size(halo.k,1)*G2_bb_cart_shot./G2_bb_cart_all;   % normalise
+    % Set up bins
+    bin_dim=length(analysis.corr.lim{i_analysis});  % get binning dims
+    bin_edge_tmp=cell(1,bin_dim);
+    bin_cent_tmp=cell(1,bin_dim);
+    for i=1:bin_dim
+        % make bin edge and centre vectors
+        bin_edge_tmp{i}=linspace(analysis.corr.lim{i_analysis}{i}(1),...
+            analysis.corr.lim{i_analysis}{i}(2),analysis.corr.nBin{i_analysis}(i)+1);
+        bin_cent_tmp{i}=0.5*(bin_edge_tmp{i}(1:end-1)+bin_edge_tmp{i}(2:end));
+    end    
 
+    % Evaluate G2
+    [G2_shot_tmp,G2_all_tmp]=G2_caller(halo.k(:,analysis.corr.type{i_analysis}.comp),...
+        bin_edge_tmp,analysis.corr.type{i_analysis}.coord,analysis.corr.type{i_analysis}.opt,verbose);
+    g2_tmp=size(halo.k,1)*G2_shot_tmp./G2_all_tmp;   % normalise
+
+    % TODO - plot for CART is different to ANGULAR
     % Plot
-    [dX_bin,dY_bin]=meshgrid(bin_cent_cart{2},bin_cent_cart{3});        % create xy-grid for surf
+    [dX_bin,dY_bin]=meshgrid(bin_cent_tmp{2},bin_cent_tmp{3});        % create xy-grid for surf
     
     % TODO for asymetric binning?
-    ind_zero_cart=round((analysis.corr.cart.nBin+1)/2); % zero-cent'd bin index for sampling 3D-g2 
+    ind_zero_tmp=round((analysis.corr.nBin{i_analysis}+1)/2); % zero-cent'd bin index for sampling 3D-g2 
     
     hfig=figure(21);
     
     subplot(1,3,1);
-    surf(dX_bin',dY_bin',squeeze(G2_bb_cart_shot(ind_zero_cart(1),:,:)),'edgecolor','none');
+    surf(dX_bin',dY_bin',squeeze(G2_shot_tmp(ind_zero_tmp(1),:,:)),'edgecolor','none');
     title('X-halo,BB,$\delta \vec{k}$ (cart),shots');
     xlabel('$\delta k_i$'); ylabel('$\delta k_j$'); zlabel('$G^{(2)}_{BB(0,1)}$');
     axis tight;
     shading interp;
     
     subplot(1,3,2);
-    surf(dX_bin',dY_bin',squeeze(G2_bb_cart_all(ind_zero_cart(1),:,:)),'edgecolor','none');
+    surf(dX_bin',dY_bin',squeeze(G2_all_tmp(ind_zero_tmp(1),:,:)),'edgecolor','none');
     title('X-halo,BB,$\delta \vec{k}$ (cart),collated');
     xlabel('$\delta k_i$'); ylabel('$\delta k_j$'); zlabel('$G^{(2)}_{ALL,BB(0,1)}$');
     axis tight;
     shading interp;
     
     subplot(1,3,3);
-    surf(dX_bin',dY_bin',squeeze(g2_bb_cart(ind_zero_cart(1),:,:)),'edgecolor','none');
+    surf(dX_bin',dY_bin',squeeze(g2_tmp(ind_zero_tmp(1),:,:)),'edgecolor','none');
     title('X-halo,BB,$\delta \vec{k}$ (cart),normalised');
     xlabel('$\delta k_i$'); ylabel('$\delta k_j$'); zlabel('$g^{(2)}_{BB(0,1)}$');
     axis tight;
@@ -579,14 +619,14 @@ if analysis.corr.run
     % 1-D g2 in Z
     hfig=figure(22);
     ax=gca;
-    plot(bin_cent_cart{1},g2_bb_cart(:,ind_zero_cart(2),ind_zero_cart(3)),'*');
+    plot(bin_cent_tmp{1},g2_tmp(:,ind_zero_tmp(2),ind_zero_tmp(3)),'*');
     hold on;
     title('X-halo BB correlations in $Z$-axis');
     xlabel('$\Delta K_z$'); ylabel('$g^{(2)}_{BB,(0,1)}$');
     
     % Gaussian fit 
     param0=[4,0,0.1,1];     % fit estimate [amp,mu,sigma,offset]
-    [fitparam_g2_bb_cart,fit_g2_bb_cart]=gaussfit(bin_cent_cart{1},g2_bb_cart(:,ind_zero_cart(2),ind_zero_cart(3)),param0,verbose);
+    [fitparam_g2_bb_cart,fit_g2_bb_cart]=gaussfit(bin_cent_tmp{1},g2_tmp(:,ind_zero_tmp(2),ind_zero_tmp(3)),param0,verbose);
     plot(ax,fit_g2_bb_cart.x,fit_g2_bb_cart.y,'r');     % plot the fit
     
     saveas(hfig,[dir_output,'8_1','.fig']);
@@ -596,29 +636,47 @@ if analysis.corr.run
     % Back-to-back g2 correlations in the s-wave scattered particles of
     % single collision source
     
-    % Halo 1
-    [G2_bb_solo_pol_shot,G2_bb_solo_pol_all]=G2_angular(halo.k(:,1),bin_edge_tmp,verbose);
-    g2_bb_solo_pol=size(halo.k,1)*G2_bb_solo_pol_shot./G2_bb_solo_pol_all;  %normalise
-
-    % plot
+    i_analysis=3;
+    
+    % Set up bins
+    bin_dim=length(analysis.corr.lim{i_analysis});  % get binning dims
+    bin_edge_tmp=cell(1,bin_dim);
+    bin_cent_tmp=cell(1,bin_dim);
+    for i=1:bin_dim
+        % make bin edge and centre vectors
+        bin_edge_tmp{i}=linspace(analysis.corr.lim{i_analysis}{i}(1),...
+            analysis.corr.lim{i_analysis}{i}(2),analysis.corr.nBin{i_analysis}(i)+1);
+        bin_cent_tmp{i}=0.5*(bin_edge_tmp{i}(1:end-1)+bin_edge_tmp{i}(2:end));
+    end    
+    
+    % TODO - asymetric binning case if ignore, then optimise histogram code?
+    ind_zero_tmp=round((analysis.corr.nBin{i_analysis}+1)/2); % zero-cent'd bin index for sampling 2D-g2 (dr-dtheta)
+    
+    % Evaluate G2 correlation
+    [G2_shot_tmp,G2_all_tmp]=G2_caller(halo.k(:,analysis.corr.type{i_analysis}.comp),...
+        bin_edge_tmp,analysis.corr.type{i_analysis}.coord,analysis.corr.type{i_analysis}.opt,verbose);
+    g2_tmp=size(halo.k,1)*G2_shot_tmp./G2_all_tmp;      % normalise g2
+    
+    % Plot
     hfig=figure(31);
+    [dR_bin,dtheta_bin]=meshgrid(bin_cent_tmp{1},bin_cent_tmp{2});  % create domain grid for surf
     
     subplot(1,3,1);
-    surf(dR_bin',dtheta_bin',G2_bb_solo_pol_shot,'edgecolor','none');
+    surf(dR_bin',dtheta_bin',G2_shot_tmp,'edgecolor','none');
     title('Single-halo,$\delta \vec{k}$ (pol),shots');
     xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{BB(0,0)}$');
     axis tight;
     shading interp;
     
     subplot(1,3,2);
-    surf(dR_bin',dtheta_bin',G2_bb_solo_pol_all,'edgecolor','none');
+    surf(dR_bin',dtheta_bin',G2_all_tmp,'edgecolor','none');
     title('Single-halo,$\delta \vec{k}$ (pol),collated');
     xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{BB(0,0)}$');
     axis tight;
     shading interp;
     
     subplot(1,3,3);
-    surf(dR_bin',dtheta_bin',g2_bb_solo_pol,'edgecolor','none');
+    surf(dR_bin',dtheta_bin',g2_tmp,'edgecolor','none');
     title('Single-halo,$\delta \vec{k}$ (pol),normalised');
     xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$g^{(2)}_{BB(0,0)}$');
     axis tight;
@@ -628,7 +686,7 @@ if analysis.corr.run
     saveas(hfig,[dir_output,'9','.png']);
     
     % dk-integrated g2(dtheta)
-    g2_dtheta_solo=size(halo.k,1)*sum(G2_bb_solo_pol_shot,1)./sum(G2_bb_solo_pol_all,1);
+    g2_dtheta_solo=size(halo.k,1)*sum(G2_shot_tmp,1)./sum(G2_all_tmp,1);
     hfig=figure(32);
     plot(bin_cent_tmp{2},g2_dtheta_solo,'*');
     
@@ -650,21 +708,21 @@ if analysis.corr.run
     hfig=figure(41);
     
     subplot(1,3,1);
-    surf(dX_bin',dY_bin',squeeze(G2_bb_solo_cart_shot(ind_zero_cart(1),:,:)),'edgecolor','none');
+    surf(dX_bin',dY_bin',squeeze(G2_bb_solo_cart_shot(ind_zero_tmp(1),:,:)),'edgecolor','none');
     title('Single-halo,BB,$\delta \vec{k}$ (cart),shots');
     xlabel('$\delta k_i$'); ylabel('$\delta k_j$'); zlabel('$G^{(2)}_{BB(0,0)}$');
     axis tight;
     shading interp;
     
     subplot(1,3,2);
-    surf(dX_bin',dY_bin',squeeze(G2_bb_solo_cart_all(ind_zero_cart(1),:,:)),'edgecolor','none');
+    surf(dX_bin',dY_bin',squeeze(G2_bb_solo_cart_all(ind_zero_tmp(1),:,:)),'edgecolor','none');
     title('Single-halo,BB,$\delta \vec{k}$ (cart),collated');
     xlabel('$\delta k_i$'); ylabel('$\delta k_j$'); zlabel('$G^{(2)}_{ALL,BB(0,0)}$');
     axis tight;
     shading interp;
     
     subplot(1,3,3);
-    surf(dX_bin',dY_bin',squeeze(g2_bb_solo_cart(ind_zero_cart(1),:,:)),'edgecolor','none');
+    surf(dX_bin',dY_bin',squeeze(g2_bb_solo_cart(ind_zero_tmp(1),:,:)),'edgecolor','none');
     title('Single-halo,BB,$\delta \vec{k}$ (cart),normalised');
     xlabel('$\delta k_i$'); ylabel('$\delta k_j$'); zlabel('$g^{(2)}_{BB(0,0)}$');
     axis tight;
@@ -675,7 +733,7 @@ if analysis.corr.run
     
    	% 1-D g2 in Z
     hfig=figure(42);
-    plot(bin_cent_cart{1},g2_bb_solo_cart(:,ind_zero_cart(2),ind_zero_cart(3)),'*');
+    plot(bin_cent_cart{1},g2_bb_solo_cart(:,ind_zero_tmp(2),ind_zero_tmp(3)),'*');
     title('Single-halo BB correlations in $Z$-axis');
     xlabel('$\Delta K_z$'); ylabel('$g^{(2)}_{BB,(0,0)}$');
     
@@ -684,9 +742,9 @@ if analysis.corr.run
     
     %% Compare g2 between scattering partners to non
     hfig=figure(51);
-    plot(bin_cent_tmp{2},g2_tmp(ind_zero_pol(1),:),'-*');
+    plot(bin_cent_tmp{2},g2_tmp(ind_zero_tmp(1),:),'-*');
     hold on;
-    plot(bin_cent_tmp{2},g2_bb_solo_pol(ind_zero_pol(1),:),'-*');
+    plot(bin_cent_tmp{2},g2_tmp(ind_zero_tmp(1),:),'-*');
     xlim([0,pi]);   ylim auto;
     title('Correlations in distinguishable $s$-wave scattering');
     xlabel('$\Delta\theta$'); ylabel('$\bar{g}^{(2)}$');
