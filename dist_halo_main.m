@@ -497,7 +497,7 @@ if do_corr_analysis
     % TODO *_tmp variables should be saved to analysis.corr. at the end
     %       code should be generic
 
-    % loop through all correlation analysis tasks
+    %% Do tasked correlation analysis 
     for iCorr=1:length(analysis.corr.type)        
         % Set up bins
         bin_dim=length(analysis.corr.lim{iCorr});  % get binning dims
@@ -526,9 +526,7 @@ if do_corr_analysis
     % clear workspace
     clear bin_dim bin_edge_tmp bin_cent_tmp G2_shot_tmp G2_all_tmp g2_tmp;
     
-    % Plot the g2 correlation function
-    % TODO - plots are not generalised yet. do a batch after
-    %   correlation analysis
+    %% Plot the original g2 correlation function
     for iCorr=1:length(analysis.corr.type)
         nfig_tmp=10+iCorr;  % g2 figures start from figure 11
         hfig=plotCorr(nfig_tmp,analysis.corr,iCorr);
@@ -539,7 +537,66 @@ if do_corr_analysis
         saveas(hfig,[dir_output,fname_str,'.png']);
     end
     
-    % Save data
+    %% 1D correlation profile and Gaussian fit
+    for iCorr=1:length(analysis.corr.type)
+        nfig_tmp=20+iCorr;  % 1D starts from fig 21
+        hfig=figure(nfig_tmp);
+        ax=gca;
+        
+        this_corr_type=analysis.corr.type{iCorr}.coord;
+        % Get integrated or sliced 1D correlation profile
+        if isequal(this_corr_type,'angular')
+            % integrate dk
+            g2_1d_tmp=size(halo.k,1)*sum(analysis.corr.G2shot{iCorr},1)./sum(analysis.corr.G2all{iCorr},1);
+            
+            plot(analysis.corr.bCent{iCorr}{2},g2_1d_tmp,'*');
+            
+            hold(ax,'on');
+            title_str=['$\Delta k$-integrated, ',...
+                '(',num2str(analysis.corr.type{iCorr}.comp),') halos'];
+            title(title_str);
+            xlabel('$\Delta\theta$'); ylabel('$\bar{g}^{(2)}$');
+            xlim([0,pi]); ylim auto;
+            
+            % Gaussian fit
+            param0=[4,pi,0.1,1];     % fit estimate [amp,mu,sigma,offset]
+            [fitparam_tmp,fit_g2_tmp]=gaussfit(analysis.corr.bCent{iCorr}{2},g2_1d_tmp,param0,verbose);
+            plot(ax,fit_g2_tmp.x,fit_g2_tmp.y,'r');     % plot the fit
+            hold(ax,'off');
+            
+        elseif isequal(this_corr_type,'cart')
+            % TODO - do in X/Y?
+            % Get line through Z-axis
+            ind_zero_tmp=round((analysis.corr.nBin{iCorr}+1)/2);    % zero-cent'd bin index for sampling 3D-g2
+            plot(analysis.corr.bCent{iCorr}{1},analysis.corr.g2{iCorr}(:,ind_zero_tmp(2),ind_zero_tmp(3)),'*');
+            
+            hold(ax,'on');
+            title_str=['(',num2str(analysis.corr.type{iCorr}.comp),') halos, ',...
+                analysis.corr.type{iCorr}.opt,', ','$Z$-axis'];
+            title(title_str);
+            xlabel('$\Delta K_z$'); ylabel(['$g^{(2)}_{',analysis.corr.type{iCorr}.opt,'}$']);
+            
+            % Gaussian fit
+            param0=[4,0,0.1,1];     % fit estimate [amp,mu,sigma,offset]
+            [fitparam_tmp,fit_g2_tmp]=gaussfit(analysis.corr.bCent{iCorr}{1},analysis.corr.g2{iCorr}(:,ind_zero_tmp(2),ind_zero_tmp(3)),param0,verbose);
+            plot(ax,fit_g2_tmp.x,fit_g2_tmp.y,'r');     % plot the fit
+            hold(ax,'off');
+            
+        else
+            warning('SOMETHING IS WRONG!');
+        end
+        
+        % Get fit params
+        analysis.corr.fit{iCorr}=fitparam_tmp;
+        
+        % Save figs
+        fname_str=['corr1d_',num2str(iCorr)];
+        saveas(hfig,[dir_output,fname_str,'.fig']);
+        saveas(hfig,[dir_output,fname_str,'.png']);
+    end
+    clear g2_1d_tmp param0 fitparam_tmp fit_g2_tmp ax this_corr_type;
+    
+    %% Save data
     save([configs.files.path,'data.mat'],'analysis','-append');
 end
 clear iCorr nfig_tmp fname_str;
