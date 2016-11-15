@@ -1,6 +1,7 @@
 % Main script for the analysis of distinguishable s-wave scattered halos
 % DKS
 
+% TODO - implement clearvars to override usrconfigs from a caller script
 clear all; close all; clc;
 
 %% USER CONFIG
@@ -47,14 +48,21 @@ usrconfigs.post.removecap=1;    % remove caps on halo (in Z)
     usrconfigs.post.zcap=0.5;   % z-cutoff (kspace;abs)
     
 % ANALYSIS
-% g2 correlations
-analysis.corr.run_g2=1;
+% correlation analysis
+analysis.corr.run=1;
     analysis.corr.polar.nBin=[11,51];    % num bins (r,theta) (USE ODD)
         analysis.corr.polar.lim{1}=0.3*[-1,1];  % radial lim
         analysis.corr.polar.lim{2}=[0,pi];      % angular lim
     analysis.corr.cart.nBin=[51,13,13];   % num bins (Z,X,Y) (USE ODD)
         analysis.corr.cart.lim=0.8*[-1,1];    % lims (z,x,y symmetric)
-        
+    
+    % 1. Cross-halo rad/angular correlations
+    analysis.corr.type{1}.comp=[1,2];           % components to analysis: cross halo 1,2
+    analysis.corr.type{1}.coord='angular';      % angular coordinate
+        analysis.corr.lim{1}{1}=0.3*[-1,1];  % bin limits - radial separation
+        analysis.corr.lim{1}{2}=[0,pi];      % bin limits - angular separation
+        analysis.corr.nBin{1}=[11,51];          % number of bins
+    
 %% PLOTS
 % 3D real space
 doplot.real.all=0;      % real space
@@ -75,7 +83,7 @@ if ~isdir(dir_output)
 end
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%% MAIN %%%%%%%%%%%%%%%%%%%%%%%%%%
-t_main_start=tic;
+t_main_start=tic;   % start timer for main script
 
 %initalize variables
 configs=usrconfigs;    % create an alias to avoid overwriting user's config
@@ -443,48 +451,55 @@ if use_inverted_pairs
 end
 
 %% Correlation analysis
-if analysis.corr.run_g2
+if analysis.corr.run
     %% Cross-halo: angular correlations (dk,dtheta)
+    % TODO *_tmp variables should be saved to analysis.corr. at the end
+    %       code should be generic
+    
+    i_analysis=1;
+    
     % Set up bins
-    for i=1:2
-        bin_edge_pol{i}=linspace(analysis.corr.polar.lim{i}(1),analysis.corr.polar.lim{i}(2),analysis.corr.polar.nBin(i)+1);
-        bin_cent_pol{i}=0.5*(bin_edge_pol{i}(1:end-1)+bin_edge_pol{i}(2:end));
+    bin_dim=length(analysis.corr.lim{i_analysis});  % get binning dims
+    bin_edge_tmp=cell(1,bin_dim);
+    bin_cent_tmp=cell(1,bin_dim);
+    for i=1:bin_dim
+        % make bin edge and centre vectors
+        bin_edge_tmp{i}=linspace(analysis.corr.lim{i_analysis}{i}(1),...
+            analysis.corr.lim{i_analysis}{i}(2),analysis.corr.nBin{i_analysis}(i)+1);
+        bin_cent_tmp{i}=0.5*(bin_edge_tmp{i}(1:end-1)+bin_edge_tmp{i}(2:end));
     end    
     
-    % TODO for asymetric binning?
-    ind_zero_pol=round((analysis.corr.polar.nBin+1)/2); % zero-cent'd bin index for sampling 2D-g2 (dr-dtheta)
+    % TODO - asymetric binning case if ignore, then optimise histogram code?
+    ind_zero_pol=round((analysis.corr.nBin{i_analysis}+1)/2); % zero-cent'd bin index for sampling 2D-g2 (dr-dtheta)
     
     % Evaluate G2 correlation
-    if use_inverted_pairs
-        % this is to check g2 for ideal, completely B-B paired halos (but
-        % possibly with many pair occupations)
-        [G2_bb_pol_shot,G2_bb_pol_all]=G2_angular(halo_inv_pair,bin_edge_pol,verbose);
-    else
-        [G2_bb_pol_shot,G2_bb_pol_all]=G2_angular(halo.k,bin_edge_pol,verbose);
-    end
-    g2_bb_pol=size(halo.k,1)*G2_bb_pol_shot./G2_bb_pol_all;  %normalise
+    % TODO - debug code for G2 and halo.k modifiers
+    [G2_shot_tmp,G2_all_tmp]=G2_caller(halo.k(:,analysis.corr.type{i_analysis}.comp),...
+        bin_edge_tmp,analysis.corr.type{i_analysis}.coord,verbose);
+    g2_tmp=size(halo.k,1)*G2_shot_tmp./G2_all_tmp;      % normalise g2
 
+    % TODO - plots are not generalised yet
     % Plot
-    [dR_bin,dtheta_bin]=meshgrid(bin_cent_pol{1},bin_cent_pol{2});  % create domain grid for surf
+    [dR_bin,dtheta_bin]=meshgrid(bin_cent_tmp{1},bin_cent_tmp{2});  % create domain grid for surf
     
     hfig=figure(11);
     
     subplot(1,3,1);
-    surf(dR_bin',dtheta_bin',G2_bb_pol_shot,'edgecolor','none');
+    surf(dR_bin',dtheta_bin',G2_shot_tmp,'edgecolor','none');
     title('X-halo,$\delta \vec{k}$ (pol),shots');
     xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{BB(0,1)}$');
     axis tight;
     shading interp;
     
     subplot(1,3,2);
-    surf(dR_bin',dtheta_bin',G2_bb_pol_all,'edgecolor','none');
+    surf(dR_bin',dtheta_bin',G2_all_tmp,'edgecolor','none');
     title('X-halo,$\delta \vec{k}$ (pol),collated');
     xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{BB(0,1)}$');
     axis tight;
     shading interp;
     
     subplot(1,3,3);
-    surf(dR_bin',dtheta_bin',g2_bb_pol,'edgecolor','none');
+    surf(dR_bin',dtheta_bin',g2_tmp,'edgecolor','none');
     title('X-halo,$\delta \vec{k}$ (pol),normalised');
     xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$g^{(2)}_{BB(0,1)}$');
     axis tight;
@@ -494,11 +509,11 @@ if analysis.corr.run_g2
     saveas(hfig,[dir_output,'7','.png']);
     
     % dk-integrated g2(dtheta)
-    g2_dtheta=size(halo.k,1)*sum(G2_bb_pol_shot,1)./sum(G2_bb_pol_all,1);
+    g2_dtheta=size(halo.k,1)*sum(G2_shot_tmp,1)./sum(G2_all_tmp,1);
     hfig=figure(12);
-    plot(bin_cent_pol{2},g2_dtheta,'*');
-    hold on;
+    plot(bin_cent_tmp{2},g2_dtheta,'*');
     ax=gca;
+    hold(ax,'on');
     
     title('$\Delta k$-integrated X-halo correlation');
     xlabel('$\Delta\theta$'); ylabel('$\bar{g}^{(2)}_{(0,1)}$');
@@ -506,8 +521,9 @@ if analysis.corr.run_g2
     
     % Gaussian fit 
     param0=[4,pi,0.1,1];     % fit estimate [amp,mu,sigma,offset]
-    [fitparam_g2_dtheta,fit_g2_dtheta]=gaussfit(bin_cent_pol{2},g2_dtheta,param0,verbose);
+    [fitparam_g2_dtheta,fit_g2_dtheta]=gaussfit(bin_cent_tmp{2},g2_dtheta,param0,verbose);
     plot(ax,fit_g2_dtheta.x,fit_g2_dtheta.y,'r');     % plot the fit
+    hold(ax,'off');
     
     saveas(hfig,[dir_output,'7_2','.fig']);
     saveas(hfig,[dir_output,'7_2','.png']);
@@ -581,7 +597,7 @@ if analysis.corr.run_g2
     % single collision source
     
     % Halo 1
-    [G2_bb_solo_pol_shot,G2_bb_solo_pol_all]=G2_angular(halo.k(:,1),bin_edge_pol,verbose);
+    [G2_bb_solo_pol_shot,G2_bb_solo_pol_all]=G2_angular(halo.k(:,1),bin_edge_tmp,verbose);
     g2_bb_solo_pol=size(halo.k,1)*G2_bb_solo_pol_shot./G2_bb_solo_pol_all;  %normalise
 
     % plot
@@ -614,7 +630,7 @@ if analysis.corr.run_g2
     % dk-integrated g2(dtheta)
     g2_dtheta_solo=size(halo.k,1)*sum(G2_bb_solo_pol_shot,1)./sum(G2_bb_solo_pol_all,1);
     hfig=figure(32);
-    plot(bin_cent_pol{2},g2_dtheta_solo,'*');
+    plot(bin_cent_tmp{2},g2_dtheta_solo,'*');
     
     title('$\Delta k$-integrated Single-halo correlation');
     xlabel('$\Delta\theta$'); ylabel('$\bar{g}^{(2)}_{(0,0)}$');
@@ -668,9 +684,9 @@ if analysis.corr.run_g2
     
     %% Compare g2 between scattering partners to non
     hfig=figure(51);
-    plot(bin_cent_pol{2},g2_bb_pol(ind_zero_pol(1),:),'-*');
+    plot(bin_cent_tmp{2},g2_tmp(ind_zero_pol(1),:),'-*');
     hold on;
-    plot(bin_cent_pol{2},g2_bb_solo_pol(ind_zero_pol(1),:),'-*');
+    plot(bin_cent_tmp{2},g2_bb_solo_pol(ind_zero_pol(1),:),'-*');
     xlim([0,pi]);   ylim auto;
     title('Correlations in distinguishable $s$-wave scattering');
     xlabel('$\Delta\theta$'); ylabel('$\bar{g}^{(2)}$');
@@ -682,7 +698,7 @@ if analysis.corr.run_g2
 end
 
 %% end of code %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-t_main_end=toc(t_main_start);
+t_main_end=toc(t_main_start);   % end of code
 disp('-----------------------------------------------');
 fprintf('Total elapsed time (s): %7.1f\n',t_main_end);
 disp('===================ALL TASKS COMPLETED===================');
