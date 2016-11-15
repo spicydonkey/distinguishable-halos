@@ -49,7 +49,7 @@ usrconfigs.post.removecap=1;    % remove caps on halo (in Z)
     
 % ANALYSIS
 % correlation analysis
-analysis.corr.run=1;    
+do_corr_analysis=1;
     % 1. Cross-halo rad/angular correlations
     analysis.corr.type{1}.comp=[1,2];           % components to analysis: cross halo 1,2
     analysis.corr.type{1}.coord='angular';      % angular coordinate
@@ -103,12 +103,12 @@ analysis.corr.run=1;
     
 %% PLOTS
 % 3D real space
-doplot.real.all=0;      % real space
-doplot.real.ind=[1:30];    % plots the selection of shots
+do_plot.real.all=0;      % real space
+do_plot.real.ind=[1:30];    % plots the selection of shots
 
 % 3D k-space (normed)
-doplot.kspace.all=0;    % k-space
-doplot.kspace.ind=[1:30];  % plots the selection of shots
+do_plot.kspace.all=0;    % k-space
+do_plot.kspace.ind=[1:30];  % plots the selection of shots
 
 %% CONSTANTS
 W_BB_GI=4e-4;   % g2 bb correlation length as determined from RIK's GI
@@ -290,7 +290,7 @@ if verbose>0
 end
 
 % Plot processed counts
-if doplot.real.all
+if do_plot.real.all
     figN=101; dotSize=1;
     hfig=figure(figN);
     scatter_zxy(figN,vertcat(halo.zxy{:,1}),dotSize,'r');
@@ -307,18 +307,18 @@ if doplot.real.all
     saveas(hfig,[dir_output,'1','.fig']);
     saveas(hfig,[dir_output,'1','.png']);
 end
-if ~isempty(doplot.real.ind)
+if ~isempty(do_plot.real.ind)
     figN=102; dotSize=100;
     hfig=figure(figN);
-    scatter_zxy(figN,vertcat(halo.zxy{doplot.real.ind,1}),dotSize,'r');
-    scatter_zxy(figN,vertcat(halo.zxy{doplot.real.ind,2}),dotSize,'b');
-    scatter_zxy(figN,vertcat(bec.zxy{doplot.real.ind,1}),dotSize,'m');
-    scatter_zxy(figN,vertcat(bec.zxy{doplot.real.ind,2}),dotSize,'c');
-    scatter_zxy(figN,vertcat(culled.tail.zxy{doplot.real.ind,1}),dotSize,'k');
-    scatter_zxy(figN,vertcat(culled.tail.zxy{doplot.real.ind,2}),dotSize,'k');
-    scatter_zxy(figN,vertcat(culled.fuzz.zxy{doplot.real.ind}),dotSize,'k');
+    scatter_zxy(figN,vertcat(halo.zxy{do_plot.real.ind,1}),dotSize,'r');
+    scatter_zxy(figN,vertcat(halo.zxy{do_plot.real.ind,2}),dotSize,'b');
+    scatter_zxy(figN,vertcat(bec.zxy{do_plot.real.ind,1}),dotSize,'m');
+    scatter_zxy(figN,vertcat(bec.zxy{do_plot.real.ind,2}),dotSize,'c');
+    scatter_zxy(figN,vertcat(culled.tail.zxy{do_plot.real.ind,1}),dotSize,'k');
+    scatter_zxy(figN,vertcat(culled.tail.zxy{do_plot.real.ind,2}),dotSize,'k');
+    scatter_zxy(figN,vertcat(culled.fuzz.zxy{do_plot.real.ind}),dotSize,'k');
     
-    title(['Selected ',num2str(length(doplot.real.ind)),' shots (real space)']);
+    title(['Selected ',num2str(length(do_plot.real.ind)),' shots (real space)']);
     xlabel('X'); ylabel('Y'); zlabel('Z');
     
     saveas(hfig,[dir_output,'2','.fig']);
@@ -351,7 +351,7 @@ for i=1:size(halo.k,1)    % iterate shots
 end
 
 % Plot counts in k-space
-if doplot.kspace.all
+if do_plot.kspace.all
     figN=111; dotSize=1;
     hfig=figure(figN);
     scatter_zxy(figN,vertcat(halo.k{:,1}),dotSize,'r');
@@ -365,15 +365,15 @@ if doplot.kspace.all
     saveas(hfig,[dir_output,'3','.fig']);
     saveas(hfig,[dir_output,'3','.png']);
 end
-if ~isempty(doplot.kspace.ind)
+if ~isempty(do_plot.kspace.ind)
     figN=112; dotSize=100;
     hfig=figure(figN);
-    scatter_zxy(figN,vertcat(halo.k{doplot.kspace.ind,1}),dotSize,'r');
-    scatter_zxy(figN,vertcat(halo.k{doplot.kspace.ind,2}),dotSize,'b');
-    scatter_zxy(figN,vertcat(bec.k{doplot.kspace.ind,1}),dotSize,'m');
-    scatter_zxy(figN,vertcat(bec.k{doplot.kspace.ind,2}),dotSize,'c');
+    scatter_zxy(figN,vertcat(halo.k{do_plot.kspace.ind,1}),dotSize,'r');
+    scatter_zxy(figN,vertcat(halo.k{do_plot.kspace.ind,2}),dotSize,'b');
+    scatter_zxy(figN,vertcat(bec.k{do_plot.kspace.ind,1}),dotSize,'m');
+    scatter_zxy(figN,vertcat(bec.k{do_plot.kspace.ind,2}),dotSize,'c');
     
-    title(['Selected ',num2str(length(doplot.kspace.ind)),' shots (k-space)']);
+    title(['Selected ',num2str(length(do_plot.kspace.ind)),' shots (k-space)']);
     xlabel('$K_{X}$'); ylabel('$K_{Y}$'); zlabel('$K_{Z}$');
     
     saveas(hfig,[dir_output,'4','.fig']);
@@ -390,7 +390,7 @@ if configs.post.removecap
     end
     
     % PLOTS
-    if doplot.kspace.all
+    if do_plot.kspace.all
         figN=121; dotSize=1;
         hfig=figure(figN);
         scatter_zxy(figN,vertcat(halo.k{:,1}),dotSize,'r');
@@ -402,12 +402,12 @@ if configs.post.removecap
         saveas(hfig,[dir_output,'5','.fig']);
     end
     
-    if ~isempty(doplot.kspace.ind)
+    if ~isempty(do_plot.kspace.ind)
         figN=122; dotSize=100;
         hfig=figure(figN);
-        scatter_zxy(figN,vertcat(halo.k{doplot.kspace.ind,1}),dotSize,'r');
-        scatter_zxy(figN,vertcat(halo.k{doplot.kspace.ind,2}),dotSize,'b');
-        title(['Z-cap removed Selected ',num2str(length(doplot.kspace.ind)),' shots (k-space)']);
+        scatter_zxy(figN,vertcat(halo.k{do_plot.kspace.ind,1}),dotSize,'r');
+        scatter_zxy(figN,vertcat(halo.k{do_plot.kspace.ind,2}),dotSize,'b');
+        title(['Z-cap removed Selected ',num2str(length(do_plot.kspace.ind)),' shots (k-space)']);
         xlabel('$K_{X}$'); ylabel('$K_{Y}$'); zlabel('$K_{Z}$');
         
         saveas(hfig,[dir_output,'6','.png']);
@@ -489,86 +489,40 @@ if use_inverted_pairs
 end
 
 %% Correlation analysis
-if analysis.corr.run
-    %% Cross-halo: angular correlations (dk,dtheta)
+if do_corr_analysis
     % TODO *_tmp variables should be saved to analysis.corr. at the end
     %       code should be generic
-    
-    i_analysis=1;
-    
-    % Set up bins
-    bin_dim=length(analysis.corr.lim{i_analysis});  % get binning dims
-    bin_edge_tmp=cell(1,bin_dim);
-    bin_cent_tmp=cell(1,bin_dim);
-    for i=1:bin_dim
-        % make bin edge and centre vectors
-        bin_edge_tmp{i}=linspace(analysis.corr.lim{i_analysis}{i}(1),...
-            analysis.corr.lim{i_analysis}{i}(2),analysis.corr.nBin{i_analysis}(i)+1);
-        bin_cent_tmp{i}=0.5*(bin_edge_tmp{i}(1:end-1)+bin_edge_tmp{i}(2:end));
-    end    
-    
-    % TODO - asymetric binning case if ignore, then optimise histogram code?
-    ind_zero_tmp=round((analysis.corr.nBin{i_analysis}+1)/2); % zero-cent'd bin index for sampling 2D-g2 (dr-dtheta)
-    
-    % Evaluate G2 correlation
-    % TODO - debug code for G2 and halo.k modifiers
-    [G2_shot_tmp,G2_all_tmp]=G2_caller(halo.k(:,analysis.corr.type{i_analysis}.comp),...
-        bin_edge_tmp,analysis.corr.type{i_analysis}.coord,analysis.corr.type{i_analysis}.opt,verbose);
-    g2_tmp=size(halo.k,1)*G2_shot_tmp./G2_all_tmp;      % normalise g2
-
-    % Save results
-    % TODO
-    
-    % TODO - plots are not generalised yet - do a batch after
-    % correlation analysis
-    % Plot
-    [dR_bin,dtheta_bin]=meshgrid(bin_cent_tmp{1},bin_cent_tmp{2});  % create domain grid for surf
-    
-    hfig=figure(11);
-    
-    subplot(1,3,1);
-    surf(dR_bin',dtheta_bin',G2_shot_tmp,'edgecolor','none');
-    title('X-halo,$\delta \vec{k}$ (pol),shots');
-    xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{BB(0,1)}$');
-    axis tight;
-    shading interp;
-    
-    subplot(1,3,2);
-    surf(dR_bin',dtheta_bin',G2_all_tmp,'edgecolor','none');
-    title('X-halo,$\delta \vec{k}$ (pol),collated');
-    xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{BB(0,1)}$');
-    axis tight;
-    shading interp;
-    
-    subplot(1,3,3);
-    surf(dR_bin',dtheta_bin',g2_tmp,'edgecolor','none');
-    title('X-halo,$\delta \vec{k}$ (pol),normalised');
-    xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$g^{(2)}_{BB(0,1)}$');
-    axis tight;
-    shading interp;
-    
-    saveas(hfig,[dir_output,'7','.fig']);
-    saveas(hfig,[dir_output,'7','.png']);
-    
-    % dk-integrated g2(dtheta)
-    g2_dtheta=size(halo.k,1)*sum(G2_shot_tmp,1)./sum(G2_all_tmp,1);
-    hfig=figure(12);
-    plot(bin_cent_tmp{2},g2_dtheta,'*');
-    ax=gca;
-    hold(ax,'on');
-    
-    title('$\Delta k$-integrated X-halo correlation');
-    xlabel('$\Delta\theta$'); ylabel('$\bar{g}^{(2)}_{(0,1)}$');
-    xlim([0,pi]); ylim auto;
-    
-    % Gaussian fit 
-    param0=[4,pi,0.1,1];     % fit estimate [amp,mu,sigma,offset]
-    [fitparam_g2_dtheta,fit_g2_dtheta]=gaussfit(bin_cent_tmp{2},g2_dtheta,param0,verbose);
-    plot(ax,fit_g2_dtheta.x,fit_g2_dtheta.y,'r');     % plot the fit
-    hold(ax,'off');
-    
-    saveas(hfig,[dir_output,'7_2','.fig']);
-    saveas(hfig,[dir_output,'7_2','.png']);
+        
+%     for i_analysis=1:length(analysis.corr.type)
+    for i_analysis=1:1  % DEBUG
+        
+        % Set up bins
+        bin_dim=length(analysis.corr.lim{i_analysis});  % get binning dims
+        bin_edge_tmp=cell(1,bin_dim);
+        bin_cent_tmp=cell(1,bin_dim);
+        for i=1:bin_dim
+            % make bin edge and centre vectors
+            bin_edge_tmp{i}=linspace(analysis.corr.lim{i_analysis}{i}(1),...
+                analysis.corr.lim{i_analysis}{i}(2),analysis.corr.nBin{i_analysis}(i)+1);
+            bin_cent_tmp{i}=0.5*(bin_edge_tmp{i}(1:end-1)+bin_edge_tmp{i}(2:end));
+        end
+        
+        % Evaluate G2 correlation
+        % TODO - insert debug code for G2 and halo.k manipulator
+        [G2_shot_tmp,G2_all_tmp]=G2_caller(halo.k(:,analysis.corr.type{i_analysis}.comp),...
+            bin_edge_tmp,analysis.corr.type{i_analysis}.coord,analysis.corr.type{i_analysis}.opt,verbose);
+        g2_tmp=size(halo.k,1)*G2_shot_tmp./G2_all_tmp;      % normalised g2
+        
+        % Get results
+        analysis.corr.bEdge{i_analysis}=bin_edge_tmp;
+        analysis.corr.bCent{i_analysis}=bin_cent_tmp;
+        analysis.corr.G2shot{i_analysis}=G2_shot_tmp;
+        analysis.corr.G2all{i_analysis}=G2_all_tmp;
+        analysis.corr.g2{i_analysis}=g2_tmp;
+        
+        % TODO - plots are not generalised yet - do a batch after
+        % correlation analysis
+    end
     
     %% Cross-halo back-to-back: in Cartesian delta_k
     i_analysis=2;
@@ -765,18 +719,19 @@ if analysis.corr.run
     saveas(hfig,[dir_output,'10_1','.fig']);
     saveas(hfig,[dir_output,'10_1','.png']);
     
-    %% Compare g2 between scattering partners to non
-    hfig=figure(51);
-    plot(bin_cent_tmp{2},g2_tmp(ind_zero_tmp(1),:),'-*');
-    hold on;
-    plot(bin_cent_tmp{2},g2_tmp(ind_zero_tmp(1),:),'-*');
-    xlim([0,pi]);   ylim auto;
-    title('Correlations in distinguishable $s$-wave scattering');
-    xlabel('$\Delta\theta$'); ylabel('$\bar{g}^{(2)}$');
-    legend({'(0,1)','(0,0)'},'Location','northwest');
-    
-    saveas(hfig,[dir_output,'11','.fig']);
-    saveas(hfig,[dir_output,'11','.png']);
+% TODO
+%     %% Compare g2 between scattering partners to non
+%     hfig=figure(51);
+%     plot(bin_cent_tmp{2},g2_tmp(ind_zero_tmp(1),:),'-*');
+%     hold on;
+%     plot(bin_cent_tmp{2},g2_tmp(ind_zero_tmp(1),:),'-*');
+%     xlim([0,pi]);   ylim auto;
+%     title('Correlations in distinguishable $s$-wave scattering');
+%     xlabel('$\Delta\theta$'); ylabel('$\bar{g}^{(2)}$');
+%     legend({'(0,1)','(0,0)'},'Location','northwest');
+%     
+%     saveas(hfig,[dir_output,'11','.fig']);
+%     saveas(hfig,[dir_output,'11','.png']);
     
 end
 
