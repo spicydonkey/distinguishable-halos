@@ -2,14 +2,16 @@
 % DKS
 
 % TODO - implement clearvars to override usrconfigs from a caller script
-clear all; close all; clc;
+% clear all;
+clearvars -except OR* override
+close all; clc;
 
 %% USER CONFIG
 % GENERAL
 use_saved_data=1;   %if false will remake the fully processed data files used in analysis (takes a while)
 use_txy=1;          %if false will remake the txy_forc files
 
-verbose=2;
+verbose=0;
 
 % DEBUG MODE
 use_inverted_pairs=0;
@@ -42,6 +44,12 @@ usrconfigs.halo.R{1}=11e-3;     % estimated radius of halo
 usrconfigs.halo.dR{1}=0.1;      % halo fractional thickness each dir (in/out)
 usrconfigs.halo.R{2}=10e-3;
 usrconfigs.halo.dR{2}=0.1;
+
+if exist('override','var')
+    % make this more generic
+    usrconfigs.halo.R{1}=OR_configs.halo.R{1}(mod(OR_i-1,10)+1);
+    usrconfigs.halo.R{2}=OR_configs.halo.R{2}(ceil(OR_i/10));
+end
 
 % POST
 usrconfigs.post.removecap=1;    % remove caps on halo (in Z)
