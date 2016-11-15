@@ -125,16 +125,16 @@ t_main_start=tic;   % start timer for main script
 
 %initalize variables
 configs=usrconfigs;    % create an alias to avoid overwriting user's config
-missingfiles=zeros(length(configs.files.id),1);     % missing dld/txy file
-filestotxy=zeros(length(configs.files.id),1);       % dld files processed to txy
-lowcountfiles=zeros(length(configs.files.id),1);    % files with too few counts (skipped in analysis)
+files.missing=false(length(configs.files.id),1);        % missing dld/txy file
+files.build_txy=false(length(configs.files.id),1);      % dld files processed to txy
+files.lowcount=false(length(configs.files.id),1);       % files with too few counts (skipped in analysis)
 
 %% Load processed data
 vars_saved = {'usrconfigs','configs'...
     'halo','bec','culled','errflag',...
-    'lowcountfiles','missingfiles','filestotxy',...
+    'files',...
     };  % variables important in halo analysis - saved to a .mat file
-
+    
 if use_saved_data     
     if ~fileExists([configs.files.path,'data.mat'])
         warning(['Saved data "', [configs.files.path,'data.mat'], '" does not exist - setting use_saved_data=0 and continue...']);
@@ -170,6 +170,7 @@ if use_saved_data
         
         clear S_data;
     end
+    clear is_complete;
 end
 
 %% Pre-processing
@@ -186,7 +187,7 @@ if ~use_saved_data
         for i=1:length(configs.files.id)
             %check for source - raw DLD file
             if ~fileExists([configs.files.path,num2str(configs.files.id(i)),'.txt'])
-                missingfiles(i)=1;
+                files.missing(i)=1;
                 if verbose>0
                     warning(['use_txy=0 but raw DLD data does not exist - file #', num2str(configs.files.id(i))]);
                 end
@@ -195,7 +196,7 @@ if ~use_saved_data
             
             % create TXY file from the raw DLD file
             dld_raw_to_txy(configs.files.path,configs.files.id(i),configs.files.id(i));
-            filestotxy(i)=1;
+            files.build_txy(i)=1;
             
             if verbose>1
                 disp(['TXY file for #',num2str(configs.files.id(i)),' is created.']);
@@ -208,7 +209,7 @@ if ~use_saved_data
         for i=1:length(configs.files.id)
             if ~fileExists([configs.files.path,'_txy_forc',num2str(configs.files.id(i)),'.txt'])
                 % missing TXY file
-                missingfiles(i)=1;
+                files.missing(i)=1;
                 if verbose>0
                     warning(['TXY file for #',num2str(configs.files.id(i)),' is missing.']);
                 end
@@ -223,13 +224,14 @@ if ~use_saved_data
             txy_temp=txy_importer(configs.files.path,configs.files.id(i));    % import data in this txy to memory
             % Check count in this file
             if size(txy_temp,1)<configs.files.minCount
-                lowcountfiles(i)=1;
+                files.lowcount(i)=1;
                 if verbose>0
                     warning(['Low count detected in file #',num2str(configs.files.id(i))]);
                 end
             end
         end
     end
+    clear txy_temp;
     
     %% Process raw TXY data
     % This is where the raw TXY data (from DLD) must be processed to do further
@@ -239,7 +241,7 @@ if ~use_saved_data
     % SAVE the refined data and results
     % TODO: name vars appropriately and update the vars_saved, etc above
     
-    importokfiles=~(missingfiles|lowcountfiles);
+    importokfiles=~(files.missing|files.lowcount);
     configs.files.idok=configs.files.id(importokfiles);     % ID's for OK files
     
     if verbose>0,disp('Processing TXY files to generate data for analysis...');,end;
@@ -265,13 +267,13 @@ end
 
 % SUMMARY
 % TXY-preprocessing
-importokfiles=~(missingfiles|lowcountfiles);
+importokfiles=~(files.missing|files.lowcount);
 if verbose>1
     disp('===================IMPORT SUMMARY===================');
     disp([int2str(sum(importokfiles)),' imported ok']);
-    disp([int2str(sum(lowcountfiles)),' files with low counts']);
-    disp([int2str(sum(missingfiles)),' files missing']);
-    disp([int2str(sum(filestotxy)),' files converted to txy']);
+    disp([int2str(sum(files.lowcount)),' files with low counts']);
+    disp([int2str(sum(files.missing)),' files missing']);
+    disp([int2str(sum(files.build_txy)),' files converted to txy']);
     disp('====================================================');
 end
 
@@ -384,8 +386,8 @@ end
 if configs.post.removecap
     for i=1:2
         for j=1:size(halo.k,1)
-            ind_cap=abs(halo.k{j,i}(:,1))>configs.post.zcap;
-            halo.k{j,i}=halo.k{j,i}(~ind_cap,:);
+            ind_cap_tmp=abs(halo.k{j,i}(:,1))>configs.post.zcap;
+            halo.k{j,i}=halo.k{j,i}(~ind_cap_tmp,:);
         end
     end
     
@@ -414,19 +416,21 @@ if configs.post.removecap
         saveas(hfig,[dir_output,'6','.fig']);
     end
 end
+clear ind_cap_tmp;
 
 %% Remove ZERO-halo count shots for analysis
-zeroShot=false(1,size(halo.k,1));
+zero_final_halo=false(1,size(halo.k,1));
 for i=1:size(halo.k,1)
     if size(halo.k{i,1},1)*size(halo.k{i,2},1)==0
-        zeroShot(i)=1;
+        zero_final_halo(i)=1;   % flag fully processed halos with 0 counts
     end
 end
-n_zero_shot=sum(zeroShot);
-if n_zero_shot>0
-    warning([num2str(n_zero_shot),' shots had zero-counts after processing. Removing from analysis...']);
+nzero_final_tmp=sum(zero_final_halo);
+if nzero_final_tmp>0
+    warning([num2str(nzero_final_tmp),' shots had zero-counts after processing. Removing from analysis...']);
 end
-halo.k=halo.k(~zeroShot,:);
+halo.k=halo.k(~zero_final_halo,:);
+clear nzero_final_tmp;
 
 %% Summarise count numbers in halos for analysis
 halo_count=zeros(size(halo.k));
@@ -494,42 +498,51 @@ if do_corr_analysis
     %       code should be generic
 
     % loop through all correlation analysis tasks
-    for i_analysis=1:length(analysis.corr.type)        
+    for iCorr=1:length(analysis.corr.type)        
         % Set up bins
-        bin_dim=length(analysis.corr.lim{i_analysis});  % get binning dims
+        bin_dim=length(analysis.corr.lim{iCorr});  % get binning dims
         bin_edge_tmp=cell(1,bin_dim);
         bin_cent_tmp=cell(1,bin_dim);
         for i=1:bin_dim
             % make bin edge and centre vectors
-            bin_edge_tmp{i}=linspace(analysis.corr.lim{i_analysis}{i}(1),...
-                analysis.corr.lim{i_analysis}{i}(2),analysis.corr.nBin{i_analysis}(i)+1);
+            bin_edge_tmp{i}=linspace(analysis.corr.lim{iCorr}{i}(1),...
+                analysis.corr.lim{iCorr}{i}(2),analysis.corr.nBin{iCorr}(i)+1);
             bin_cent_tmp{i}=0.5*(bin_edge_tmp{i}(1:end-1)+bin_edge_tmp{i}(2:end));
         end
         
         % Evaluate G2 correlation
         % TODO - insert debug code for G2 and halo.k manipulator
-        [G2_shot_tmp,G2_all_tmp]=G2_caller(halo.k(:,analysis.corr.type{i_analysis}.comp),...
-            bin_edge_tmp,analysis.corr.type{i_analysis}.coord,analysis.corr.type{i_analysis}.opt,verbose);
+        [G2_shot_tmp,G2_all_tmp]=G2_caller(halo.k(:,analysis.corr.type{iCorr}.comp),...
+            bin_edge_tmp,analysis.corr.type{iCorr}.coord,analysis.corr.type{iCorr}.opt,verbose);
         g2_tmp=size(halo.k,1)*G2_shot_tmp./G2_all_tmp;      % normalised g2
         
         % Get results
-        analysis.corr.bEdge{i_analysis}=bin_edge_tmp;
-        analysis.corr.bCent{i_analysis}=bin_cent_tmp;
-        analysis.corr.G2shot{i_analysis}=G2_shot_tmp;
-        analysis.corr.G2all{i_analysis}=G2_all_tmp;
-        analysis.corr.g2{i_analysis}=g2_tmp;
+        analysis.corr.bEdge{iCorr}=bin_edge_tmp;
+        analysis.corr.bCent{iCorr}=bin_cent_tmp;
+        analysis.corr.G2shot{iCorr}=G2_shot_tmp;
+        analysis.corr.G2all{iCorr}=G2_all_tmp;
+        analysis.corr.g2{iCorr}=g2_tmp;
     end
     % clear workspace
-    clear i_analysis bin_dim bin_edge_tmp bin_cent_tmp G2_shot_tmp G2_all_tmp g2_tmp;
+    clear bin_dim bin_edge_tmp bin_cent_tmp G2_shot_tmp G2_all_tmp g2_tmp;
     
     % Plot the g2 correlation function
     % TODO - plots are not generalised yet. do a batch after
     %   correlation analysis
-    
+    for iCorr=1:length(analysis.corr.type)
+        nfig_tmp=10+iCorr;  % g2 figures start from figure 11
+        hfig=plotCorr(nfig_tmp,analysis.corr,iCorr);
+        
+        % save figs
+        fname_str=['corr_',num2str(iCorr)];
+        saveas(hfig,[dir_output,fname_str,'.fig']);
+        saveas(hfig,[dir_output,fname_str,'.png']);
+    end
     
     % Save data
     save([configs.files.path,'data.mat'],'analysis','-append');
 end
+clear iCorr nfig_tmp fname_str;
 
 %% end of code %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 t_main_end=toc(t_main_start);   % end of code
