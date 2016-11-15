@@ -50,11 +50,11 @@ usrconfigs.post.removecap=1;    % remove caps on halo (in Z)
 % ANALYSIS
 % correlation analysis
 analysis.corr.run=1;
-    analysis.corr.polar.nBin=[11,51];    % num bins (r,theta) (USE ODD)
-        analysis.corr.polar.lim{1}=0.3*[-1,1];  % radial lim
-        analysis.corr.polar.lim{2}=[0,pi];      % angular lim
-    analysis.corr.cart.nBin=[51,13,13];   % num bins (Z,X,Y) (USE ODD)
-        analysis.corr.cart.lim=0.8*[-1,1];    % lims (z,x,y symmetric)
+%     analysis.corr.polar.nBin=[11,51];    % num bins (r,theta) (USE ODD)
+%         analysis.corr.polar.lim{1}=0.3*[-1,1];  % radial lim
+%         analysis.corr.polar.lim{2}=[0,pi];      % angular lim
+%     analysis.corr.cart.nBin=[51,13,13];   % num bins (Z,X,Y) (USE ODD)
+%         analysis.corr.cart.lim=0.8*[-1,1];    % lims (z,x,y symmetric)
     
     % 1. Cross-halo rad/angular correlations
     analysis.corr.type{1}.comp=[1,2];           % components to analysis: cross halo 1,2
@@ -514,7 +514,11 @@ if analysis.corr.run
         bin_edge_tmp,analysis.corr.type{i_analysis}.coord,analysis.corr.type{i_analysis}.opt,verbose);
     g2_tmp=size(halo.k,1)*G2_shot_tmp./G2_all_tmp;      % normalise g2
 
-    % TODO - plots are not generalised yet
+    % Save results
+    % TODO
+    
+    % TODO - plots are not generalised yet - do a batch after
+    % correlation analysis
     % Plot
     [dR_bin,dtheta_bin]=meshgrid(bin_cent_tmp{1},bin_cent_tmp{2});  % create domain grid for surf
     
@@ -620,7 +624,7 @@ if analysis.corr.run
     hfig=figure(22);
     ax=gca;
     plot(bin_cent_tmp{1},g2_tmp(:,ind_zero_tmp(2),ind_zero_tmp(3)),'*');
-    hold on;
+    hold(ax,'on');
     title('X-halo BB correlations in $Z$-axis');
     xlabel('$\Delta K_z$'); ylabel('$g^{(2)}_{BB,(0,1)}$');
     
@@ -628,6 +632,7 @@ if analysis.corr.run
     param0=[4,0,0.1,1];     % fit estimate [amp,mu,sigma,offset]
     [fitparam_g2_bb_cart,fit_g2_bb_cart]=gaussfit(bin_cent_tmp{1},g2_tmp(:,ind_zero_tmp(2),ind_zero_tmp(3)),param0,verbose);
     plot(ax,fit_g2_bb_cart.x,fit_g2_bb_cart.y,'r');     % plot the fit
+    hold(ax,'off');
     
     saveas(hfig,[dir_output,'8_1','.fig']);
     saveas(hfig,[dir_output,'8_1','.png']);
