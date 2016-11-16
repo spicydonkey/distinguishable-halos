@@ -3,10 +3,23 @@
 
 %% CONFIGS
 %   <<Group into each stages>>
-% raw - raw-data handling
-% preproc - broad capture
-% postproc - manipulations
-% analysis
+% [x] raw - raw-data handling
+% [] preproc - broad capture
+% [] postproc - manipulations
+% [] analysis
+
+% files -  data file
+usrconfigs.files.path='C:\Users\HE BEC\Documents\lab\halo_analysis\data\dist_halo\4_separated_lownum\d';    % path to unindexed data file (e.g. 'a\b\datadir\$DATA_FNAME_TOKEN$')
+usrconfigs.files.id=1:3000;         % file id numbers to use for analysis
+usrconfigs.files.minCount=100;     % min counts to use for analysis
+
+% window - region of interest ( [] --> no crop )
+usrconfigs.window{1}=[20.678,20.726];   % Z [m] T-window will overide Z
+usrconfigs.window{2}=[-20e-3,18e-3];    % X [m]
+usrconfigs.window{3}=[-10e-3,17e-3];    % Y [m]
+
+
+configs=usrconfigs;     % copy to protect usrconfigs
 
 %% Load raw-data DLD/TXY
 %   <<Skip if already done and configs are same>>
@@ -14,6 +27,8 @@
 %     - get counts separated by shot# (ditch low-counts)
 %     - save (ZXY)-counts to .mat file
 
+% TODO - implement the skip feature
+loadExpData(configs,verbose);
 
 
 %% Preprocess: Get halo counts
@@ -24,6 +39,8 @@
 %       a broad radial mask
 %     - collate all shots with BEC oscillations cancelled (esp. halo)
 %     - save to file (think about not saving BEC's - too many counts)
+
+
 
 %% Fit halos
 %   Process the broadly captured halos (ZXY):
