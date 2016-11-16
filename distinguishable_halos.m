@@ -8,13 +8,16 @@
 % [] postproc - manipulations
 % [] analysis
 
+% GENERAL
+verbose=2;
+
 % files -  data file
 usrconfigs.files.path='C:\Users\HE BEC\Documents\lab\halo_analysis\data\dist_halo\4_separated_lownum\d';    % path to unindexed data file (e.g. 'a\b\datadir\$DATA_FNAME_TOKEN$')
 usrconfigs.files.id=1:3000;         % file id numbers to use for analysis
 usrconfigs.files.minCount=100;     % min counts to use for analysis
 
-% window - region of interest ( [] --> no crop )
-usrconfigs.window{1}=[20.678,20.726];   % Z [m] T-window will overide Z
+% TXY window - region of interest ( [] --> no crop )
+usrconfigs.window{1}=[4.905,4.92];      % T [s]
 usrconfigs.window{2}=[-20e-3,18e-3];    % X [m]
 usrconfigs.window{3}=[-10e-3,17e-3];    % Y [m]
 
