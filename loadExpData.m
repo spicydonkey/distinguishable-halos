@@ -57,23 +57,21 @@ for i=1:length(f_id)
             continue;
         end
     end  % TXY-file exists
-    
-    % Check for errorneous files by low-count
-    txy_temp=txy_importer(f_path,f_id(i));	% import data in this txy to memory
-    if size(txy_temp,1)<f_minCount
-        files.lowcount(i)=1;
-        if VERBOSE>0
-            warning('Low-count in file #%d. Discarding from further processing.',f_id(i));
-        end
-    end
 end
 
 %% Extract a region of interest from TXY-files
-files.id_ok=f_id(~(files.missing|files.lowcount));  % id's for passed files
-txy_all=cell(length(files.id_ok),1);
+% f_id=f_id(~files.missing);      % get ids for existing data files
+txy_all=cell(length(f_id),1);   % TXY data cell in window
 
 if VERBOSE>0, fprintf('Getting counts in window from TXY-files...\n');, end;
+counter=1;
 for i=1:length(f_id)
+    % pass for missing files
+    if files.missing(i)
+        continue
+    end
+    
+    % load the TXY-file to memory
     txy_temp=txy_importer(f_path,f_id(i));
     
     % Crop to pre-window
@@ -84,13 +82,29 @@ for i=1:length(f_id)
         in_window=((txy_temp(:,dim)>CONFIGS.window{dim}(1))&(txy_temp(:,dim)<CONFIGS.window{dim}(2)));
         txy_temp=txy_temp(in_window,:);     % filter temporary variable
     end
-    txy_all{i}=txy_temp;    % save captured counts
+    
+    % Check for errorneous files by low-count
+    if size(txy_temp,1)<f_minCount
+        files.lowcount(i)=1;
+        if VERBOSE>0
+            warning('Low-count in file #%d. Discarding from further processing.',f_id(i));
+        end
+        continue
+    end
+    
+    txy_all{counter}=txy_temp;    % save captured counts
+    counter=counter+1;
 end
+txy_all(counter:end)=[];    % delete all empty cells
+
+% evaluate files successfully processed: id_ok
+files.id_ok=f_id(~(files.missing|files.lowcount));
 
 %% Save processed data
 % if a file already exists it needs to be replaced
 if VERBOSE>0,fprintf('Saving data...\n');,end;
 if exist([f_path,'data.mat'],'file')
+    warning('Data file already exists. Moving existing file to archive...');
     % create archive directory
     if ~exist([f_path,'_archive'],'dir')
        mkdir([f_path,'_archive']);
