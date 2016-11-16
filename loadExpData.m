@@ -19,10 +19,12 @@ if ~exist('VERBOSE','var')
     VERBOSE=0;  % default verbose is quiet
 end
 
-vars_save={'txy_all','files'};  % a list of variables to save to file
+vars_save={'configs','txy_all','files'};  % a list of variables to save to file
 
 %% MAIN
 t_fun_start=tic;
+
+configs=CONFIGS;
 
 f_id=CONFIGS.files.id;      % get files id's to process
 f_path=CONFIGS.files.path;  % get path to file (no id token)
@@ -103,24 +105,24 @@ files.id_ok=f_id(~(files.missing|files.lowcount));
 %% Save processed data
 % if a file already exists it needs to be replaced
 if VERBOSE>0,fprintf('Saving data...\n');,end;
-if exist([f_path,'data.mat'],'file')
+if exist(configs.files.saveddata,'file')
     warning('Data file already exists. Moving existing file to archive...');
     % create archive directory
-    if ~exist([f_path,'_archive'],'dir')
-       mkdir([f_path,'_archive']);
+    if ~exist(configs.files.archive,'dir')
+       mkdir(configs.files.archive);
     end
     % move existing file to archive
-    movefile([f_path,'data.mat'],[f_path,'_archive']);  % will overwrite an existing file of same name in the archive dir
+    movefile(configs.files.saveddata,configs.files.archive);  % will overwrite an existing file of same name in the archive dir
 end
 
 % save data
-save([f_path,'data.mat'],vars_save{1});    % must create *.mat without append option
+save(configs.files.saveddata,vars_save{1});    % must create *.mat without append option
 for i = 1:length(vars_save)
     if ~exist(vars_save{i},'var')
         warning(['Variable "',vars_save{i},'" does not exist.']);
         continue;
     end
-    save([f_path,'data.mat'],vars_save{i},'-append');
+    save(configs.files.saveddata,vars_save{i},'-append');
 end
 
 %% END
