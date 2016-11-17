@@ -27,15 +27,17 @@ usrconfigs.window{3}=[-10e-3,17e-3];    % Y [m]
 %%% HALO PARAMS: BEC counts + oscillation removal for broad capture of halos
 usrconfigs.bec.pos{1}=[20.7024,4.74e-3,2.72e-3];   % approx condensate locations (z,x,y)
 usrconfigs.bec.Rmax{1}=7e-3;    % max condensate sph radius
-usrconfigs.bec.dR_tail{1}=0.3;	% BEC tail radial frac diff
+usrconfigs.bec.dR_tail{1}=0.35;	% BEC tail radial frac diff
 usrconfigs.bec.pos{2}=[20.7005,-7.38e-3,6.55e-3];
 usrconfigs.bec.Rmax{2}=7e-3;
-usrconfigs.bec.dR_tail{2}=0.3;
+usrconfigs.bec.dR_tail{2}=0.35;
 
 usrconfigs.halo.R{1}=11e-3;     % estimated radius of halo
-usrconfigs.halo.dR{1}=0.25;      % broad radial mask fractional width (in/out)
+usrconfigs.halo.dR{1}=0.20;      % broad radial mask fractional width (in/out)
 usrconfigs.halo.R{2}=10e-3;
-usrconfigs.halo.dR{2}=0.3;
+usrconfigs.halo.dR{2}=0.20;
+
+usrconfigs.halo.zcap=0.75;   % z-cutoff (fractional wrt radius)
 
 % MISCELLANEOUS
 usrconfigs.misc.vel_z=9.8*0.430;    % atom free-fall vert v at detector hit for T-to-Z conversion;
@@ -49,9 +51,11 @@ do_next=force_all_stages;  % flag for executing stages for efficiency (do not ch
 
 configs=usrconfigs;     % copy to protect usrconfigs
 
+
 %% MAIN
 %%%% 
 t_main_start=tic;
+
 
 %% Load raw-data DLD/TXY
 %   <<Skip if already done and configs are same>>
@@ -83,14 +87,14 @@ if do_next
     loadExpData(configs,verbose);
 end
 
+
 %% Preprocess: Get halo counts
-%   <<Skip if already done AND configs are same>>
 %   Process loaded counts to:
-%     - locate condensate accurately in each shot
-%     - capture all counts in the halo with approx centre location and
+%     - [x] locate condensate accurately in each shot
+%     - [x] capture all counts in the halo with approx centre location and
 %       a broad radial mask
-%     - collate all shots with BEC oscillations cancelled (esp. halo)
-%     - save to file (think about not saving BEC's - too many counts)
+%     - [x] collate all shots with BEC oscillations cancelled (esp. halo)
+%     - [x] save to file (think about not saving BEC's - too many counts)
 
 % Check if broad halo capture can be skipped
 if ~do_next
@@ -121,13 +125,21 @@ end
 %     - extract well-fitted counts (tight capture)
 %     - save to file (fitted halo with shape and fit params)
 
-fitHalo(configs,verbose);
+% No user settable params yet
+if do_next
+    fitHalo(configs,verbose);
+end
 
 %% Postprocess: Manipulate halos
 %   <<Skip if already done and configs are same>>
 %   Manipulate the halos to account for distortions:
 %     - e.g. spin in Z-axis, isotropic/anisotropic scaling, etc.
 %     - save to file
+
+% no user settable params yet
+if do_next
+    transformHalo(configs,verbose);
+end
 
 %% Analysis
 %   <<Skip if already done and configs are same>>
