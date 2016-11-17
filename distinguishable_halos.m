@@ -4,15 +4,16 @@
 %% CONFIGS
 %   <<Group into each stages>>
 % [x] raw - raw-data handling
-% [] preproc - broad capture
+% [-] preproc - broad capture
 % [] postproc - manipulations
 % [] analysis
 
-% GENERAL
+%%% GENERAL
 force_all_stages=0;    % force all the stages to run (useful for debug)
 
 verbose=2;
 
+%%% Raw data handling
 % files -  data file
 usrconfigs.files.path='C:\Users\HE BEC\Documents\lab\halo_analysis\data\dist_halo\4_separated_lownum\d';    % path to unindexed data file (e.g. 'a\b\datadir\$DATA_FNAME_TOKEN$')
 usrconfigs.files.id=1:100;         % file id numbers to use for analysis
@@ -22,6 +23,22 @@ usrconfigs.files.minCount=100;     % min counts to use for analysis
 usrconfigs.window{1}=[4.905,4.92];      % T [s]
 usrconfigs.window{2}=[-20e-3,18e-3];    % X [m]
 usrconfigs.window{3}=[-10e-3,17e-3];    % Y [m]
+
+%%% HALO PARAMS: BEC counts + oscillation removal for broad capture of halos
+usrconfigs.bec.pos{1}=[20.7024,4.74e-3,2.72e-3];   % approx condensate locations (z,x,y)
+usrconfigs.bec.Rmax{1}=7e-3;    % max condensate sph radius
+usrconfigs.bec.dR_tail{1}=0.3;	% BEC tail radial frac diff
+usrconfigs.bec.pos{2}=[20.7005,-7.38e-3,6.55e-3];
+usrconfigs.bec.Rmax{2}=7e-3;
+usrconfigs.bec.dR_tail{2}=0.3;
+
+usrconfigs.halo.R{1}=11e-3;     % estimated radius of halo
+usrconfigs.halo.dR{1}=0.3;      % broad radial mask fractional width (in/out)
+usrconfigs.halo.R{2}=10e-3;
+usrconfigs.halo.dR{2}=0.3;
+
+% MISCELLANEOUS
+usrconfigs.misc.vel_z=9.8*0.430;    % atom free-fall vert v at detector hit for T-to-Z conversion;
 
 %%% ALGORITHM CONFIGS
 % DO NOT ADJUST
@@ -71,6 +88,8 @@ end
 %     - collate all shots with BEC oscillations cancelled (esp. halo)
 %     - save to file (think about not saving BEC's - too many counts)
 
+
+captureHalo(configs,verbose);
 
 
 
