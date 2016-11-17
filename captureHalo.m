@@ -169,6 +169,25 @@ for i=1:length(f_idok)        % TODO: MAJOR BUG: treat f_id properly
     culled.fuzz.zxy{i}=ZXY_all{i};      % all remaining counts called fuzz
 end
 
+
+%% Remove caps
+haloR=configs.halo.R;
+zcap=configs.halo.zcap;
+for i=1:size(halo.zxy0,1)
+    for j=1:2
+        % remove caps
+        ind_cap_temp=abs(halo.zxy0{i,j}(:,1))>(zcap*haloR{j});
+        halo.zxy0{i,j}=halo.zxy0{i,j}(~ind_cap_temp,:);
+
+        % check for zero counts
+        if sum(~ind_cap_temp)==0
+            warning('Halo capture: shot #%d, halo #%d has no counts after removing cap.',f_idok(i),i_halo);
+            errflag(i)=1;
+        end
+    end
+end
+
+
 %% Handle bad shots
 % bad shots will be discarded
 nBadshots=sum(errflag);
@@ -178,6 +197,7 @@ if nBadshots>0
     
     % Cull bad shots for all returned processed data
     halo.zxy=halo.zxy(~errflag,:);
+    halo.zxy0=halo.zxy0(~errflag,:);
     halo.R=halo.R(~errflag,:);
     halo.cent=halo.cent(~errflag,:);
     
@@ -187,6 +207,7 @@ if nBadshots>0
     culled.fuzz.zxy=culled.fuzz.zxy(~errflag,:);
     culled.tail.zxy=culled.tail.zxy(~errflag,:);
 end
+
 
 %% Save processed data
 % Append to existing data file with all counts
@@ -198,6 +219,7 @@ for i = 1:length(vars_save)
     end
     save(configs.files.saveddata,vars_save{i},'-append');
 end
+
 
 %% END
 t_fun_end=toc(t_fun_start);   % end of code
