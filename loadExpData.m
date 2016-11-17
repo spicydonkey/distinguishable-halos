@@ -11,8 +11,7 @@ function [txy_all,files]=loadExpData(CONFIGS,VERBOSE)
 % files: flags for processed files
 %   has fields:     build_txy,missing,lowcount,id_ok
 %
-% Saves the data to a file
-%   txy_all, files
+% Saves the data (txy_all, files) to file + configs used
 %
 
 if ~exist('VERBOSE','var')
