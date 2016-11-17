@@ -11,6 +11,7 @@ end
 
 vars_save={'halo','bec','culled','errflag'};  % a list of variables to save to file
 
+if VERBOSE>0, fprintf('Beginning halo capture...\n'), end;
 %% MAIN
 t_fun_start=tic;
 configs=CONFIGS;
@@ -41,7 +42,8 @@ end
 ZXY_all=txy_all;
 clear txy_all;
 
-% Process TXY data
+%% Process TXY data
+% BEC
 for i=1:length(f_idok)
     %fprintf('%d: %d\n',i,size(ZXY_all{i},1));
     
@@ -116,11 +118,72 @@ for i=1:length(f_idok)
         ZXY_all{i}=ZXY_all{i}(~ind_tail,:);         % pop tail out
     end
     
-    %% save single-shot to a cell
+    
+    
+    % save single-shot to a cell
     bec.zxy(i,:)=zxy_bec;	% BEC
 	culled.tail.zxy(i,:)=zxy_tail;  % tail
 end
 
+%% HALO (broad) capture
+% assuming BEC centre lies on halo's Z-extremity and estimating halo
+% radii, apply radial crop
+errflag=false(size(f_idok));  % flag for bad shots
+for i=1:length(f_idok)        % TODO: MAJOR BUG: treat f_id properly
+    zxy_halo=cell(1,2); % temp for halo counts
+    for i_halo=1:2
+        % add/subtract estimated halo radius in Z: HALO 1 should be the
+        %   non-magnetic Raman outcoupled atoms - Halo must sit "ABOVE" the
+        %   BEC
+        halo.cent{i,i_halo}=bec.cent{i,i_halo}+((-1)^(i_halo+1))*[1,0,0]*configs.halo.R{i_halo};
+        zxy_temp=ZXY_all{i}-repmat(halo.cent{i,i_halo},[size(ZXY_all{i},1),1]);     % ref about halo G
+        rsq_temp=sum(zxy_temp.^2,2);            % evaluate radial distances
+        ind_halo=((rsq_temp<(((1+R_halo{i_halo})*configs.halo.R{i_halo})^2)) & (rsq_temp>(((1-R_halo{i_halo})*configs.halo.R{i_halo})^2)));  % halo counts index
+        
+        % Check for no counts captured for halo
+        if sum(ind_halo)==0
+            warning('Halo capture: shot #%d, halo #%d has no counts.',f_idok(i),i_halo);
+            errflag(i)=1;
+        end
+        
+        zxy_halo{i_halo}=ZXY_all{i}(ind_halo,:);       % counts in halo
+        ZXY_all{i}=ZXY_all{i}(~ind_halo,:);           % pop halo out
+    
+        % Estimate halo radius: [AVG_RADIUS STD_RADIUS] for counts in halo
+        % around the guessed centre
+        halo.R{i,i_halo}=[mean(sqrt(rsq_temp(ind_halo))),std(sqrt(rsq_temp(ind_halo)))];
+        
+        % NaN error occurs for halo radius - Occurs or zero halo count
+        if VERBOSE>0
+            if isnan(halo.R{i,i_halo}(1))
+                warning('Halo capture: shot #%d, halo #%d has returned NaN for halo radius.',f_idok(i),i_halo);
+            end
+        end
+    end
+    
+    % save single-shot to a cell
+    halo.zxy(i,:)=zxy_halo;             % HALO
+    culled.fuzz.zxy{i}=ZXY_all{i};     % all remaining counts called fuzz
+end
+
+%% Handle bad shots
+% bad shots will be discarded
+nBadshots=sum(errflag);
+
+if nBadshots>0
+    warning('%d bad shot(s) in data will be discarded.',nBadshots);
+    
+    % Cull bad shots for all returned processed data
+    halo.zxy=halo.zxy(~errflag,:);
+    halo.R=halo.R(~errflag,:);
+    halo.cent=halo.cent(~errflag,:);
+    
+    bec.zxy=bec.zxy(~errflag,:);
+    bec.cent=bec.cent(~errflag,:);
+    
+    culled.fuzz.zxy=culled.fuzz.zxy(~errflag,:);
+    culled.tail.zxy=culled.tail.zxy(~errflag,:);
+end
 
 %% Save processed data
 % Append to existing data file with all counts
