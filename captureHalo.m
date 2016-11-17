@@ -22,6 +22,9 @@ load(configs.files.saveddata,'txy_all','files');
 f_idok=files.id_ok;     % id's of files in txy_all
 v_z=configs.misc.vel_z;	% z-velocity for T-Z conversion
 
+R_tail=configs.bec.dR_tail;     % estimated tail radius from BEC
+R_halo=configs.halo.dR;         % fractional error around estimtaed halo rad for cropping (TODO - sensitivity?)
+
 % Initialise vars
 halo.zxy=cell(length(f_idok),2);    % halo counts
 halo.cent=cell(length(f_idok),2);   % halo centres
@@ -98,11 +101,24 @@ for i=1:length(f_idok)
         end
     end
     
+    %% Clean around condensates
+    % There is still spherical tail around the condensate capturing sphere which is
+    %   much stronger than scattered counts
+    % Must be done after locating condensates since the clean-up windows
+    %   for two condensates will significantly overlap
+    zxy_tail=cell(1,2);
     
+    for i_cond=1:2
+        zxy_temp=ZXY_all{i}-repmat(bec.cent{i,i_cond},[size(ZXY_all{i},1),1]); % relocate centre to approx BEC position
+        rsq_temp=sum(zxy_temp.^2,2);            % evaluate radial distances
+        ind_tail=rsq_temp<(((1+R_tail{i_cond})*configs.bec.Rmax{i_cond})^2);  % tail counts index
+        zxy_tail{i_cond}=ZXY_all{i}(ind_tail,:);  % counts in BEC tail
+        ZXY_all{i}=ZXY_all{i}(~ind_tail,:);         % pop tail out
+    end
     
     %% save single-shot to a cell
     bec.zxy(i,:)=zxy_bec;	% BEC
-%     culled.tail.zxy(i,:)=zxy_tail;  % tail
+	culled.tail.zxy(i,:)=zxy_tail;  % tail
 end
 
 
