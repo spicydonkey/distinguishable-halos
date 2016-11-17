@@ -16,7 +16,7 @@ verbose=2;
 %%% Raw data handling
 % files -  data file
 usrconfigs.files.path='C:\Users\HE BEC\Documents\lab\halo_analysis\data\dist_halo\4_separated_lownum\d';    % path to unindexed data file (e.g. 'a\b\datadir\$DATA_FNAME_TOKEN$')
-usrconfigs.files.id=1:100;         % file id numbers to use for analysis
+usrconfigs.files.id=1:3000;         % file id numbers to use for analysis
 usrconfigs.files.minCount=100;     % min counts to use for analysis
 
 % TXY window - region of interest ( [] --> no crop )
@@ -33,7 +33,7 @@ usrconfigs.bec.Rmax{2}=7e-3;
 usrconfigs.bec.dR_tail{2}=0.3;
 
 usrconfigs.halo.R{1}=11e-3;     % estimated radius of halo
-usrconfigs.halo.dR{1}=0.3;      % broad radial mask fractional width (in/out)
+usrconfigs.halo.dR{1}=0.25;      % broad radial mask fractional width (in/out)
 usrconfigs.halo.R{2}=10e-3;
 usrconfigs.halo.dR{2}=0.3;
 
@@ -48,6 +48,10 @@ usrconfigs.files.archive=[usrconfigs.files.path,'_archive'];   % dir to archive 
 do_next=force_all_stages;  % flag for executing stages for efficiency (do not change)
 
 configs=usrconfigs;     % copy to protect usrconfigs
+
+%% MAIN
+%%%% 
+t_main_start=tic;
 
 %% Load raw-data DLD/TXY
 %   <<Skip if already done and configs are same>>
@@ -65,7 +69,7 @@ if ~do_next
         S_temp=load(configs.files.saveddata,'configs');  % load configs from prev data
         % TODO - will throw error if $files and $window are not fields of $configs
         if ~(isequal(S_temp.configs.files,configs.files)&&isequal(S_temp.configs.window,configs.window))
-            warning('Existing data has different configs. Setting do_next=1.');
+            warning('Raw data: Existing data has different configs. Setting do_next=1.');
             do_next=1;
         end
     else
@@ -88,9 +92,24 @@ end
 %     - collate all shots with BEC oscillations cancelled (esp. halo)
 %     - save to file (think about not saving BEC's - too many counts)
 
+% Check if broad halo capture can be skipped
+if ~do_next
+    % same configs?: files, window
+    % TODO - will throw error if $configs is not a variable in data
+    S_temp=load(configs.files.saveddata,'configs');  % load configs from prev data
+    % TODO - will throw error if bec,halo,or misc are not fields of $configs
+    if ~(isequal(S_temp.configs.bec,configs.bec)&&...
+            isequal(S_temp.configs.halo,configs.halo)&&...
+            isequal(S_temp.configs.misc,configs.misc))
+        warning('Halo capture: Existing data has different configs. Setting do_next=1.');
+        do_next=1;
+    end
+    clear S_temp;
+end
 
-captureHalo(configs,verbose);
-
+if do_next
+    captureHalo(configs,verbose);
+end
 
 
 %% Fit halos
@@ -101,6 +120,8 @@ captureHalo(configs,verbose);
 %     - reference to centre of mass (halo centres)
 %     - extract well-fitted counts (tight capture)
 %     - save to file (fitted halo with shape and fit params)
+
+fitHalo(configs,verbose);
 
 %% Postprocess: Manipulate halos
 %   <<Skip if already done and configs are same>>
@@ -113,3 +134,10 @@ captureHalo(configs,verbose);
 %   Correlation analysis (in angular, cartesian):
 %     - cross-halo
 %     - single-halo
+
+
+%% end of code %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+t_main_end=toc(t_main_start);   % end of code
+disp('-----------------------------------------------');
+fprintf('Total elapsed time (s): %7.1f\n',t_main_end);
+disp('===================ALL TASKS COMPLETED===================');
