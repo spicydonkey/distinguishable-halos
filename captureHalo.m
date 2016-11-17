@@ -28,6 +28,7 @@ R_halo=configs.halo.dR;         % fractional error around estimtaed halo rad for
 
 % Initialise vars
 halo.zxy=cell(length(f_idok),2);    % halo counts
+halo.zxy0=cell(length(f_idok),2);   % halo counts (oscillations compensated)
 halo.cent=cell(length(f_idok),2);   % halo centres
 halo.R=cell(length(f_idok),2);      % halo radii 
 bec.zxy=cell(length(f_idok),2);     % BEC counts
@@ -146,8 +147,9 @@ for i=1:length(f_idok)        % TODO: MAJOR BUG: treat f_id properly
             errflag(i)=1;
         end
         
-        zxy_halo{i_halo}=ZXY_all{i}(ind_halo,:);       % counts in halo
-        ZXY_all{i}=ZXY_all{i}(~ind_halo,:);           % pop halo out
+        zxy_halo{i_halo}=ZXY_all{i}(ind_halo,:);       % counts in halo (abs ref)
+        zxy0_halo{i_halo}=zxy_temp(ind_halo,:);          % approx halo-centered ref frame
+        ZXY_all{i}=ZXY_all{i}(~ind_halo,:);             % pop halo out
     
         % Estimate halo radius: [AVG_RADIUS STD_RADIUS] for counts in halo
         % around the guessed centre
@@ -162,8 +164,9 @@ for i=1:length(f_idok)        % TODO: MAJOR BUG: treat f_id properly
     end
     
     % save single-shot to a cell
-    halo.zxy(i,:)=zxy_halo;             % HALO
-    culled.fuzz.zxy{i}=ZXY_all{i};     % all remaining counts called fuzz
+    halo.zxy(i,:)=zxy_halo;             % HALO (abs ref frame)
+    halo.zxy0(i,:)=zxy0_halo;           % HALO - oscillations compensated
+    culled.fuzz.zxy{i}=ZXY_all{i};      % all remaining counts called fuzz
 end
 
 %% Handle bad shots
