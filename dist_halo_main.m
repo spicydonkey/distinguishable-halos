@@ -11,7 +11,7 @@ close all; clc;
 use_saved_data=1;   %if false will remake the fully processed data files used in analysis (takes a while)
 use_txy=1;          %if false will remake the txy_forc files
 
-verbose=0;
+verbose=2;
 
 % DEBUG MODE
 use_inverted_pairs=0;
@@ -41,9 +41,9 @@ usrconfigs.bec.Rmax{2}=7e-3;
 usrconfigs.bec.dR_tail{2}=0.3;
 
 usrconfigs.halo.R{1}=11e-3;     % estimated radius of halo
-usrconfigs.halo.dR{1}=0.1;      % halo fractional thickness each dir (in/out)
+usrconfigs.halo.dR{1}=0.15;      % halo fractional thickness each dir (in/out)
 usrconfigs.halo.R{2}=10e-3;
-usrconfigs.halo.dR{2}=0.1;
+usrconfigs.halo.dR{2}=0.15;
 
 if exist('override','var')
     % make this more generic
@@ -55,7 +55,16 @@ end
 usrconfigs.post.removecap=1;    % remove caps on halo (in Z)
     usrconfigs.post.zcap=0.5;   % z-cutoff (kspace;abs)
     
-% ANALYSIS
+%% PLOTS
+% 3D real space
+do_plot.real.all=0;      % real space
+do_plot.real.ind=[1:100];    % plots the selection of shots
+
+% 3D k-space (normed)
+do_plot.kspace.all=0;    % k-space
+do_plot.kspace.ind=[1:100];  % plots the selection of shots
+    
+%% ANALYSIS
 % correlation analysis
 do_corr_analysis=1;
     % 1. Cross-halo rad/angular correlations
@@ -109,14 +118,7 @@ do_corr_analysis=1;
 %     analysis.corr.lim{#}{3}=0.8*[-1,1]; % bin limits - Y
 %     analysis.corr.nBin{#}=[51,13,13];   % number of bins
     
-%% PLOTS
-% 3D real space
-do_plot.real.all=0;      % real space
-do_plot.real.ind=[];    % plots the selection of shots
 
-% 3D k-space (normed)
-do_plot.kspace.all=0;    % k-space
-do_plot.kspace.ind=[];  % plots the selection of shots
 
 %% CONSTANTS
 W_BB_GI=4e-4;   % g2 bb correlation length as determined from RIK's GI
@@ -352,11 +354,20 @@ for i=1:2
     bec.k(:,i)=zxy_translate(bec.zxy(:,i),halo.cent(:,i),-1);
 end
 
+% Get mean halo radius
+for i=1:2
+    halo_temp=vertcat(halo.k{:,i});
+    R_halo_temp(i)=mean(sqrt(sum(halo_temp.^2,2)));
+end
+clear halo_temp;
+
 % Isometric scaling (normalisation)
 for i=1:size(halo.k,1)    % iterate shots
     for j=1:2   % iterate internal states
-        halo.k{i,j}=halo.k{i,j}/halo.R{i,j}(1);     % normalise in k-space
-        bec.k{i,j}=bec.k{i,j}/halo.R{i,j}(1);
+        %halo.k{i,j}=halo.k{i,j}/halo.R{i,j}(1);     % TODO: SHOULDN'T SCALE LIKE THIS! normalise in k-space
+        %bec.k{i,j}=bec.k{i,j}/halo.R{i,j}(1);
+        halo.k{i,j}=halo.k{i,j}/R_halo_temp(j);     % normalise to population mean
+        bec.k{i,j}=bec.k{i,j}/R_halo_temp(j);
     end
 end
 
