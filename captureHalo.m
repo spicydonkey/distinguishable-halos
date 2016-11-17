@@ -9,7 +9,7 @@ if ~exist('VERBOSE','var')
     VERBOSE=0;
 end
 
-vars_save={'halo','bec','culled','errflag'};  % a list of variables to save to file
+vars_save={'configs','halo','bec','culled','errflag'};  % a list of variables to save to file
 
 if VERBOSE>0, fprintf('Beginning halo capture...\n'), end;
 %% MAIN
