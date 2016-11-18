@@ -1,13 +1,13 @@
 % Distinguishable halo
 % DKS 16/11/2016
 
-% %% CONFIGS (in set_config.m)
-% %   <<Group into each stages>>
-% % [x] raw - raw-data handling
-% % [x] preproc - broad capture
-% % [] fit - fit halo
-% % [-] postproc - manipulations
-% % [x] analysis
+%%% CONFIGS (in set_config.m)
+% [x] raw - raw-data handling
+% [x] preproc - broad capture
+% [] fit - fit halo
+% [-] postproc - manipulations
+% [x] analysis
+
 
 %% Load configurations
 set_config;     % set configurations
@@ -27,7 +27,6 @@ end
 
 
 %% Load raw-data DLD/TXY
-%   <<Skip if already done and configs are same>>
 %   Process rawDLD/TXY archive to:
 %     - get counts separated by shot# (ditch low-counts)
 %     - save (ZXY)-counts to .mat file: $txy_all
@@ -86,13 +85,14 @@ end
 
 
 %% Fit halos
+%   <<Currently just returns the same halo>>
 %   Process the broadly captured halos (ZXY):
-%     - fit the point cloud to some shape (sphere/oblate spheroid/tri-axial
+%     - [] fit the point cloud to some shape (sphere/oblate spheroid/tri-axial
 %       ellipsoid, etc.)
-%     - get "centre", "radii", etc. for each halo
-%     - reference to centre of mass (halo centres)
-%     - extract well-fitted counts (tight capture)
-%     - save to file (fitted halo with shape and fit params)
+%     - [] get "centre", "radii", etc. for each halo
+%     - [] reference to centre of mass (halo centres)
+%     - [] extract well-fitted counts (tight capture)
+%     - [] save to file (fitted halo with shape and fit params)
 
 % No user settable params yet
 if do_next
@@ -100,9 +100,8 @@ if do_next
 end
 
 
-%% Postprocess: Manipulate halos
-%   <<Skip if already done and configs are same>>
-%   Manipulate the halos to account for distortions:
+%% Postprocess: Transform halos
+%   Transform halos to account for distortions:
 %     - e.g. spin in Z-axis, isotropic/anisotropic scaling, etc.
 %     - save to file
 %   * creates the 'zxy' cell array of finalised counts
@@ -114,11 +113,9 @@ end
 
 
 %% Analysis
-%   <<Skip if already done and configs are same>>
 %   Correlation analysis (in angular, cartesian):
 %     - cross-halo
 %     - single-halo
-
 
 if ~do_next
     % check if analysis configs has changed
