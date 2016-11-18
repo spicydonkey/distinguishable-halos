@@ -108,14 +108,13 @@ if ncomp==2
         % all shots - except self
         for i=1:nShot
             data_collated=vertcat(data2{[1:i-1,i+1:end]});  % except self
-            %data_collated=vertcat(data2{:}); % collate all shots inc. self
             Ntotpair=size(data_collated,1);  % total number of counts in the cross-species
             nAtom=size(data1{i},1);
             
             for j=1:nAtom
                 % back-to-back condition
                 this_atom=data1{i}(j,:);
-                diff_tmp=data_collated+repmat(this_atom,[Ntotpair,1]);   % diff for BB
+                diff_tmp=data_collated+repmat(this_atom,[Ntotpair,1]);   % sum for BB
                 
                 G2_ALL=G2_ALL+nhist(diff_tmp,BIN_EDGE);     % update G2
             end
@@ -127,8 +126,55 @@ if ncomp==2
                 erase_str=repmat(sprintf('\b'),1,length(prog_msg));
             end
         end
+        
     elseif isequal(CORR_INFO,'CL')
-        error('CL is not set up yet');
+        % Colinear G2 analysis
+        for i=1:nShot
+            nAtom=size(data1{i},1); % number of counts in DATA1
+            Npairs=size(data2{i},1);
+            
+            for j=1:nAtom
+                % colinear condition
+                this_atom=data1{i}(j,:);    % ZXY-vector for this atom (to find pairs)
+                diff_tmp=data2{i}-repmat(this_atom,[Npairs,1]);   % "diff" for diff_CL in k-space
+                
+                G2_SINGLE=G2_SINGLE+nhist(diff_tmp,BIN_EDGE);	% update G2
+            end
+            
+            % Progress report
+            if VERBOSE>1
+                prog_msg=sprintf('[1/2]: %4.1f',100*i/nShot);
+                fprintf([erase_str,prog_msg]);
+                erase_str=repmat(sprintf('\b'),1,length(prog_msg));
+            end
+        end
+        
+        if VERBOSE>1
+            fprintf('\n');  % need to return carriage in output
+            erase_str='';   % reset to null
+        end
+        
+        % all shots - except self
+        for i=1:nShot
+            data_collated=vertcat(data2{[1:i-1,i+1:end]});  % except self
+            Ntotpair=size(data_collated,1);  % total number of counts in the cross-species
+            nAtom=size(data1{i},1);
+            
+            for j=1:nAtom
+                % colinear condition
+                this_atom=data1{i}(j,:);
+                diff_tmp=data_collated-repmat(this_atom,[Ntotpair,1]);   % diff for CL
+                
+                G2_ALL=G2_ALL+nhist(diff_tmp,BIN_EDGE);     % update G2
+            end
+            
+            % Progress report
+            if VERBOSE>1
+                prog_msg=sprintf('[2/2]: %4.1f',100*i/nShot);
+                fprintf([erase_str,prog_msg]);
+                erase_str=repmat(sprintf('\b'),1,length(prog_msg));
+            end
+        end
     else
         error('BUG: CORR_INFO must be BB or CL at this point: this line should never be called.');
     end
@@ -192,6 +238,9 @@ elseif ncomp==1
         end
     elseif isequal(CORR_INFO,'CL')
         error('CL is not set up yet');
+        % TODO - code CL
+        
+        %
     else
         error('BUG: CORR_INFO must be BB or CL at this point: this line should never be called.');
     end
