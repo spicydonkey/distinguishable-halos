@@ -7,8 +7,7 @@ if ~exist('VERBOSE','var')
     VERBOSE=0;
 end
 
-%vars_save={'analysis'};
-vars_save={'result'};
+vars_save={'analysis','result'};
 
 if VERBOSE>0, fprintf('Starting correlation analysis...\n'), end;
 %% MAIN
