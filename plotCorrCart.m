@@ -16,7 +16,7 @@ surf(dX',dY',squeeze(CORRDATA.G2shot{INDEX}(ind_zero(1),:,:)),'edgecolor','none'
 title_str=['(',num2str(CORRCONFIG.type{INDEX}.comp),') halos,',CORRCONFIG.type{INDEX}.coord,',shots'];
 title(title_str);
 xlabel('$\delta k_i$'); ylabel('$\delta k_j$'); 
-zlabel(['$G^{(2)}_{BB(',num2str(CORRCONFIG.type{INDEX}.comp),')}$']);
+zlabel(['$G^{(2)}_{',CORRCONFIG.type{INDEX}.opt,'(',num2str(CORRCONFIG.type{INDEX}.comp),')}$']);
 axis tight;
 shading interp;
 
@@ -26,7 +26,7 @@ surf(dX',dY',squeeze(CORRDATA.G2all{INDEX}(ind_zero(1),:,:)),'edgecolor','none')
 title_str=['(',num2str(CORRCONFIG.type{INDEX}.comp),') halos,',CORRCONFIG.type{INDEX}.coord,',all'];
 title(title_str);
 xlabel('$\delta k_i$'); ylabel('$\delta k_j$'); 
-zlabel(['$G^{(2)}_{BB(',num2str(CORRCONFIG.type{INDEX}.comp),')}$']);
+zlabel(['$G^{(2)}_{',CORRCONFIG.type{INDEX}.opt,'(',num2str(CORRCONFIG.type{INDEX}.comp),')}$']);
 axis tight;
 shading interp;
 
@@ -36,6 +36,6 @@ surf(dX',dY',squeeze(CORRDATA.g2{INDEX}(ind_zero(1),:,:)),'edgecolor','none');
 title_str=['(',num2str(CORRCONFIG.type{INDEX}.comp),') halos,',CORRCONFIG.type{INDEX}.coord,',normalised'];
 title(title_str);
 xlabel('$\delta k_i$'); ylabel('$\delta k_j$'); 
-zlabel(['$g^{(2)}_{BB(',num2str(CORRCONFIG.type{INDEX}.comp),')}$']);
+zlabel(['$g^{(2)}_{',CORRCONFIG.type{INDEX}.opt,'(',num2str(CORRCONFIG.type{INDEX}.comp),')}$']);
 axis tight;
 shading interp;
