@@ -58,11 +58,11 @@ usrconfigs.post.removecap=1;    % remove caps on halo (in Z)
 %% PLOTS
 % 3D real space
 do_plot.real.all=0;      % real space
-do_plot.real.ind=[1:100];    % plots the selection of shots
+do_plot.real.ind=1:100;    % plots the selection of shots
 
 % 3D k-space (normed)
 do_plot.kspace.all=0;    % k-space
-do_plot.kspace.ind=[1:100];  % plots the selection of shots
+do_plot.kspace.ind=1:100;  % plots the selection of shots
     
 %% ANALYSIS
 % correlation analysis
@@ -167,7 +167,7 @@ if use_saved_data
             use_saved_data=0;
         else
             % OK load all vars in file
-            if verbose>0, disp('Loading saved data...');, end;
+            if verbose>0, disp('Loading saved data...'); end;
             
             % Check saved file is not empty
             if isempty(vertcat(S_data.halo.zxy{:}))
@@ -193,7 +193,7 @@ if ~use_saved_data
     % files and shots of low count, etc.
     if ~use_txy
         % Create TXY from raw DLD files
-        if verbose>0, disp('Creating TXY files...');, end;
+        if verbose>0, disp('Creating TXY files...'); end;
         for i=1:length(configs.files.id)
             %check for source - raw DLD file
             if ~fileExists([configs.files.path,num2str(configs.files.id(i)),'.txt'])
@@ -214,7 +214,7 @@ if ~use_saved_data
         end
     else
         % Using pre-built TXY files
-        if verbose>0, disp('Using pre-built TXY files...');, end;
+        if verbose>0, disp('Using pre-built TXY files...'); end;
         % Check for missing files
         for i=1:length(configs.files.id)
             if ~fileExists([configs.files.path,'_txy_forc',num2str(configs.files.id(i)),'.txt'])
@@ -228,7 +228,7 @@ if ~use_saved_data
     end
     
     % Check for low counts
-    if verbose>0,disp('Checking for low counts in TXY files...');,end;
+    if verbose>0,disp('Checking for low counts in TXY files...'); end;
     for i=1:length(configs.files.id)
         if fileExists([configs.files.path,'_txy_forc',num2str(configs.files.id(i)),'.txt'])
             txy_temp=txy_importer(configs.files.path,configs.files.id(i));    % import data in this txy to memory
@@ -254,12 +254,12 @@ if ~use_saved_data
     importokfiles=~(files.missing|files.lowcount);
     configs.files.idok=configs.files.id(importokfiles);     % ID's for OK files
     
-    if verbose>0,disp('Processing TXY files to generate data for analysis...');,end;
+    if verbose>0,disp('Processing TXY files to generate data for analysis...'); end;
     [halo,bec,culled,errflag]=distinguish_halo(configs,verbose);  % all the data processing on raw-TXY to generate halo data
     
     
     %% Save processed data
-    if verbose>0,disp('Saving data..');,end;
+    if verbose>0,disp('Saving data..'); end;
     % delete existing data
     if fileExists([configs.files.path,'data.mat'])
         delete([configs.files.path,'data.mat']);    
@@ -355,6 +355,9 @@ for i=1:2
 end
 
 % Get mean halo radius
+% TODO - is this the right way to calculated halo radii? - then it should
+% be reported
+R_halo_temp=zeros(2,1);
 for i=1:2
     halo_temp=vertcat(halo.k{:,i});
     R_halo_temp(i)=mean(sqrt(sum(halo_temp.^2,2)));

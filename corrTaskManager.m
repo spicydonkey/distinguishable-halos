@@ -125,7 +125,7 @@ clear g2_1d_tmp param0 fitparam_tmp fit_g2_tmp ax this_corr_type;
 
 %% Save processed data
 % Append to existing data file
-if VERBOSE>0,fprintf('Saving data...\n');,end;
+if VERBOSE>0,fprintf('Saving data...\n'); end;
 for i = 1:length(vars_save)
     if ~exist(vars_save{i},'var')
         warning(['Variable "',vars_save{i},'" does not exist.']);

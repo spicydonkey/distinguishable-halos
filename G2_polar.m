@@ -67,7 +67,7 @@ end
 
 % Initialise variables
 nShot=size(data1,1);     % number of shots in data
-if VERBOSE>1,disp([num2str(nShot),' shots to analyse for G2_polar...']);,end;
+if VERBOSE>1,disp([num2str(nShot),' shots to analyse for G2_polar...']); end;
 G2_SINGLE=zeros(nBin);
 G2_ALL=zeros(nBin);
 

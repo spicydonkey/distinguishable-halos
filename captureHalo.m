@@ -10,6 +10,7 @@ if ~exist('VERBOSE','var')
 end
 
 vars_save={'configs','halo','bec','culled','errflag'};  % a list of variables to save to file
+% configs needs to be overwritten to update new bec/halo capture settings
 
 if VERBOSE>0, fprintf('Beginning halo capture...\n'), end;
 %% MAIN
@@ -122,8 +123,6 @@ for i=1:length(f_idok)
         zxy_tail{i_cond}=ZXY_all{i}(ind_tail,:);  % counts in BEC tail
         ZXY_all{i}=ZXY_all{i}(~ind_tail,:);         % pop tail out
     end
-    
-    
     
     % save single-shot to a cell
     bec.zxy(i,:)=zxy_bec;	% BEC

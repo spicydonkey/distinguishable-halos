@@ -41,12 +41,12 @@ if VERBOSE>0, fprintf('Preparing TXY-files...\n'), end;
 for i=1:length(f_id)
     % TXY-file does not exist
     if ~fileExists([f_path,'_txy_forc',num2str(f_id(i)),'.txt'])
-        if VERBOSE>1, warning('Could not find TXY-file #%d.',f_id(i));, end;
+        if VERBOSE>1, warning('Could not find TXY-file #%d.',f_id(i)); end;
         
         % rawDLD source file exists
         if fileExists([f_path,num2str(f_id(i)),'.txt'])
             % Create TXY from DLD
-            if VERBOSE>0, warning('Creating TXY-file from raw source #%d.',f_id(i));, end;
+            if VERBOSE>0, warning('Creating TXY-file from raw source #%d.',f_id(i)); end;
             dld_raw_to_txy(f_path,f_id(i),f_id(i));
             files.build_txy(i)=1;
             
@@ -64,7 +64,7 @@ end
 % f_id=f_id(~files.missing);      % get ids for existing data files
 txy_all=cell(length(f_id),1);   % TXY data cell in window
 
-if VERBOSE>0, fprintf('Getting counts in window from TXY-files...\n');, end;
+if VERBOSE>0, fprintf('Getting counts in window from TXY-files...\n'); end;
 counter=1;
 for i=1:length(f_id)
     % pass for missing files
@@ -103,7 +103,7 @@ files.id_ok=f_id(~(files.missing|files.lowcount));
 
 %% Save processed data
 % if a file already exists it needs to be replaced
-if VERBOSE>0,fprintf('Saving data...\n');,end;
+if VERBOSE>0,fprintf('Saving data...\n'); end;
 if exist(configs.files.saveddata,'file')
     warning('Data file already exists. Moving existing file to archive...');
     % create archive directory

@@ -29,7 +29,7 @@ halo_fit.zxy0=halo_zxy0;     % DUMMY - no fitting
 
 %% Save processed data
 % Append to existing data file
-if VERBOSE>0,fprintf('Saving data...\n');,end;
+if VERBOSE>0,fprintf('Saving data...\n'); end;
 for i = 1:length(vars_save)
     if ~exist(vars_save{i},'var')
         warning(['Variable "',vars_save{i},'" does not exist.']);

@@ -83,7 +83,6 @@ if ncomp==2
         for i=1:nShot
             nAtom=size(data1{i},1); % number of counts in DATA1
             Npairs=size(data2{i},1);
-            diff_tmp=[];   % diff vectors for pair search
             
             for j=1:nAtom
                 % back-to-back condition
@@ -112,7 +111,6 @@ if ncomp==2
             %data_collated=vertcat(data2{:}); % collate all shots inc. self
             Ntotpair=size(data_collated,1);  % total number of counts in the cross-species
             nAtom=size(data1{i},1);
-            diff_tmp=[];
             
             for j=1:nAtom
                 % back-to-back condition
@@ -147,7 +145,6 @@ elseif ncomp==1
         for i=1:nShot
             shot_tmp=data1{i};
             nAtom=size(shot_tmp,1); % number of counts in this shot
-            diff_tmp=[];   % diff vectors for pair search
             
             for j=1:nAtom
                 % back-to-back condition
@@ -177,7 +174,6 @@ elseif ncomp==1
             %data_collated=vertcat(data2{:});   % collate all shots inc. self
             Ntotpair=size(data_collated,1);     % total number of counts to search pairs
             nAtom=size(data1{i},1);     % counts in this shot
-            diff_tmp=[];
             
             for j=1:nAtom
                 % back-to-back condition
