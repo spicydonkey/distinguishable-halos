@@ -16,15 +16,19 @@ if VERBOSE>0, fprintf('Beginning halo capture...\n'), end;
 t_fun_start=tic;
 configs=CONFIGS;
 
-% load saved file with windowed counts
-load(configs.files.saveddata,'txy_all','files');
-
-% get variables
-f_idok=files.id_ok;     % id's of files in txy_all
+% Parse input
 v_z=configs.misc.vel_z;	% z-velocity for T-Z conversion
 
 R_tail=configs.bec.dR_tail;     % estimated tail radius from BEC
 R_halo=configs.halo.dR;         % fractional error around estimtaed halo rad for cropping (TODO - sensitivity?)
+
+% load saved file with windowed counts
+files=struct([]);   % initialise 'files'
+load(configs.files.saveddata,'files');  % load files summary
+f_idok=files.id_ok;     % id's of files in txy_all (loaded ok from source)
+
+txy_all=cell(length(f_idok),1); % preallocate txy_all before loading
+load(configs.files.saveddata,'txy_all');    % load all counts
 
 % Initialise vars
 halo.zxy=cell(length(f_idok),2);    % halo counts
@@ -40,7 +44,7 @@ culled.fuzz.zxy=cell(length(f_idok),1);   % halo fuzz + background counts - 1D c
 for i=1:size(txy_all,1)
     txy_all{i}(:,1)=txy_all{i}(:,1)*v_z;    % ToF to Z
 end
-ZXY_all=txy_all;
+ZXY_all=txy_all;    % much easier to handle counts in ZXY
 clear txy_all;
 
 %% Process TXY data
@@ -130,8 +134,9 @@ end
 % assuming BEC centre lies on halo's Z-extremity and estimating halo
 % radii, apply radial crop
 errflag=false(size(f_idok));  % flag for bad shots
+zxy_halo=cell(1,2);     % temp for halo counts
+zxy0_halo=cell(1,2);    % temp for centred halo counts
 for i=1:length(f_idok)        % TODO: MAJOR BUG: treat f_id properly
-    zxy_halo=cell(1,2); % temp for halo counts
     for i_halo=1:2
         % add/subtract estimated halo radius in Z: HALO 1 should be the
         %   non-magnetic Raman outcoupled atoms - Halo must sit "ABOVE" the
@@ -211,7 +216,7 @@ end
 
 %% Save processed data
 % Append to existing data file with all counts
-if VERBOSE>0,fprintf('Saving data...\n');,end;
+if VERBOSE>0,fprintf('Saving data...\n'); end;
 for i = 1:length(vars_save)
     if ~exist(vars_save{i},'var')
         warning(['Variable "',vars_save{i},'" does not exist.']);
