@@ -124,6 +124,16 @@ for i = 1:length(vars_save)
     save(configs.files.saveddata,vars_save{i},'-v6','-append');     % -v6 version much faster (but no compression)?
 end
 
+%% Summary
+if VERBOSE>0
+    fprintf('===================IMPORT SUMMARY===================\n');
+    fprintf('Number of shots successfully loaded: %d\n',length(files.id_ok));
+    fprintf('Number of shots with counts below %d: %d\n',f_minCount,sum(files.lowcount));
+    fprintf('Number of missing files: %d\n',sum(files.missing));
+    fprintf('Number of files converted to TXY: %d\n',sum(files.build_txy));
+    fprintf('====================================================\n');
+end
+
 %% END
 t_fun_end=toc(t_fun_start);   % end of code
 if VERBOSE>0
