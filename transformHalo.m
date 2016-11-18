@@ -32,6 +32,7 @@ halo_tf.k=cell(size(halo_zxy0));
 % indepdent isotropic scaling to unit radius (normalisation)
 
 % Get mean halo radius for all shots combined
+R_halo_temp=zeros(2,1);
 for i=1:2
     halo_temp=vertcat(halo_zxy0{:,i});
     R_halo_temp(i)=mean(sqrt(sum(halo_temp.^2,2)));
@@ -55,7 +56,7 @@ for i = 1:length(vars_save)
         warning(['Variable "',vars_save{i},'" does not exist.']);
         continue;
     end
-    save(configs.files.saveddata,vars_save{i},'-append');
+    save(configs.files.saveddata,vars_save{i},'-v6','-append');
 end
 
 %% END

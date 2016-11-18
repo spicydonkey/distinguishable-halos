@@ -35,7 +35,7 @@ for i = 1:length(vars_save)
         warning(['Variable "',vars_save{i},'" does not exist.']);
         continue;
     end
-    save(configs.files.saveddata,vars_save{i},'-append');
+    save(configs.files.saveddata,vars_save{i},'-v6','-append');
 end
 
 %% END
