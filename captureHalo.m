@@ -225,6 +225,60 @@ for i = 1:length(vars_save)
 end
 
 
+%% Summary
+if VERBOSE>0
+    bec_num=zeros(size(halo.zxy0));     % BEC nums in shot (same size as halos)
+    halo_num=zeros(size(halo.zxy0));    % halo nums in shot
+    
+    bec_cent=cell(1,2);     % centres of BECs
+    bec_cent_mean=cell(1,2);
+    bec_cent_std=cell(1,2);
+    
+    halo_collated=cell(1,2);	% halo counts collated
+    
+    halo_radius=cell(1,2);      % approx radius of halos
+    halo_radius_mean=zeros(1,2);
+    halo_radius_std=zeros(1,2);
+    for i=1:2
+        % get number of counts captured for BEC/halo
+        for j=1:size(halo.zxy0,1)
+            bec_num(j,i)=size(bec.zxy{j,i},1);
+            halo_num(j,i)=size(halo.zxy0{j,i},1);
+        end
+        
+        % collate BEC centres
+        bec_cent{i}=vertcat(bec.cent{:,i});
+        bec_cent_mean{i}=mean(bec_cent{i},1);
+        bec_cent_std{i}=std(bec_cent{i},1);
+        
+        halo_collated{i}=vertcat(halo.zxy0{:,i});
+        % approx halo radius from all counts
+        % TODO - this should have already been calculated
+        halo_radius{i}=sqrt(sum(halo_collated{i}.^2,2));
+        halo_radius_mean(i)=mean(halo_radius{i});
+        halo_radius_std(i)=std(halo_radius{i});
+    end
+    bec_num_mean=mean(bec_num,1);
+    halo_num_mean=mean(halo_num,1);
+    bec_num_std=std(bec_num,1);
+    halo_num_std=std(halo_num,1);
+    
+    fprintf('====================HALO CAPTURE====================\n');
+    fprintf('Number of shots successful: %d\n',sum(~errflag));
+    fprintf('Number of shots with zero counts in captured halo: %d\n',sum(errflag));
+    fprintf('----------------------------------------------------\n');
+    fprintf('BEC counts: [%5.1f,%5.1f]±[%5.1f,%5.1f]\n',bec_num_mean,bec_num_std);
+    fprintf('Halo counts: [%3.1f,%3.1f]±[%3.1f,%3.1f]\n',halo_num_mean,halo_num_std);
+    fprintf('----------------------------------------------------\n');
+    for i=1:2
+        fprintf('BEC(%d) centre: [%.3e,%.3e,%.3e]±[%.3e,%.3e,%.3e]\n',i,bec_cent_mean{i},bec_cent_std{i});
+    end
+    fprintf('----------------------------------------------------\n');
+    fprintf('Halo radius: [%.3e,%.3e]±[%.3e,%.3e]\n',halo_radius_mean,halo_radius_std);
+    fprintf('====================================================\n');
+end
+
+
 %% END
 t_fun_end=toc(t_fun_start);   % end of code
 if VERBOSE>0
