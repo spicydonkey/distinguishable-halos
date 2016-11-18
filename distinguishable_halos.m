@@ -7,7 +7,7 @@
 % % [x] preproc - broad capture
 % % [] fit - fit halo
 % % [-] postproc - manipulations
-% % [x] analysis - TODO - check
+% % [x] analysis
 
 %% Load configurations
 set_config;     % set configurations
@@ -105,6 +105,7 @@ end
 %   Manipulate the halos to account for distortions:
 %     - e.g. spin in Z-axis, isotropic/anisotropic scaling, etc.
 %     - save to file
+%   * creates the 'zxy' cell array of finalised counts
 
 % no user settable params yet
 if do_next
@@ -117,9 +118,20 @@ end
 %   Correlation analysis (in angular, cartesian):
 %     - cross-halo
 %     - single-halo
-do_next=1;  %DEBUG
+
+
+if ~do_next
+    % check if analysis configs has changed
+    S_temp=load(configs.files.saveddata,'analysis');    % load prev analysis configs
+    if ~isequal(S_temp.analysis.corr,analysis.corr)
+        warning('Correlation analysis: prev saved data has different configs. Setting do_next=1.');
+        do_next=1;
+    end
+    clear S_temp;
+end
+
 % Correlation analysis
-if do_next||do_corr_analysis
+if do_next&&do_corr_analysis
     corrTaskManager(analysis,configs,verbose);
 end
 
