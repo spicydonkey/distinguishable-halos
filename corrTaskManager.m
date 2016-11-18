@@ -19,9 +19,10 @@ t_fun_start=tic;
 % get paths
 dir_output=configs.files.dirout;
 
-% load halo: fitted and transformed halo in k-space
-S_temp=load(configs.files.saveddata,'halo_tf');
-halo=S_temp.halo_tf;
+% load counts for correlation analysis
+S_temp=load(configs.files.saveddata,'zxy');
+zxy=cell(size(S_temp.zxy));    % preallocate size for MATLAB (not sure if this helps)
+zxy=S_temp.zxy;   % load the corr-ready data (transformed)
 clear S_temp;
 
 %% Do tasked correlation analysis
@@ -38,10 +39,10 @@ for iCorr=1:length(analysis.corr.type)
     end
     
     % Evaluate G2 correlation
-    % TODO - insert debug code for G2 and halo.k manipulator
-    [G2_shot_tmp,G2_all_tmp]=G2_caller(halo.k(:,analysis.corr.type{iCorr}.comp),...
+    % TODO - insert debug code for G2 and zxy manipulator
+    [G2_shot_tmp,G2_all_tmp]=G2_caller(zxy(:,analysis.corr.type{iCorr}.comp),...
         bin_edge_tmp,analysis.corr.type{iCorr}.coord,analysis.corr.type{iCorr}.opt,VERBOSE);
-    g2_tmp=size(halo.k,1)*G2_shot_tmp./G2_all_tmp;      % normalised g2
+    g2_tmp=size(zxy,1)*G2_shot_tmp./G2_all_tmp;      % normalised g2
     
     % Get results
     analysis.corr.bEdge{iCorr}=bin_edge_tmp;
@@ -74,7 +75,7 @@ for iCorr=1:length(analysis.corr.type)
     % Get integrated or sliced 1D correlation profile
     if isequal(this_corr_type,'angular')
         % integrate dk
-        g2_1d_tmp=size(halo.k,1)*sum(analysis.corr.G2shot{iCorr},1)./sum(analysis.corr.G2all{iCorr},1);
+        g2_1d_tmp=size(zxy,1)*sum(analysis.corr.G2shot{iCorr},1)./sum(analysis.corr.G2all{iCorr},1);
         
         plot(analysis.corr.bCent{iCorr}{2},g2_1d_tmp,'*');
         

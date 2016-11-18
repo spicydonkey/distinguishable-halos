@@ -1,10 +1,11 @@
-function [halo_tf]=transformHalo(CONFIGS,VERBOSE)
+function [zxy]=transformHalo(CONFIGS,VERBOSE)
 % Transform halos
 %
 % [] iso/aniso scaling
-%   [x] normalise --> halo_tf.k
+%   [x] normalise
 % [] Z-axis spin : but shouldn't have spun much at all
 %
+% FINAL counts are called: 'zxy'
 
 % input check
 if ~exist('VERBOSE','var')
@@ -12,7 +13,7 @@ if ~exist('VERBOSE','var')
     VERBOSE=0;
 end
 
-vars_save={'halo_tf'};
+vars_save={'zxy'};
 
 if VERBOSE>0, fprintf('Transforming halos...\n'), end;
 %% MAIN
@@ -25,7 +26,7 @@ halo_zxy0=S_temp.halo_fit.zxy0;  % get fitted halo counts (real space)
 clear S_temp;
 
 % Initialise vars
-halo_tf.k=cell(size(halo_zxy0));
+zxy=cell(size(halo_zxy0));
 
 % Do transforms here
 %% k-space transform
@@ -42,7 +43,7 @@ clear halo_temp;
 % Isometric scaling (normalisation)
 for i=1:size(halo_zxy0,1)
     for j=1:2
-        halo_tf.k{i,j}=halo_zxy0{i,j}/R_halo_temp(j);
+        zxy{i,j}=halo_zxy0{i,j}/R_halo_temp(j);
     end
 end
 clear R_halo_temp;
