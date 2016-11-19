@@ -132,22 +132,24 @@ if ncomp==2
     end
     
 elseif ncomp==1
+    % TODO - DEBUG: pairs should be counted just once
     %% Single component G(2) analysis
     for i=1:nShot
         shot_tmp=data1{i};
         nAtom=size(shot_tmp,1); % number of counts in this shot
-        diff_tmp=[];   % diff vectors for pair search
         
-        for j=1:nAtom
+        for j=1:(nAtom-1)   % skip last atom - no unique pairs
+            diff_tmp=[];   % initialise diff vectors for pair search 
+            
             this_atom=shot_tmp(j,:);    % ZXY-vector for this atom (to find pairs)
-            other_tmp=shot_tmp([1:j-1,j+1:end],:);  % all other counts in shot
+            other_tmp=shot_tmp((j+1):end,:);    % rem count available for unique pairing
             
             % Get rad/angular diff vectors for all pairs except self
             norm_this_atom=sqrt(sum(this_atom.^2,2));
             norm_tmp=sqrt(sum(other_tmp.^2,2));
             
             diff_tmp(:,1)=norm_tmp-norm_this_atom;
-            dotp_tmp=sum(other_tmp.*repmat(this_atom,[nAtom-1,1]),2);
+            dotp_tmp=sum(other_tmp.*repmat(this_atom,[nAtom-j,1]),2);
             diff_tmp(:,2)=real(acos(dotp_tmp./(norm_this_atom*norm_tmp)));
 
             G2_SINGLE=G2_SINGLE+nhist(diff_tmp,BIN_EDGE);   % update G2
@@ -167,14 +169,14 @@ elseif ncomp==1
     end
     
     % all shots - except self
-    for i=1:nShot
-        data_collated=vertcat(data1{[1:i-1,i+1:end]});  % all shots except self
-        %data_collated=vertcat(data2{:});   % collate all shots inc. self
+    for i=1:(nShot-1)   % skip last shot - no unique pairs
+        data_collated=vertcat(data1{(i+1):end});  % all shots except self
         Ntotpair=size(data_collated,1);     % total number of counts to search pairs
         nAtom=size(data1{i},1);     % counts in this shot
-        diff_tmp=[];
         
         for j=1:nAtom
+            diff_tmp=[];   % initialise diff vectors
+            
             this_atom=data1{i}(j,:);
             
             % Get rad/angular diff vectors for all pairs
