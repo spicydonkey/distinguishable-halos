@@ -185,7 +185,7 @@ if ncomp==2
     end
     
 elseif ncomp==1
-    % TODO - DEBUG: pairs should be counted just once
+    % TODO - BUG with CL because counts are ordered in Z (in a shot, CL-diff is always positive)
     %% Single component G(2) analysis
     if isequal(CORR_INFO,'BB')
         % Back-to-back G2 analysis
@@ -246,7 +246,7 @@ elseif ncomp==1
                 % colinear condition
                 this_atom=shot_tmp(j,:);    % ZXY-vector for this atom (to find pairs)
                 % Get "CL"-diff vectors for all pairs except self
-                diff_tmp=shot_tmp((j+1):end,:)-repmat(this_atom,[nAtom-j,1]);  % BB-diff for unique pairs
+                diff_tmp=shot_tmp((j+1):end,:)-repmat(this_atom,[nAtom-j,1]);  % CL-diff for unique pairs
                 
                 G2_SINGLE=G2_SINGLE+nhist(diff_tmp,BIN_EDGE);   % update G2
             end
