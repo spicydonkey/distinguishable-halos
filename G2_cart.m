@@ -185,6 +185,7 @@ if ncomp==2
     end
     
 elseif ncomp==1
+    % TODO - DEBUG: pairs should be counted just once
     %% Single component G(2) analysis
     if isequal(CORR_INFO,'BB')
         % Back-to-back G2 analysis
@@ -192,11 +193,11 @@ elseif ncomp==1
             shot_tmp=data1{i};
             nAtom=size(shot_tmp,1); % number of counts in this shot
             
-            for j=1:nAtom
+            for j=1:(nAtom-1)   % skip last atom - no unique pairs left
                 % back-to-back condition
                 this_atom=shot_tmp(j,:);    % ZXY-vector for this atom (to find pairs)
                 % Get BB-diff vectors for all pairs except self
-                diff_tmp=shot_tmp([1:j-1,j+1:end],:)+repmat(this_atom,[nAtom-1,1]);     % BB-diff condition
+                diff_tmp=shot_tmp((j+1):end,:)+repmat(this_atom,[nAtom-j,1]);  % BB-diff for unique pairs
                 
                 G2_SINGLE=G2_SINGLE+nhist(diff_tmp,BIN_EDGE);   % update G2
             end
@@ -215,16 +216,15 @@ elseif ncomp==1
         end
         
         % all shots - except self
-        for i=1:nShot
-            data_collated=vertcat(data1{[1:i-1,i+1:end]});  % all shots except self
-            %data_collated=vertcat(data2{:});   % collate all shots inc. self
+        for i=1:(nShot-1)     % skip last shot - no unique pairs left
+            data_collated=vertcat(data1{(i+1):end});  % all shots except self and unique pairs
             Ntotpair=size(data_collated,1);     % total number of counts to search pairs
             nAtom=size(data1{i},1);     % counts in this shot
             
             for j=1:nAtom
                 % back-to-back condition
                 this_atom=data1{i}(j,:);
-                diff_tmp=data_collated+repmat(this_atom,[Ntotpair,1]);   % diff for BB
+                diff_tmp=data_collated+repmat(this_atom,[Ntotpair,1]);   % BB-diff
                 
                 G2_ALL=G2_ALL+nhist(diff_tmp,BIN_EDGE); % update G2
             end
@@ -242,11 +242,11 @@ elseif ncomp==1
             shot_tmp=data1{i};
             nAtom=size(shot_tmp,1); % number of counts in this shot
             
-            for j=1:nAtom
+            for j=1:(nAtom-1) % skip last atom - no unique pairs left
                 % colinear condition
                 this_atom=shot_tmp(j,:);    % ZXY-vector for this atom (to find pairs)
                 % Get "CL"-diff vectors for all pairs except self
-                diff_tmp=shot_tmp([1:j-1,j+1:end],:)-repmat(this_atom,[nAtom-1,1]);
+                diff_tmp=shot_tmp((j+1):end,:)-repmat(this_atom,[nAtom-j,1]);  % BB-diff for unique pairs
                 
                 G2_SINGLE=G2_SINGLE+nhist(diff_tmp,BIN_EDGE);   % update G2
             end
@@ -265,8 +265,9 @@ elseif ncomp==1
         end
         
         % all shots - except self
-        for i=1:nShot
-            data_collated=vertcat(data1{[1:i-1,i+1:end]});  % all shots except self
+        for i=1:(nShot-1)  % skip last shot - no unique pairs left
+            %data_collated=vertcat(data1{[1:i-1,i+1:end]});  % all shots except self
+            data_collated=vertcat(data1{(i+1):end});  % all shots except self and unique pairs
             Ntotpair=size(data_collated,1);     % total number of counts to search pairs
             nAtom=size(data1{i},1);     % counts in this shot
             
