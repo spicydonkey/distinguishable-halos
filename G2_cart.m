@@ -246,8 +246,8 @@ elseif ncomp==1
                 % colinear condition
                 this_atom=shot_tmp(j,:);    % ZXY-vector for this atom (to find pairs)
                 % Get "CL"-diff vectors for all pairs except self
-                diff_tmp=shot_tmp((j+1):end,:)-repmat(this_atom,[nAtom-j,1]);  % CL-diff for unique pairs
-                
+                %diff_tmp=shot_tmp((j+1):end,:)-repmat(this_atom,[nAtom-j,1]);  % CL-diff for unique pairs
+                diff_tmp=abs(shot_tmp((j+1):end,:)-repmat(this_atom,[nAtom-j,1]));  % remove ordering by subtraction with abs
                 G2_SINGLE=G2_SINGLE+nhist(diff_tmp,BIN_EDGE);   % update G2
             end
             
