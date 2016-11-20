@@ -274,7 +274,7 @@ elseif ncomp==1
             for j=1:nAtom
                 % colinear condition
                 this_atom=data1{i}(j,:);
-                diff_tmp=data_collated-repmat(this_atom,[Ntotpair,1]);
+                diff_tmp=abs(data_collated-repmat(this_atom,[Ntotpair,1]));
                 
                 G2_ALL=G2_ALL+nhist(diff_tmp,BIN_EDGE); % update G2
             end
