@@ -73,7 +73,7 @@ for iCorr=1:length(analysis.corr.type)
     this_corr_type=analysis.corr.type{iCorr}.coord;
     % Get integrated or sliced 1D correlation profile
     if isequal(this_corr_type,'angular')
-        % integrate dk
+        % TODO: correlations - dk integrated (may reduce peak height)
         g2_1d_tmp=size(zxy,1)*sum(result.corr.G2shot{iCorr},1)./sum(result.corr.G2all{iCorr},1);
         
         plot(result.corr.bCent{iCorr}{2},g2_1d_tmp,'*');
@@ -85,17 +85,26 @@ for iCorr=1:length(analysis.corr.type)
         xlabel('$\Delta\theta$'); ylabel('$\bar{g}^{(2)}$');
         xlim([0,pi]); ylim auto;
         
-        % Gaussian fit
+        % Gaussian fit (angular G2 allows fitting both BB,CL)
+        % BB fit
         param0=[4,pi,0.1,1];     % fit estimate [amp,mu,sigma,offset]
         [fitparam_tmp,fit_g2_tmp]=gaussfit(result.corr.bCent{iCorr}{2},g2_1d_tmp,param0,VERBOSE);
         plot(ax,fit_g2_tmp.x,fit_g2_tmp.y,'r');     % plot the fit
+        hold(ax,'off');
+        
+        % CL fit
+        param0=[2,0,0.1,1];
+        [fitparam_tmpCL,fit_g2_tmpCL]=gaussfit(result.corr.bCent{iCorr}{2},g2_1d_tmp,param0,VERBOSE);
+        hold(ax,'on');
+        plot(ax,fit_g2_tmpCL.x,fit_g2_tmpCL.y,'b--');
         hold(ax,'off');
         
     elseif isequal(this_corr_type,'cart')
         % TODO - do in X/Y?
         % Get line through Z-axis
         ind_zero_tmp=round((analysis.corr.nBin{iCorr}+1)/2);    % zero-cent'd bin index for sampling 3D-g2
-        plot(result.corr.bCent{iCorr}{1},result.corr.g2{iCorr}(:,ind_zero_tmp(2),ind_zero_tmp(3)),'*');
+        plot(result.corr.bCent{iCorr}{1},...
+            result.corr.g2{iCorr}(:,ind_zero_tmp(2),ind_zero_tmp(3)),'*');
         
         hold(ax,'on');
         title_str=['(',num2str(analysis.corr.type{iCorr}.comp),') halos, ',...
@@ -104,8 +113,14 @@ for iCorr=1:length(analysis.corr.type)
         xlabel('$\Delta K_z$'); ylabel(['$g^{(2)}_{',analysis.corr.type{iCorr}.opt,'}$']);
         
         % Gaussian fit
-        param0=[4,0,0.1,1];     % fit estimate [amp,mu,sigma,offset]
-        [fitparam_tmp,fit_g2_tmp]=gaussfit(result.corr.bCent{iCorr}{1},result.corr.g2{iCorr}(:,ind_zero_tmp(2),ind_zero_tmp(3)),param0,VERBOSE);
+        % Set initial params
+        if strcmp(analysis.corr.type{iCorr}.opt,'BB')
+            param0=[4,0,0.1,1];     % fit estimate [amp,mu,sigma,offset]
+        else
+            param0=[2,0,0.1,1];     % CL peaks at 2
+        end
+        [fitparam_tmp,fit_g2_tmp]=gaussfit(result.corr.bCent{iCorr}{1},...
+            result.corr.g2{iCorr}(:,ind_zero_tmp(2),ind_zero_tmp(3)),param0,VERBOSE);
         plot(ax,fit_g2_tmp.x,fit_g2_tmp.y,'r');     % plot the fit
         hold(ax,'off');
         
