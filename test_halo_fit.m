@@ -46,8 +46,12 @@ for ii=1:2
     lighting phong;
 end
 
+halo_orig=DATA.halo.zxy0;
+nShot=size(halo_orig,1);
+halo_fitted=cell(size(halo_orig));
 % Filter well-fit counts
 for ii=1:2
-    
-    
+    for jj=1:nShot
+        % some kind of radial mask around the ellipsoid fit
+    end
 end
