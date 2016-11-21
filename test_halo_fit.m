@@ -11,7 +11,7 @@ halo=DATA.halo.zxy0;        % get oscillation compensated halo in cell form
 halo=collate_shots(halo);   % collate the halo counts (ZXY)
 
 % Ellipsoid fit to data
-figure();
+
 for ii=1:2
     % get data points
     x=halo{ii}(:,2);
@@ -22,7 +22,7 @@ for ii=1:2
     [center{ii}, radii{ii}, evecs{ii}, v{ii}, chi2{ii} ] = ellipsoid_fit( [ x y z ],'0');
     
     % draw fit
-    subplot(2,1,ii);
+    figure();
     plot3(x,y,z,'.r');
     hold on;
     
@@ -39,11 +39,14 @@ for ii=1:2
     
     p{ii} = patch( isosurface( x, y, z, Ellipsoid, -v{ii}(10) ));
     hold off;
-    set( p{ii}, 'FaceColor', 'g', 'EdgeColor', 'none','FaceAlpha',0.5);
+    set( p{ii}, 'FaceColor', 'g', 'EdgeColor', 'none','FaceAlpha',0.7);
     view( -70, 40 );
     axis vis3d equal;
     camlight;
     lighting phong;
+    
+    title(sprintf('Ellipsoid fit to halo #%d',ii));
+    xlabel('X'); ylabel('Y'); zlabel('Z');
 end
 
 halo_orig=DATA.halo.zxy0;
