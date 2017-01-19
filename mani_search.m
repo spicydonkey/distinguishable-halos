@@ -7,8 +7,8 @@ set_config;
 configs=usrconfigs;     % copy to protect usrconfigs
 
 % Manipulation search space
-zxy_scale=linspace(0.9,1.1,20);    % test manip param space - scaling
-
+zxy_scale=linspace(0.9,1.1,3);    % test manip param space - scaling
+% zxy_scale=linspace(1,1,1); % test
 
 %% load halo data
 S_temp=load(configs.files.saveddata,'zxy');
@@ -49,20 +49,22 @@ for ii_1=1:length(zxy_scale)
             [G2_single,G2_all]=G2_angular(halo_manip,bin_edge_tmp,verbose);
             g2=nshot*G2_single./G2_all;
             
-            % plot and save
-            [drad,dtheta]=meshgrid(bin_cent_tmp{1},bin_cent_tmp{2});
-            figure(1);
-            surf(drad',dtheta',g2,'edgecolor','none');
-            title_str=['Iter num: ',num2str(N),', scale=',num2str(scale_vect)];
-            title(title_str);
-            xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$g^{(2)}_{(1,2)}$');
-            axis tight;
-            shading interp;
+            %% g2 plot
+%             [drad,dtheta]=meshgrid(bin_cent_tmp{1},bin_cent_tmp{2});
+%             figure(1);
+%             surf(drad',dtheta',g2,'edgecolor','none');
+%             title_str=['Iter num: ',num2str(N),', scale=',num2str(scale_vect)];
+%             title(title_str);
+%             xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$g^{(2)}_{(1,2)}$');
+%             axis tight;
+%             shading interp;
+%             
+%             saveas(gcf,[configs.files.archive,'\o_',num2str(N),'.png']);
+% %             saveas(gcf,[configs.files.archive,'\o_test',num2str(N),'.png']);    % test
             
-            saveas(gcf,[configs.files.archive,'\o_',num2str(N),'.png']);
-            
-            % save result
-            save([configs.files.archive,'\o_',num2str(N),'.mat'],'g2','scale_vect');
+            %% save data
+            save([configs.files.archive,'\o_',num2str(N),'.mat'],'G2_single','G2_all','g2','scale_vect');
+%             save([configs.files.archive,'\o_test',num2str(N),'.mat'],'G2_single','G2_all','g2','scale_vect');    % test
         end
     end
 end
