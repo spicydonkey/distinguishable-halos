@@ -47,6 +47,7 @@ for i=1:bin_dim
 end
 drad=bin_cent_tmp{1};
 dtheta=bin_cent_tmp{2};     % g2 delta theta vector
+[DRAD,DTHETA]=meshgrid(drad,dtheta);    % create mesh grid for 3D-plots
 
 %% Collate runs
 % get data files
@@ -67,35 +68,66 @@ for i=1:iterN
     jj=mod(floor((thisN-1)/pardiv_zxy_scale),pardiv_zxy_scale)+1;
     ii=mod(floor((thisN-1)/(pardiv_zxy_scale^2)),pardiv_zxy_scale)+1;
     
-    % get summary results from this run
-    g2_max(ii,jj,kk)=max(sum(data_tmp.g2,1)/size(data_tmp.g2,1));   % max of integrated
+    % evaluate normalised g2 in angular-radial
+    g2=data_tmp.nshot*data_tmp.G2_single./data_tmp.G2_all;  % this is noisy, don't understand well why
     
-    %EXAMPLE
-    fig_ex=figure(11);
+    % get radially integrated g2 (angular g2) (avg along dim-1)
+    G2_single_ang=(sum(data_tmp.G2_single,1)/size(data_tmp.G2_single,1));
+    G2_all_ang=(sum(data_tmp.G2_all,1)/size(data_tmp.G2_all,1));
+    g2_ang=data_tmp.nshot*G2_single_ang./G2_all_ang;    % get angular-g2 (1D)
+    
+    % store ang-g2 amplitude
+    g2_max(ii,jj,kk)=max(g2_ang);   % max of integrated
+
+    %% plot angular-g2 over all params searched
+    fig_g2_1D=figure(11);
     hold on;
-    plot(dtheta,sum(data_tmp.g2,1)/size(data_tmp.g2,1));
+    plot(dtheta,g2_ang);
     if i==1
         title('Integrated $g^2$ from manipulated halo');
-        xlabel('$\theta$');
+        xlabel('$\Delta\theta$');
         ylabel('$g^2$');
         xlim([min(dtheta),max(dtheta)]);
+        box on;
+        set(gca,'LooseInset',get(gca,'TightInset'));    % set figure tight
     end
-%     drawnow;    % slow
 
-    %% plot g2
-    [DRAD,DTHETA]=meshgrid(drad,dtheta);
+    %% plot g2 measures
     fig_g2=figure(21);
-    surf(DRAD',DTHETA',data_tmp.g2,'edgecolor','none');
-    title(strcat('ZXY-stretch = ',num2str([zxy_scale(ii),zxy_scale(jj),zxy_scale(kk)])));
+    % G2 in each shot
+    subplot(1,3,1);
+    surf(DRAD',DTHETA',data_tmp.G2_single,'edgecolor','none');
+    xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{corr}$');
+    axis tight;
+    shading interp;
+    
+    % G2 across uncorrelated runs (scaled)
+    subplot(1,3,2);
+    surf(DRAD',DTHETA',data_tmp.G2_all/data_tmp.nshot,'edgecolor','none');
+    xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$G^{(2)}_{uncorr}$');
+    axis tight;
+    shading interp;
+    
+    % normalised g2
+    subplot(1,3,3);
+    surf(DRAD',DTHETA',g2,'edgecolor','none');
+%     title(strcat('ZXY-stretch = ',num2str([zxy_scale(ii),zxy_scale(jj),zxy_scale(kk)])));
     xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$g^{(2)}$');
     axis tight;
     shading interp;
     
+    % title
+    suplabel(strcat('ZXY-stretch = ',num2str([zxy_scale(ii),zxy_scale(jj),zxy_scale(kk)])),'t');
+    
     drawnow;
+    
     saveas(fig_g2,['output\g2_',num2str(i),'.png']);
 end
 
-%% Summary
+% Save figure
+saveas(fig_g2_1D,'output\g2_angular.png');
+
+%% Summary from collated
 % Max g2 in eps_x and eps_y
 eps_x=zxy_scale-1;
 eps_y=eps_x;    % symmetric param space
