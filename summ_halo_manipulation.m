@@ -143,6 +143,9 @@ for ii_plot=1:size(g2_max,1)
     xlim([min(eps_x),max(eps_x)]);
     ylim([min(eps_y),max(eps_y)]);
     
+    box on;
+    set(gca,'LooseInset',get(gca,'TightInset'));    % set figure tight
+    
     drawnow;
     saveas(H,['output\zz_',num2str(ii_plot),'.png']);
 end
