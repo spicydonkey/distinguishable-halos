@@ -7,7 +7,7 @@ set_config;
 configs=usrconfigs;     % copy to protect usrconfigs
 
 % Manipulation search space
-zxy_scale=linspace(0.9,1.1,3);    % test manip param space - scaling
+zxy_scale=linspace(0.9,1.1,7);    % test manip param space - scaling
 % zxy_scale=linspace(1,1,1); % test
 
 %% load halo data
@@ -36,7 +36,8 @@ for ii_1=1:length(zxy_scale)
     for ii_2=1:length(zxy_scale)
         for ii_3=1:length(zxy_scale)
             % iter N
-            N=N+1
+            N=N+1;
+            fprintf('N = %6d\t(%3d,%3d,%3d)\n',N,ii_1,ii_2,ii_3);
             
             % get manip params for this iteration
             scale_vect=[zxy_scale(ii_1),zxy_scale(ii_2),zxy_scale(ii_3)];   % zxy scaling
@@ -47,24 +48,16 @@ for ii_1=1:length(zxy_scale)
             end
             
             [G2_single,G2_all]=G2_angular(halo_manip,bin_edge_tmp,verbose);
-            g2=nshot*G2_single./G2_all;
-            
-            %% g2 plot
-%             [drad,dtheta]=meshgrid(bin_cent_tmp{1},bin_cent_tmp{2});
-%             figure(1);
-%             surf(drad',dtheta',g2,'edgecolor','none');
-%             title_str=['Iter num: ',num2str(N),', scale=',num2str(scale_vect)];
-%             title(title_str);
-%             xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel('$g^{(2)}_{(1,2)}$');
-%             axis tight;
-%             shading interp;
-%             
-%             saveas(gcf,[configs.files.archive,'\o_',num2str(N),'.png']);
-% %             saveas(gcf,[configs.files.archive,'\o_test',num2str(N),'.png']);    % test
+%             g2=nshot*G2_single./G2_all;    % don't really need g2 (since
+%             it can be calculated from unnormalised G2's?
             
             %% save data
-            save([configs.files.archive,'\o_',num2str(N),'.mat'],'G2_single','G2_all','g2','scale_vect');
-%             save([configs.files.archive,'\o_test',num2str(N),'.mat'],'G2_single','G2_all','g2','scale_vect');    % test
+            % TODO: shouldn't need nshot - should be collected from some
+            % kind of summary of original halo data (since manipulation
+            % keeps all shots)
+            % TODO: for same reason, wouldn't need scale_vect as well since
+            % it will be determined from file number token "N"
+            save([configs.files.archive,'\o_',num2str(N),'.mat'],'G2_single','G2_all','scale_vect','nshot');
         end
     end
 end
