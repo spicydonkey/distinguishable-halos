@@ -1,7 +1,7 @@
 % PLOT ZXY DATA
 % DKS 
 
-function plot_zxy(FIG,ZXY,SIZE,COLORS)
+function plot_zxy(ZXY,FIG,SIZE,COLORS)
 if ~iscell(ZXY)
     warning('ZXY must be a cell array.');
     return;
@@ -21,7 +21,7 @@ figure(FIG); hold on;
 n_species=size(ZXY,2);
 for i=1:n_species
     temp_zxy=vertcat(ZXY{:,i});
-    scatter_zxy(FIG,temp_zxy,SIZE,COLORS(i));
+    scatter_zxy(temp_zxy,FIG,SIZE,COLORS(i));
 end
 
 end

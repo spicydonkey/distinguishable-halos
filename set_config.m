@@ -29,7 +29,7 @@ usrconfigs.halo.dR{1}=0.15;      % broad radial mask fractional width (in/out)
 usrconfigs.halo.R{2}=10e-3;
 usrconfigs.halo.dR{2}=0.15;
 
-usrconfigs.halo.zcap=0.75;   % z-cutoff (fractional wrt radius)
+usrconfigs.halo.zcap=0.7;   % z-cutoff (fractional wrt radius)
 
 %%% MISCELLANEOUS
 usrconfigs.misc.vel_z=9.8*0.430;    % atom free-fall vert v at detector hit for T-to-Z conversion;
@@ -41,7 +41,7 @@ analysis.corr.type{1}.coord='angular';      % angular coordinate
 analysis.corr.type{1}.opt=[];               % 'angular' has no optional feature atm
 analysis.corr.lim{1}{1}=0.2*[-1,1];  % bin limits - radial separation
 analysis.corr.lim{1}{2}=pi*[0.7,1];      % bin limits - angular separation
-analysis.corr.nBin{1}=[21,41];          % number of bins
+analysis.corr.nBin{1}=[11,31];          % number of bins
 
 % 2. Cross-halo cartesian BB-correlations
 analysis.corr.type{2}.comp=[1,2];           % components to analysis: cross halo 1,2
