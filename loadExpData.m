@@ -29,6 +29,8 @@ f_id=CONFIGS.files.id;      % get files id's to process
 f_path=CONFIGS.files.path;  % get path to file (no id token)
 f_minCount=CONFIGS.files.minCount;  % min count in TXY to flag as errorneous
 
+dir_output=configs.files.dirout;    % output directory
+
 % Initialiase variables
 % file output flags
 files.build_txy=false(length(f_id),1);      % dld files processed to txy
@@ -100,6 +102,16 @@ txy_all(counter:end)=[];    % delete all empty cells
 
 % evaluate files successfully processed: id_ok
 files.id_ok=f_id(~(files.missing|files.lowcount));
+
+%% Plot captured counts (TXY)
+h_zxy_all=figure();     % create figure
+plot_zxy(txy_all,1,'k');
+title('All counts');
+xlabel('X [m]'); ylabel('Y [m]'); zlabel('T [s]');
+
+% save plot
+fname_str='all_counts';
+saveas(h_zxy_all,[dir_output,fname_str,'.png']);
 
 %% Save processed data
 % if a file already exists it needs to be replaced

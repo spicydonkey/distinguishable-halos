@@ -31,6 +31,8 @@ f_idok=files.id_ok;     % id's of files in txy_all (loaded ok from source)
 txy_all=cell(length(f_idok),1); % preallocate txy_all before loading
 load(configs.files.saveddata,'txy_all');    % load all counts
 
+dir_output=configs.files.dirout;    % output directory
+
 % Initialise vars
 halo.zxy=cell(length(f_idok),2);    % halo counts
 halo.zxy0=cell(length(f_idok),2);   % halo counts (oscillations compensated)
@@ -212,6 +214,23 @@ if nBadshots>0
     culled.tail.zxy=culled.tail.zxy(~errflag,:);
 end
 
+%% Plot captured halo
+% All captured counts (halo only)
+h_haloraw=figure();     % create figure instance for each plot
+plot_zxy(halo.zxy,1);
+title('captured halos');
+xlabel('X [m]'); ylabel('Y [m]'); zlabel('Z [m]');
+fname_str='halo_raw';
+saveas(h_haloraw,[dir_output,fname_str,'.png']);    % save plot to output dir
+
+% Halo (oscillation compensated, etc)
+h_halooc=figure();
+plot_zxy(halo.zxy0,1);
+title('halos: oscillation compensated');
+xlabel('X [m]'); ylabel('Y [m]'); zlabel('Z [m]');
+fname_str='halo_oc';
+saveas(h_halooc,[dir_output,fname_str,'.png']);    % save plot to output dir
+saveas(h_halooc,[dir_output,fname_str,'.fig']);    % save a fig file
 
 %% Save processed data
 % Append to existing data file with all counts
