@@ -6,8 +6,12 @@ clear all; close all; clc;
 set_config;
 configs=usrconfigs;     % copy to protect usrconfigs
 
+% file save dir
+dir_save=strcat(configs.files.archive,'\',num2str(floor(rand()*100)));
+mkdir(dir_save);
+
 % Manipulation search space
-zxy_scale=linspace(0.9,1.1,7);    % test manip param space - scaling
+zxy_scale=linspace(0.9,1.1,20);    % test manip param space - scaling
 % zxy_scale=linspace(1,1,1); % test
 
 %% load halo data
@@ -57,7 +61,7 @@ for ii_1=1:length(zxy_scale)
             % keeps all shots)
             % TODO: for same reason, wouldn't need scale_vect as well since
             % it will be determined from file number token "N"
-            save([configs.files.archive,'\o_',num2str(N),'.mat'],'G2_single','G2_all','scale_vect','nshot');
+            save([dir_save,'\o_',num2str(N),'.mat'],'G2_single','G2_all','scale_vect','nshot');
         end
     end
 end

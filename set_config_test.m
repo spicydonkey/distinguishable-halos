@@ -1,9 +1,9 @@
 % Configuration file for distinguishable_halos.m
 
 %%% GENERAL
-do_corr_analysis=0;
-force_all_stages=0;    % force all the stages to run (useful for debug)
-verbose=0;
+do_corr_analysis=1;
+force_all_stages=1;    % force all the stages to run (useful for debug)
+verbose=2;
 
 %%% Raw data handling
 % files -  data file
@@ -43,49 +43,49 @@ analysis.corr.lim{1}{1}=0.2*[-1,1];  % bin limits - radial separation
 analysis.corr.lim{1}{2}=pi*[0.7,1];      % bin limits - angular separation
 analysis.corr.nBin{1}=[11,31];          % number of bins
 
-% % 2. Cross-halo cartesian BB-correlations
-% analysis.corr.type{2}.comp=[1,2];           % components to analysis: cross halo 1,2
-% analysis.corr.type{2}.coord='cart';         % Cartesian (ZXY)
-% analysis.corr.type{2}.opt='BB';             % BB / CL
-% analysis.corr.lim{2}{1}=0.8*[-1,1]; % bin limits - Z
-% analysis.corr.lim{2}{2}=0.8*[-1,1]; % bin limits - X
-% analysis.corr.lim{2}{3}=0.8*[-1,1]; % bin limits - Y
-% analysis.corr.nBin{2}=[51,13,13];   % number of bins
-% 
-% % 3. Single-halo (1) rad/angular correlations
-% analysis.corr.type{3}.comp=1;           % single component
-% analysis.corr.type{3}.coord='angular';
-% analysis.corr.type{3}.opt=[];
-% analysis.corr.lim{3}{1}=0.3*[-1,1];  % bin limits - radial separation
-% analysis.corr.lim{3}{2}=[0,pi];      % bin limits - angular separation
-% analysis.corr.nBin{3}=[11,101];          % number of bins
-% 
-% % 4. Single-halo (1) cartesian BB-correlations
-% analysis.corr.type{4}.comp=1;
-% analysis.corr.type{4}.coord='cart';
-% analysis.corr.type{4}.opt='BB';
-% analysis.corr.lim{4}{1}=0.8*[-1,1]; % bin limits - Z
-% analysis.corr.lim{4}{2}=0.8*[-1,1]; % bin limits - X
-% analysis.corr.lim{4}{3}=0.8*[-1,1]; % bin limits - Y
-% analysis.corr.nBin{4}=[51,13,13];   % number of bins
-% 
-% % 5. Cross-halo cartesian CL-correlations
-% analysis.corr.type{5}.comp=[1,2];
-% analysis.corr.type{5}.coord='cart';
-% analysis.corr.type{5}.opt='CL';
-% analysis.corr.lim{5}{1}=0.8*[-1,1]; % bin limits - Z
-% analysis.corr.lim{5}{2}=0.8*[-1,1]; % bin limits - X
-% analysis.corr.lim{5}{3}=0.8*[-1,1]; % bin limits - Y
-% analysis.corr.nBin{5}=[51,13,13];   % number of bins
-% 
-% % 6. Single-halo (1) cartesian CL-correlations
-% analysis.corr.type{6}.comp=1;
-% analysis.corr.type{6}.coord='cart';
-% analysis.corr.type{6}.opt='CL';
-% analysis.corr.lim{6}{1}=0.8*[-1,1]; % bin limits - Z
-% analysis.corr.lim{6}{2}=0.8*[-1,1]; % bin limits - X
-% analysis.corr.lim{6}{3}=0.8*[-1,1]; % bin limits - Y
-% analysis.corr.nBin{6}=[51,13,13];   % number of bins
+% 2. Cross-halo cartesian BB-correlations
+analysis.corr.type{2}.comp=[1,2];           % components to analysis: cross halo 1,2
+analysis.corr.type{2}.coord='cart';         % Cartesian (ZXY)
+analysis.corr.type{2}.opt='BB';             % BB / CL
+analysis.corr.lim{2}{1}=0.8*[-1,1]; % bin limits - Z
+analysis.corr.lim{2}{2}=0.8*[-1,1]; % bin limits - X
+analysis.corr.lim{2}{3}=0.8*[-1,1]; % bin limits - Y
+analysis.corr.nBin{2}=[51,13,13];   % number of bins
+
+% 3. Single-halo (1) rad/angular correlations
+analysis.corr.type{3}.comp=1;           % single component
+analysis.corr.type{3}.coord='angular';
+analysis.corr.type{3}.opt=[];
+analysis.corr.lim{3}{1}=0.3*[-1,1];  % bin limits - radial separation
+analysis.corr.lim{3}{2}=[0,pi];      % bin limits - angular separation
+analysis.corr.nBin{3}=[11,101];          % number of bins
+
+% 4. Single-halo (1) cartesian BB-correlations
+analysis.corr.type{4}.comp=1;
+analysis.corr.type{4}.coord='cart';
+analysis.corr.type{4}.opt='BB';
+analysis.corr.lim{4}{1}=0.8*[-1,1]; % bin limits - Z
+analysis.corr.lim{4}{2}=0.8*[-1,1]; % bin limits - X
+analysis.corr.lim{4}{3}=0.8*[-1,1]; % bin limits - Y
+analysis.corr.nBin{4}=[51,13,13];   % number of bins
+
+% 5. Cross-halo cartesian CL-correlations
+analysis.corr.type{5}.comp=[1,2];
+analysis.corr.type{5}.coord='cart';
+analysis.corr.type{5}.opt='CL';
+analysis.corr.lim{5}{1}=0.8*[-1,1]; % bin limits - Z
+analysis.corr.lim{5}{2}=0.8*[-1,1]; % bin limits - X
+analysis.corr.lim{5}{3}=0.8*[-1,1]; % bin limits - Y
+analysis.corr.nBin{5}=[51,13,13];   % number of bins
+
+% 6. Single-halo (1) cartesian CL-correlations
+analysis.corr.type{6}.comp=1;
+analysis.corr.type{6}.coord='cart';
+analysis.corr.type{6}.opt='CL';
+analysis.corr.lim{6}{1}=0.8*[-1,1]; % bin limits - Z
+analysis.corr.lim{6}{2}=0.8*[-1,1]; % bin limits - X
+analysis.corr.lim{6}{3}=0.8*[-1,1]; % bin limits - Y
+analysis.corr.nBin{6}=[51,13,13];   % number of bins
 
 %     % #. <TEMPLATE ANGULAR>
 %     analysis.corr.type{#}.comp=[1,2];           % components to analysis: cross halo 1,2

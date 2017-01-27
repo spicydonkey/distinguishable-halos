@@ -17,9 +17,10 @@ if VERBOSE>0, fprintf('Beginning halo capture...\n'), end;
 t_fun_start=tic;
 configs=CONFIGS;
 
-% Parse input
-v_z=configs.misc.vel_z;	% z-velocity for T-Z conversion
+% Exp constants
+v_z=9.8*0.430;    % atom free-fall vert v at detector hit for T-to-Z conversion
 
+% Parse input
 R_tail=configs.bec.dR_tail;     % estimated tail radius from BEC
 R_halo=configs.halo.dR;         % fractional error around estimtaed halo rad for cropping (TODO - sensitivity?)
 

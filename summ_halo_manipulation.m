@@ -125,7 +125,7 @@ for i=1:iterN
 end
 
 % Save figure
-saveas(fig_g2_1D,'output\g2_angular.png');
+saveas(fig_g2_1D,'output\collated_angular_g2.png');
 
 %% Summary from collated
 % Max g2 in eps_x and eps_y
