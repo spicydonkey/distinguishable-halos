@@ -1,7 +1,9 @@
 function [txy_all,files]=loadExpData(CONFIGS,VERBOSE)
-% Loads raw-data DLD/TXY and get counts in region of interest and save to
-% file
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Loads raw-data DLD/TXY and get counts in region of interest (after XY rotation) and 
+% save to file
 %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % INPUT
 % CONFIGS
 %   has fields:     files.id,.path,.minCount 
@@ -13,6 +15,9 @@ function [txy_all,files]=loadExpData(CONFIGS,VERBOSE)
 %
 % Saves the data (txy_all, files) to file + configs used
 %
+%%%%%%%%%%%%%%%%% LOG %%%%%%%%%%%%%%%%%
+% TODO 31/01/17 | DKS | XY rotation implemented (before crop)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if ~exist('VERBOSE','var')
     VERBOSE=0;  % default verbose is quiet
@@ -37,6 +42,12 @@ files.build_txy=false(length(f_id),1);      % dld files processed to txy
 files.missing=false(length(f_id),1);        % missing dld/txy file
 files.lowcount=false(length(f_id),1);       % files with too few counts (skipped in analysis)
 files.id_ok=false(length(f_id),1);          % files id's that were successfully processed
+
+% XY rotation
+if ~isfield(configs,'rot_angle')    % XY rotation needs to be back-compatible
+    warning('rot_angle was not defined. Setting to default (0.61).');
+    configs.rot_angle=0.61;     % set param to default value
+end
 
 %% Prepare TXY-files and check for low-counts (possibly errorneous shots)
 if VERBOSE>0, fprintf('Preparing TXY-files...\n'), end;
@@ -77,20 +88,40 @@ for i=1:length(f_id)
     % load the TXY-file to memory
     txy_temp=txy_importer(f_path,f_id(i));
     
-    % Crop to pre-window
-    for dim=1:3
-        if isempty(CONFIGS.window{dim})
-            continue;    % empty window will pass cropping
+%     % Crop to pre-window
+%     for dim=1:3
+%         if isempty(CONFIGS.window{dim})
+%             continue;    % empty window will pass cropping
+%         end
+%         in_window=((txy_temp(:,dim)>CONFIGS.window{dim}(1))&(txy_temp(:,dim)<CONFIGS.window{dim}(2)));
+%         txy_temp=txy_temp(in_window,:);     % filter temporary variable
+%     end
+    
+    % Crop in T to massively cull data
+    if isempty(configs.window{1})   % pass crop if empty
+        continue;
+    end
+    in_window=((txy_temp(:,1)>CONFIGS.window{1}(1))&...
+        (txy_temp(:,1)<CONFIGS.window{1}(2)));
+    txy_temp=txy_temp(in_window,:);     % pre-filter txy counts in T axis
+    
+    % Apply rotation in XY plane
+    
+    
+    % Crop in XY plane
+    for i_dim=2:3
+        if isempty(configs.window{i_dim})   % pass crop if empty
+            continue;
         end
-        in_window=((txy_temp(:,dim)>CONFIGS.window{dim}(1))&(txy_temp(:,dim)<CONFIGS.window{dim}(2)));
-        txy_temp=txy_temp(in_window,:);     % filter temporary variable
+        in_window=((txy_temp(:,i_dim)>CONFIGS.window{i_dim}(1))&(txy_temp(:,i_dim)<CONFIGS.window{i_dim}(2)));
+        txy_temp=txy_temp(in_window,:);     % crop counts in XY axis
     end
     
-    % Check for errorneous files by low-count
+    % Check for errorneous files by low-count in cropped region
     if size(txy_temp,1)<f_minCount
         files.lowcount(i)=1;
         if VERBOSE>0
-            warning('Low-count in file #%d. Discarding from further processing.',f_id(i));
+            warning('ROI Low-count in file #%d. Discarding from further processing.',f_id(i));
         end
         continue
     end
