@@ -48,6 +48,7 @@ if ~isfield(configs,'rot_angle')    % XY rotation needs to be back-compatible
     warning('rot_angle was not defined. Setting to default (0.61).');
     configs.rot_angle=0.61;     % set param to default value
 end
+rot_angle=configs.rot_angle;
 
 %% Prepare TXY-files and check for low-counts (possibly errorneous shots)
 if VERBOSE>0, fprintf('Preparing TXY-files...\n'), end;
@@ -106,7 +107,10 @@ for i=1:length(f_id)
     txy_temp=txy_temp(in_window,:);     % pre-filter txy counts in T axis
     
     % Apply rotation in XY plane
-    
+    x_temp=txy_temp(:,2);   % temp store x,y vects
+    y_temp=txy_temp(:,3);
+    txy_temp(:,2)=x_temp*cos(rot_angle)-y_temp*sin(rot_angle);
+    txy_temp(:,3)=x_temp*sin(rot_angle)+y_temp*cos(rot_angle);
     
     % Crop in XY plane
     for i_dim=2:3
