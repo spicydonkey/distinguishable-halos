@@ -139,14 +139,16 @@ txy_all(counter:end)=[];    % delete all empty cells
 files.id_ok=f_id(~(files.missing|files.lowcount));
 
 %% Plot captured counts (TXY)
-h_zxy_all=figure();     % create figure
-plot_zxy(txy_all,1,'k');
-title('All counts');
-xlabel('X [m]'); ylabel('Y [m]'); zlabel('T [s]');
-
-% save plot
-fname_str='all_counts';
-saveas(h_zxy_all,[dir_output,fname_str,'.png']);
+if VERBOSE>1
+    h_zxy_all=figure();     % create figure
+    plot_zxy(txy_all,1,'k');
+    title('All counts');
+    xlabel('X [m]'); ylabel('Y [m]'); zlabel('T [s]');
+    
+    % save plot
+    fname_str='all_counts';
+    saveas(h_zxy_all,[dir_output,fname_str,'.png']);
+end
 
 %% Save processed data
 % if a file already exists it needs to be replaced
