@@ -16,8 +16,4 @@ if ~exist('SIZE','var')
 end
 
 scatter3(ZXY_ARRAY(:,2),ZXY_ARRAY(:,3),ZXY_ARRAY(:,1),SIZE,[COLOR,'.']);
-axis vis3d; 
-%axis equal;
-
-view(3);    %default view
 end
