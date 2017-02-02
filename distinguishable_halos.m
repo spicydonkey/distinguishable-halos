@@ -17,7 +17,6 @@ set_config_test;     % set configurations
 %% MAIN
 %%%% 
 t_main_start=tic;
-configs=usrconfigs;     % copy to protect usrconfigs
 
 % CHECKS
 % Output management
