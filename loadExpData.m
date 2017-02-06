@@ -139,7 +139,7 @@ txy_all(counter:end)=[];    % delete all empty cells
 files.id_ok=f_id(~(files.missing|files.lowcount));
 
 %% Plot captured counts (TXY)
-if VERBOSE>1
+if VERBOSE>2
     h_zxy_all=figure();     % create figure
     plot_zxy(txy_all,1,'k');
     title('All counts');
