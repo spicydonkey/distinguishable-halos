@@ -35,7 +35,7 @@ configs.halo.dR{2}=0.15;
 configs.halo.zcap=0.7;   % z-cutoff (fractional wrt radius)
 
 %%% MISCELLANEOUS
-configs.misc.vel_z=9.8*0.430;    % atom free-fall vert v at detector hit for T-to-Z conversion;
+configs.misc.vel_z=9.8*0.416;    % atom free-fall vert v at detector hit for T-to-Z conversion;
 
 %%% correlation analysis
 % 1. Cross-halo rad/angular correlations
