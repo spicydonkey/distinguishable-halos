@@ -28,8 +28,6 @@ for i=1:n_species
         idx_sel=rand(N_TOT,1);          % RNG array
         idx_sel=idx_sel<(NDISP/N_TOT);  % RNG to binary selection indices
         
-        disp(sum(idx_sel));
-        
         temp_zxy=temp_zxy(idx_sel,:);
     end
     
