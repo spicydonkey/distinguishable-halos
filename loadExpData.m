@@ -4,20 +4,27 @@ function [txy_all,files]=loadExpData(configs,verbose)
 % save to file
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% TODO: some inputs are not required + DOCUMENTATION
 % INPUT
-% configs
-%   requires fields:    files.id,files.path, files.minCount (not req)
-%                       files.dirout (not req)
-%                       window - 3x1 cell of Z,X,Y window limits (crop)
-%   optional fields:
+%   required:   
+%       configs.files.id
+%       configs.files.path
+%   optional:
+%       configs.files.minCount
+%       configs.files.dirout
+%       configs.files.saveddata
+%       configs.files.archive
+%       configs.flags.savedata: saves the data (txy_all, files) to file + configs used
+%
+%       configs.window - 3x1 cell of Z,X,Y window limits (crop)
+%
+%       configs.rot_angle
+%
 %
 % OUTPUT
-% files: flags for processed files
-%   has fields:     build_txy,missing,lowcount,id_ok
-%
-% MISC
-% * configs.savedata: saves the data (txy_all, files) to file + configs used
+%   txy_all : Nx1 cell-array of TXY data
+%   files   : flags for processed files
+%       has fields:     build_txy,missing,lowcount,id_ok
+%   
 %
 %%%%%%%%%%%%%%%%% LOG %%%%%%%%%%%%%%%%%
 % 31/01/17 | DKS | XY rotation implemented (before crop)
@@ -36,18 +43,25 @@ t_fun_start=tic;
 f_id=configs.files.id;      % get files id's to process
 f_path=configs.files.path;  % get path to file (no id token)
 
-% check for user-specified flag
-if ~isfield(configs,'savedata')
-    warning('configs.savedata is unspecified. By default data will not be saved.');
-    configs.savedata=false;     % default
+% check for user-specified flags
+if ~isfield(configs,'flags')
+    warning('configs.flags is unspecified. Setting to default: all flags off.');
+    
+    % default flags
+    configs.flags.savedata=false;
 end
-if configs.savedata
+
+if ~isfield(configs.flags,'savedata')
+    warning('configs.flags.savedata is unspecified. By default data will not be saved.');
+    configs.flags.savedata=false;     % default
+end
+if configs.flags.savedata
     if ~isfield(configs.files,'dirout')
         % check for MATLAB default folder, where startup.m is located
         dir_home=which('startup.m');
         if isequal(dir_home,'')
-            warning('configs.files.dirout is unspecified and home directory cannot be found. Setting configs.savedata=false');
-            configs.savedata=false;
+            warning('configs.files.dirout is unspecified and home directory cannot be found. Setting configs.flags.savedata=false');
+            configs.flags.savedata=false;
             configs.files.dirout='';
         else
             dir_home=fileparts(dir_home);   % extract HOME directory
@@ -63,7 +77,7 @@ dir_output=configs.files.dirout;    % output directory
 
 %%% optional fields
 if ~isfield(configs.files,'saveddata')
-    if configs.savedata
+    if configs.flags.savedata
         dir_saveddata=[configs.files.path,'_data.mat'];
         warning('configs.files.saveddata is unspecified. Setting to default %s.',dir_saveddata);
         configs.files.saveddata=dir_saveddata;      % default
@@ -71,7 +85,7 @@ if ~isfield(configs.files,'saveddata')
 end
 
 if ~isfield(configs.files,'archive')
-    if configs.savedata
+    if configs.flags.savedata
         dir_archive=[configs.files.path,'_archive'];
         warning('configs.files.archive is unspecified. Setting to default %s.',dir_archive);
         configs.files.archive=dir_archive;      % default
@@ -138,30 +152,11 @@ counter=1;
 for i=1:length(f_id)
     % pass for missing files
     if files.missing(i)
-        continue
+        continue;
     end
     
     % load the TXY-file to memory
     txy_temp=txy_importer(f_path,f_id(i));
-    
-%     % Crop to pre-window
-%     for dim=1:3
-%         if isempty(CONFIGS.window{dim})
-%             continue;    % empty window will pass cropping
-%         end
-%         in_window=((txy_temp(:,dim)>CONFIGS.window{dim}(1))&(txy_temp(:,dim)<CONFIGS.window{dim}(2)));
-%         txy_temp=txy_temp(in_window,:);     % filter temporary variable
-%     end
-    
-    % Crop in T to massively cull data
-    if isempty(configs.window{1})   % pass crop if empty
-        warning('TODO 1');
-%         continue;
-    else
-        in_window=((txy_temp(:,1)>configs.window{1}(1))&...
-            (txy_temp(:,1)<configs.window{1}(2)));
-        txy_temp=txy_temp(in_window,:);     % pre-filter txy counts in T axis
-    end
     
     % Apply rotation in XY plane
     x_temp=txy_temp(:,2);   % temp store x,y vects
@@ -169,13 +164,15 @@ for i=1:length(f_id)
     txy_temp(:,2)=x_temp*cos(rot_angle)-y_temp*sin(rot_angle);
     txy_temp(:,3)=x_temp*sin(rot_angle)+y_temp*cos(rot_angle);
     
-    % Crop in XY plane
-    for i_dim=2:3
+    % Crop counts to window
+    for i_dim=1:3
         if isempty(configs.window{i_dim})   % pass crop if empty
-            warning('TODO 2');
-            %             continue;
+            if verbose>0
+                warning('configs.window{%d} is empty - no cropping in this dimension.',i_dim);
+            end
         else
-            in_window=((txy_temp(:,i_dim)>configs.window{i_dim}(1))&(txy_temp(:,i_dim)<configs.window{i_dim}(2)));
+            in_window=((txy_temp(:,i_dim)>configs.window{i_dim}(1))&...
+                (txy_temp(:,i_dim)<configs.window{i_dim}(2)));
             txy_temp=txy_temp(in_window,:);     % crop counts in XY axis
         end
     end
@@ -205,14 +202,14 @@ if verbose>2
     xlabel('X [m]'); ylabel('Y [m]'); zlabel('T [s]');
     
     % save plot
-    if configs.savedata
+    if configs.flags.savedata
         fname_str='all_counts';
         saveas(h_zxy_all,[dir_output,fname_str,'.png']);
     end
 end
 
 %% Save processed data
-if configs.savedata
+if configs.flags.savedata
     % if a file already exists it needs to be replaced
     if verbose>0,fprintf('Saving data...\n'); end;
     if exist(configs.files.saveddata,'file')
