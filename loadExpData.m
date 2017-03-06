@@ -1,26 +1,31 @@
-function [txy_all,files]=loadExpData(CONFIGS,VERBOSE)
+function [txy_all,files]=loadExpData(configs,verbose)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Loads raw-data DLD/TXY and get counts in region of interest (after XY rotation) and 
 % save to file
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% TODO: some inputs are not required + DOCUMENTATION
 % INPUT
-% CONFIGS
-%   has fields:     files.id,.path,.minCount 
-%                   window - 3x1 cell of Z,X,Y window limits (crop)
+% configs
+%   requires fields:    files.id,files.path, files.minCount (not req)
+%                       files.dirout (not req)
+%                       window - 3x1 cell of Z,X,Y window limits (crop)
+%   optional fields:
 %
 % OUTPUT
 % files: flags for processed files
 %   has fields:     build_txy,missing,lowcount,id_ok
 %
-% Saves the data (txy_all, files) to file + configs used
+% MISC
+% * configs.savedata: saves the data (txy_all, files) to file + configs used
 %
 %%%%%%%%%%%%%%%%% LOG %%%%%%%%%%%%%%%%%
-% TODO 31/01/17 | DKS | XY rotation implemented (before crop)
+% 31/01/17 | DKS | XY rotation implemented (before crop)
+% TODO 06/03/17 | DKS | some inputs made optional
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if ~exist('VERBOSE','var')
-    VERBOSE=0;  % default verbose is quiet
+if ~exist('verbose','var')
+    verbose=0;  % default verbose is quiet
 end
 
 vars_save={'configs','txy_all','files'};  % a list of variables to save to file
@@ -28,13 +33,58 @@ vars_save={'configs','txy_all','files'};  % a list of variables to save to file
 %% MAIN
 t_fun_start=tic;
 
-configs=CONFIGS;
+f_id=configs.files.id;      % get files id's to process
+f_path=configs.files.path;  % get path to file (no id token)
 
-f_id=CONFIGS.files.id;      % get files id's to process
-f_path=CONFIGS.files.path;  % get path to file (no id token)
-f_minCount=CONFIGS.files.minCount;  % min count in TXY to flag as errorneous
-
+% check for user-specified flag
+if ~isfield(configs,'savedata')
+    warning('configs.savedata is unspecified. By default data will not be saved.');
+    configs.savedata=false;     % default
+end
+if configs.savedata
+    if ~isfield(configs.files,'dirout')
+        % check for MATLAB default folder, where startup.m is located
+        dir_home=which('startup.m');
+        if isequal(dir_home,'')
+            warning('configs.files.dirout is unspecified and home directory cannot be found. Setting configs.savedata=false');
+            configs.savedata=false;
+            configs.files.dirout='';
+        else
+            dir_home=fileparts(dir_home);   % extract HOME directory
+            warning('configs.files.dirout is unspecified. Setting default to %s.',dir_home);
+            configs.files.dirout=strcat(dir_home,'\');    % default output path
+        end
+    end
+else
+    warning('Resetting configs.files.dirout to NULL.');
+    configs.files.dirout='';    % default
+end
 dir_output=configs.files.dirout;    % output directory
+
+%%% optional fields
+if ~isfield(configs.files,'saveddata')
+    if configs.savedata
+        dir_saveddata=[configs.files.path,'_data.mat'];
+        warning('configs.files.saveddata is unspecified. Setting to default %s.',dir_saveddata);
+        configs.files.saveddata=dir_saveddata;      % default
+    end
+end
+
+if ~isfield(configs.files,'archive')
+    if configs.savedata
+        dir_archive=[configs.files.path,'_archive'];
+        warning('configs.files.archive is unspecified. Setting to default %s.',dir_archive);
+        configs.files.archive=dir_archive;      % default
+    end
+end
+
+% minCounts
+if ~isfield(configs.files,'minCount')
+    warning('configs.files.minCount is unspecified. Setting to default 1000.');
+    configs.files.minCount=1000;    % default
+end
+f_minCount=configs.files.minCount;  % min count in TXY to flag as errorneous
+
 
 % Initialiase variables
 % file output flags
@@ -51,16 +101,16 @@ end
 rot_angle=configs.rot_angle;
 
 %% Prepare TXY-files and check for low-counts (possibly errorneous shots)
-if VERBOSE>0, fprintf('Preparing TXY-files...\n'), end;
+if verbose>0, fprintf('Preparing TXY-files...\n'), end;
 for i=1:length(f_id)
     % TXY-file does not exist
     if ~fileExists([f_path,'_txy_forc',num2str(f_id(i)),'.txt'])
-        if VERBOSE>1, warning('Could not find TXY-file #%d.',f_id(i)); end;
+        if verbose>1, warning('Could not find TXY-file #%d.',f_id(i)); end;
         
         % rawDLD source file exists
         if fileExists([f_path,num2str(f_id(i)),'.txt'])
             % Create TXY from DLD
-            if VERBOSE>0, warning('Creating TXY-file from raw source #%d.',f_id(i)); end;
+            if verbose>0, warning('Creating TXY-file from raw source #%d.',f_id(i)); end;
             dld_raw_to_txy(f_path,f_id(i),f_id(i));
             files.build_txy(i)=1;
             
@@ -78,7 +128,7 @@ end
 % f_id=f_id(~files.missing);      % get ids for existing data files
 txy_all=cell(length(f_id),1);   % TXY data cell in window
 
-if VERBOSE>0, fprintf('Getting counts in window from TXY-files...\n'); end;
+if verbose>0, fprintf('Getting counts in window from TXY-files...\n'); end;
 counter=1;
 for i=1:length(f_id)
     % pass for missing files
@@ -102,8 +152,8 @@ for i=1:length(f_id)
     if isempty(configs.window{1})   % pass crop if empty
         continue;
     end
-    in_window=((txy_temp(:,1)>CONFIGS.window{1}(1))&...
-        (txy_temp(:,1)<CONFIGS.window{1}(2)));
+    in_window=((txy_temp(:,1)>configs.window{1}(1))&...
+        (txy_temp(:,1)<configs.window{1}(2)));
     txy_temp=txy_temp(in_window,:);     % pre-filter txy counts in T axis
     
     % Apply rotation in XY plane
@@ -117,14 +167,14 @@ for i=1:length(f_id)
         if isempty(configs.window{i_dim})   % pass crop if empty
             continue;
         end
-        in_window=((txy_temp(:,i_dim)>CONFIGS.window{i_dim}(1))&(txy_temp(:,i_dim)<CONFIGS.window{i_dim}(2)));
+        in_window=((txy_temp(:,i_dim)>configs.window{i_dim}(1))&(txy_temp(:,i_dim)<configs.window{i_dim}(2)));
         txy_temp=txy_temp(in_window,:);     % crop counts in XY axis
     end
     
     % Check for errorneous files by low-count in cropped region
     if size(txy_temp,1)<f_minCount
         files.lowcount(i)=1;
-        if VERBOSE>0
+        if verbose>0
             warning('ROI Low-count in file #%d. Discarding from further processing.',f_id(i));
         end
         continue
@@ -139,42 +189,46 @@ txy_all(counter:end)=[];    % delete all empty cells
 files.id_ok=f_id(~(files.missing|files.lowcount));
 
 %% Plot captured counts (TXY)
-if VERBOSE>2
+if verbose>2
     h_zxy_all=figure();     % create figure
     plot_zxy(txy_all,1,'k');
     title('All counts');
     xlabel('X [m]'); ylabel('Y [m]'); zlabel('T [s]');
     
     % save plot
-    fname_str='all_counts';
-    saveas(h_zxy_all,[dir_output,fname_str,'.png']);
+    if configs.savedata
+        fname_str='all_counts';
+        saveas(h_zxy_all,[dir_output,fname_str,'.png']);
+    end
 end
 
 %% Save processed data
-% if a file already exists it needs to be replaced
-if VERBOSE>0,fprintf('Saving data...\n'); end;
-if exist(configs.files.saveddata,'file')
-    warning('Data file already exists. Moving existing file to archive...');
-    % create archive directory
-    if ~exist(configs.files.archive,'dir')
-       mkdir(configs.files.archive);
+if configs.savedata
+    % if a file already exists it needs to be replaced
+    if verbose>0,fprintf('Saving data...\n'); end;
+    if exist(configs.files.saveddata,'file')
+        warning('Data file already exists. Moving existing file to archive...');
+        % create archive directory
+        if ~exist(configs.files.archive,'dir')
+            mkdir(configs.files.archive);
+        end
+        % move existing file to archive
+        movefile(configs.files.saveddata,configs.files.archive);  % will overwrite an existing file of same name in the archive dir
     end
-    % move existing file to archive
-    movefile(configs.files.saveddata,configs.files.archive);  % will overwrite an existing file of same name in the archive dir
-end
-
-% save data
-save(configs.files.saveddata,vars_save{1});    % must create *.mat without append option
-for i = 1:length(vars_save)
-    if ~exist(vars_save{i},'var')
-        warning(['Variable "',vars_save{i},'" does not exist.']);
-        continue;
+    
+    % save data
+    save(configs.files.saveddata,vars_save{1});    % must create *.mat without append option
+    for i = 1:length(vars_save)
+        if ~exist(vars_save{i},'var')
+            warning(['Variable "',vars_save{i},'" does not exist.']);
+            continue;
+        end
+        save(configs.files.saveddata,vars_save{i},'-v6','-append');     % -v6 version much faster (but no compression)?
     end
-    save(configs.files.saveddata,vars_save{i},'-v6','-append');     % -v6 version much faster (but no compression)?
 end
 
 %% Summary
-if VERBOSE>0
+if verbose>0
     fprintf('===================IMPORT SUMMARY===================\n');
     fprintf('Number of shots successfully loaded: %d\n',length(files.id_ok));
     fprintf('Number of shots with counts below %d: %d\n',f_minCount,sum(files.lowcount));
@@ -185,7 +239,7 @@ end
 
 %% END
 t_fun_end=toc(t_fun_start);   % end of code
-if VERBOSE>0
+if verbose>0
     disp('-----------------------------------------------');
     fprintf('Total elapsed time for %s (s): %7.1f\n','loadExpData',t_fun_end);
     disp('-----------------------------------------------');
