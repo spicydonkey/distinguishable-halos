@@ -85,6 +85,11 @@ if ~isfield(configs.files,'minCount')
 end
 f_minCount=configs.files.minCount;  % min count in TXY to flag as errorneous
 
+% window
+if ~isfield(configs,'window')
+    warning('configs.window is undefined. Setting to default {[],[],[]}.');
+    configs.window={[],[],[]};      % default: skips all cropping
+end
 
 % Initialiase variables
 % file output flags
@@ -150,11 +155,13 @@ for i=1:length(f_id)
     
     % Crop in T to massively cull data
     if isempty(configs.window{1})   % pass crop if empty
-        continue;
+        warning('TODO 1');
+%         continue;
+    else
+        in_window=((txy_temp(:,1)>configs.window{1}(1))&...
+            (txy_temp(:,1)<configs.window{1}(2)));
+        txy_temp=txy_temp(in_window,:);     % pre-filter txy counts in T axis
     end
-    in_window=((txy_temp(:,1)>configs.window{1}(1))&...
-        (txy_temp(:,1)<configs.window{1}(2)));
-    txy_temp=txy_temp(in_window,:);     % pre-filter txy counts in T axis
     
     % Apply rotation in XY plane
     x_temp=txy_temp(:,2);   % temp store x,y vects
@@ -165,10 +172,12 @@ for i=1:length(f_id)
     % Crop in XY plane
     for i_dim=2:3
         if isempty(configs.window{i_dim})   % pass crop if empty
-            continue;
+            warning('TODO 2');
+            %             continue;
+        else
+            in_window=((txy_temp(:,i_dim)>configs.window{i_dim}(1))&(txy_temp(:,i_dim)<configs.window{i_dim}(2)));
+            txy_temp=txy_temp(in_window,:);     % crop counts in XY axis
         end
-        in_window=((txy_temp(:,i_dim)>configs.window{i_dim}(1))&(txy_temp(:,i_dim)<configs.window{i_dim}(2)));
-        txy_temp=txy_temp(in_window,:);     % crop counts in XY axis
     end
     
     % Check for errorneous files by low-count in cropped region
