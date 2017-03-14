@@ -11,7 +11,7 @@
 clear all; clc; close all;
 
 %% Load configurations
-set_config_test;     % set configurations
+config_full;     % set configurations
 
 
 %% MAIN
