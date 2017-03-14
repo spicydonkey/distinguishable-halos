@@ -1,9 +1,9 @@
 % Configuration file for distinguishable_halos.m
 
 %%% GENERAL
-do_corr_analysis=0;
+do_corr_analysis=1;
 force_all_stages=1;    % force all the stages to run (useful for debug)
-verbose=1;
+verbose=3;
 
 %%% Raw data handling
 % files -  data file
@@ -16,8 +16,8 @@ configs.rot_angle=0.61;
 
 % TXY window - region of interest ( [] --> no crop )
 configs.window{1}=[4.907,4.918];      % T [s]
-configs.window{2}=[-20e-3,18e-3];    % X [m]
-configs.window{3}=[-10e-3,17e-3];    % Y [m]
+configs.window{2}=[-30e-3,20e-3];    % X [m]
+configs.window{3}=[-15e-3,20e-3];    % Y [m]
 
 %%% HALO PARAMS: BEC counts + oscillation removal for broad capture of halos
 configs.bec.pos{1}=[20.7024,4.74e-3,2.72e-3];   % approx condensate locations (z,x,y)
@@ -111,7 +111,7 @@ analysis.corr.nBin{6}=[51,13,13];   % number of bins
 % DO NOT ADJUST
 configs.files.saveddata=[configs.files.path,'_data.mat'];     % path to store saved data
 configs.files.archive=[configs.files.path,'_archive'];   % dir to archive folder
-configs.files.dirout=[configs.files.path,'_output\'];      % output directory
+configs.files.dirout=[configs.files.path,'_output'];      % output directory
 
 do_next=force_all_stages;  % flag for executing stages for efficiency (do not change)
 
