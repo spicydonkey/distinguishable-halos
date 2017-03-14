@@ -99,7 +99,7 @@ end
 
 % No user settable params yet
 if do_next
-    fitHalo(configs,verbose);
+    [halo_fit]=fitHalo(configs,verbose);
 end
 
 
@@ -111,7 +111,7 @@ end
 
 % no user settable params yet
 if do_next
-    transformHalo(configs,verbose);
+    [zxy_transform]=transformHalo(configs,verbose);
 end
 
 
@@ -132,7 +132,7 @@ end
 
 % Correlation analysis
 if do_next&&do_corr_analysis
-    corrTaskManager(analysis,configs,verbose);
+    [result]=corrTaskManager(analysis,configs,verbose);
 end
 
 
