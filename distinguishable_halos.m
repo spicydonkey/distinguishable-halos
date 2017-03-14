@@ -8,11 +8,16 @@
 % [-] postproc - manipulations
 % [x] analysis
 
+% TODO - replace saving and loading data files by using functions to return
+% nice results
+
 clear all; clc; close all;
 
 %% Load configurations
 config_full;     % set configurations
 
+% TODO - current version requires data to be saved after every stage
+configs.flags.savedata=1;
 
 %% MAIN
 %%%% 
@@ -52,7 +57,7 @@ if ~do_next
 end
 
 if do_next
-    loadExpData(configs,verbose);
+    [txy,files_out]=loadExpData(configs,verbose);
 end
 
 
@@ -80,7 +85,7 @@ if ~do_next
 end
 
 if do_next
-    captureHalo(configs,verbose);
+    [halo,bec,culled,errflag]=captureHalo(configs,verbose);
 end
 
 
