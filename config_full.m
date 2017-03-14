@@ -5,6 +5,10 @@ do_corr_analysis=1;
 force_all_stages=1;    % force all the stages to run (useful for debug)
 verbose=3;
 
+%%% FLAGS
+configs.flags.savedata=1;       % TODO - req'd currently since each stage passes data by save/load to disk
+configs.flags.graphics=0;       % toggle to control graphics/plotting options
+
 %%% Raw data handling
 % files -  data file
 configs.files.path='C:\Users\HE BEC\Documents\lab\halo_analysis\data\dist_halo\4_separated_lownum\d';    % path to unindexed data file (e.g. 'a\b\datadir\$DATA_FNAME_TOKEN$')

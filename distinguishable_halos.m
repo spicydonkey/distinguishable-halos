@@ -16,8 +16,6 @@ clear all; clc; close all;
 %% Load configurations
 config_full;     % set configurations
 
-% TODO - current version requires data to be saved after every stage
-configs.flags.savedata=1;
 
 %% MAIN
 %%%% 
