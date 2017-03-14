@@ -218,7 +218,7 @@ end
 %% Plot captured halo
 % All captured counts (halo only)
 h_haloraw=figure();     % create figure instance for each plot
-plot_zxy(halo.zxy,1);
+plot_zxy(halo.zxy,[],1);
 view(3);
 title('captured halos');
 xlabel('X [m]'); ylabel('Y [m]'); zlabel('Z [m]');
@@ -227,7 +227,7 @@ saveas(h_haloraw,[dir_output,fname_str,'.png']);    % save plot to output dir
 
 % Halo (oscillation compensated, etc)
 h_halooc=figure();
-plot_zxy(halo.zxy0,1);
+plot_zxy(halo.zxy0,[],1);
 view(3);
 axis equal;
 title('halos: oscillation compensated');
