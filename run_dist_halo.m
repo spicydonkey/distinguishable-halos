@@ -1,6 +1,8 @@
 %% distinguishable halo analysis
 % DKS 15/05/2017
-
+%% TODO
+% map to sphere
+    
 function [halo,efit,corr_out,err]=run_dist_halo(configm)
     %% Initialise
     t_main_start=tic;   % for reporting process duration
@@ -49,9 +51,7 @@ function [halo,efit,corr_out,err]=run_dist_halo(configm)
     %   should have equal LOAD + HALO
     [halo,bec,culled,errflag]=halo_capture(txy,files_out,configs,verbose);
     
-    %% TODO
-    % fit mf=-1 halo
-    % map to sphere
+
     %% Quick ellipsoid fit
     efit_flag='';
     efit=cell(2,1);
@@ -100,7 +100,36 @@ function [halo,efit,corr_out,err]=run_dist_halo(configm)
     end
     
     %% Transform halos to COM frame
+    % Initialise k-vector in XYZ coord
+    halo_k=cellfun(@(x) circshift(x,-1,2),halo.zxy0,'UniformOutput',false);
+    for ii=1:2
+        % Centre to fitted ellipsoid
+        halo_k(:,ii)=boost_zxy(halo_k(:,ii),-efit{ii}.cent');
+        
+        % Transform to ellipsoid principal axis (Rotation)
+        M_rot=efit{ii}.evecs;   % rotation matrix: X'Y'Z'(principal ellipsoid) --> XYZ
+        halo_k(:,ii)=cellfun(@(x) (M_rot\x')',halo_k(:,ii),'UniformOutput',false);     % inverse transform
+        
+        % Stretch to UNIT sphere: unit in collision wave-vector/momenta
+        halo_k(:,ii)=cellfun(@(x) x./repmat(efit{ii}.rad',size(x,1),1),halo_k(:,ii),'UniformOutput',false);
+        
+        % Reverse transform to original/detector axis
+        halo_k(:,ii)=cellfun(@(x) (M_rot*x')',halo_k(:,ii),'UniformOutput',false);
+    end
+    % transform to ZXY system
+    halo_k=cellfun(@(x) circshift(x,1,2),halo_k,'UniformOutput',false);
     
+    % Plot k-space mapped halos
+    if configs.flags.graphics
+        figure();
+        plot_zxy(halo_k,1e5);
+        
+        axis equal;
+        axis vis3d;
+        xlabel('$K_{x}$ [m]'); ylabel('$K_{y}$ [m]'); zlabel('$K_{z}$ [m]');
+        titlestr='k-space mapped halos';
+        title(titlestr);
+    end
     
     %% Correlation analysis
     % TODO
