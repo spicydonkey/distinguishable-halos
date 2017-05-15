@@ -4,8 +4,8 @@ function [halo,bec,culled,errflag]=halo_capture(txy,files,configs,verbose)
 % DKS 15/05/2017
 %
 
-if ~exist('VERBOSE','var')
-    warning('VERBOSE is not provided - setting to quiet (0)');
+if ~exist('verbose','var')
+    warning('verbose is not provided - setting to quiet (0)');
     verbose=0;
 end
 
