@@ -1,7 +1,7 @@
 %% distinguishable halo analysis
 % DKS 15/05/2017
 
-function err=run_dist_halo(configm)
+function [halo,corr_out,err]=run_dist_halo(configm)
     %% Initialise
     t_main_start=tic;   % for reporting process duration
     datetimestr=datestr(datetime,'yyyymmdd_HHMMSS');    % timestamp when function called
@@ -56,13 +56,15 @@ function err=run_dist_halo(configm)
     %% Correlation analysis
     % TODO
     %   check for preexisting saved files passed for above
-%     if do_corr_analysis
-%         [result]=corrTaskManager(configs,verbose);
-%     end
+    if do_corr_analysis
+        corr_out=halo_g2_manager(halo.zxy0,configs,verbose);
+    end
     
     %% end of code %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     t_main_end=toc(t_main_start);   % end of code
     disp('-----------------------------------------------');
     fprintf('Total elapsed time (s): %7.1f\n',t_main_end);
     disp('===================ALL TASKS COMPLETED===================');
+    
+    err=0;  % everything ok
 end
