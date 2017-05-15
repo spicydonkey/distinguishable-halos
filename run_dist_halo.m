@@ -33,6 +33,7 @@ function err=run_dist_halo(configm)
                     do_next=1;
                 end
             end
+            clear S_temp;
         end
     end
     
@@ -41,4 +42,27 @@ function err=run_dist_halo(configm)
             configs.load.window,configs.load.minCount,...
             configs.load.rot_angle,verbose,configs.flags.graphics);
     end
+
+    %% Capture halos
+    % TODO
+    %   check for preexisting saved files:
+    %   should have equal LOAD + HALO
+    [halo,bec,culled,errflag]=halo_capture(txy,files_out,configs,verbose);
+    
+    %% TODO
+    % fit mf=-1 halo
+    % map to sphere
+    
+    %% Correlation analysis
+    % TODO
+    %   check for preexisting saved files passed for above
+%     if do_corr_analysis
+%         [result]=corrTaskManager(configs,verbose);
+%     end
+    
+    %% end of code %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    t_main_end=toc(t_main_start);   % end of code
+    disp('-----------------------------------------------');
+    fprintf('Total elapsed time (s): %7.1f\n',t_main_end);
+    disp('===================ALL TASKS COMPLETED===================');
 end
