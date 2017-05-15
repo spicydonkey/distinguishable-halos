@@ -3,7 +3,7 @@
 %% TODO
 % map to sphere
     
-function [halo,efit,corr_out,err]=run_dist_halo(configm)
+function [halo,efit,corr_out,txy,files_out,err]=run_dist_halo(configm)
     %% Initialise
     t_main_start=tic;   % for reporting process duration
     datetimestr=datestr(datetime,'yyyymmdd_HHMMSS');    % timestamp when function called
@@ -126,6 +126,7 @@ function [halo,efit,corr_out,err]=run_dist_halo(configm)
         
         axis equal;
         axis vis3d;
+        view(3);
         xlabel('$K_{x}$ [m]'); ylabel('$K_{y}$ [m]'); zlabel('$K_{z}$ [m]');
         titlestr='k-space mapped halos';
         title(titlestr);
@@ -135,8 +136,11 @@ function [halo,efit,corr_out,err]=run_dist_halo(configm)
     % TODO
     %   check for preexisting saved files passed for above
     if do_corr_analysis
-        corr_out=halo_g2_manager(halo.zxy0,configs,verbose);
+        corr_out=halo_g2_manager(halo_k,configs,verbose);
     end
+    
+    %% Save results
+    
     
     %% end of code %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     t_main_end=toc(t_main_start);   % end of code
