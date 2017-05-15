@@ -1,7 +1,7 @@
 %% distinguishable halo analysis
 % DKS 15/05/2017
 
-function [halo,corr_out,err]=run_dist_halo(configm)
+function [halo,efit,corr_out,err]=run_dist_halo(configm)
     %% Initialise
     t_main_start=tic;   % for reporting process duration
     datetimestr=datestr(datetime,'yyyymmdd_HHMMSS');    % timestamp when function called
@@ -52,6 +52,55 @@ function [halo,corr_out,err]=run_dist_halo(configm)
     %% TODO
     % fit mf=-1 halo
     % map to sphere
+    %% Quick ellipsoid fit
+    efit_flag='';
+    efit=cell(2,1);
+    for ii=1:2
+        [ecent,eradii,evecs,v,echi2]=ellipsoid_fit(circshift(vertcat(halo.zxy0{:,ii}),-1,2),efit_flag);
+        % NOTE: efit params are in XYZ coordinate frame!
+        efit{ii}.cent=ecent; 
+        efit{ii}.rad=eradii;
+        efit{ii}.evecs=evecs;
+        efit{ii}.v=v;
+        efit{ii}.chi2=echi2;
+    end
+    
+    % plot ellipsoid fit
+    if configs.flags.graphics
+        COLOR={'b','r'};
+        figure();
+        for ii=1:2
+            subplot(1,2,ii);
+            hold on;
+            
+            % draw data
+            xyz_temp=circshift(vertcat(halo.zxy0{:,ii}),-1,2);
+            plot_zxy(halo.zxy0(:,ii),1e5,5,COLOR{ii});
+            
+            % draw fit
+            mind=min(xyz_temp);
+            maxd=max(xyz_temp);
+            nsteps=50;
+            step=(maxd-mind)/nsteps;
+            [x,y,z]=meshgrid( linspace( mind(1) - step(1), maxd(1) + step(1), nsteps ), linspace( mind(2) - step(2), maxd(2) + step(2), nsteps ), linspace( mind(3) - step(3), maxd(3) + step(3), nsteps ) );
+            v=efit{ii}.v;
+            Ellipsoid = v(1) *x.*x +   v(2) * y.*y + v(3) * z.*z + ...
+                2*v(4) *x.*y + 2*v(5)*x.*z + 2*v(6) * y.*z + ...
+                2*v(7) *x    + 2*v(8)*y    + 2*v(9) * z;
+            p = patch( isosurface( x, y, z, Ellipsoid, -v(10) ) );
+            hold off;
+            set( p, 'FaceColor', 'g', 'EdgeColor', 'none', 'FaceAlpha',0.5);
+            
+            view( -70, 40 );
+            axis vis3d equal;
+            camlight;
+            lighting phong;
+            xlabel('X [m]'); ylabel('Y [m]'); zlabel('Z [m]');
+        end
+    end
+    
+    %% Transform halos to COM frame
+    
     
     %% Correlation analysis
     % TODO
