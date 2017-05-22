@@ -7,22 +7,12 @@ if ~exist('verbose','var')
     verbose=0;
 end
 
-vars_save={'result'};
-
 if verbose>0, fprintf('Starting correlation analysis...\n'), end;
 %% MAIN
 t_fun_start=tic;
 
 % get paths
 dir_output=configs.files.dirout;
-
-% load counts for correlation analysis
-% S_temp=load(configs.files.saveddata,'zxy');
-% zxy0=cell(size(S_temp.zxy));    % preallocate size for MATLAB (not sure if this helps)
-% zxy0=S_temp.zxy;   % load the corr-ready data (transformed)
-% clear S_temp;
-
-% "result" should not be defined previously in data file (will be overwritten)
 
 %% Do tasked correlation analysis
 for iCorr=1:length(configs.corr.type)
@@ -61,8 +51,8 @@ if configs.flags.graphics
         
         % save figs
         fname_str=['corr_',num2str(iCorr)];
-        saveas(hfig,[dir_output,fname_str,'.fig']);
-        saveas(hfig,[dir_output,fname_str,'.png']);
+        saveas(hfig,fullfile(dir_output,[fname_str,'.fig']));
+        saveas(hfig,fullfile(dir_output,[fname_str,'.png']));
     end
 end
 
@@ -146,22 +136,11 @@ for iCorr=1:length(configs.corr.type)
     % Save figs
     if configs.flags.graphics   % plotting
         fname_str=['corr1d_',num2str(iCorr)];
-        saveas(hfig,[dir_output,fname_str,'.fig']);
-        saveas(hfig,[dir_output,fname_str,'.png']);
+        saveas(hfig,fullfile(dir_output,[fname_str,'.fig']));
+        saveas(hfig,fullfile(dir_output,[fname_str,'.png']));
     end
 end
 clear g2_1d_tmp param0 fitparam_tmp fit_g2_tmp ax this_corr_type;
-
-%% Save processed data
-% Append to existing data file
-if verbose>0,fprintf('Saving data...\n'); end;
-for i = 1:length(vars_save)
-    if ~exist(vars_save{i},'var')
-        warning(['Variable "',vars_save{i},'" does not exist.']);
-        continue;
-    end
-    save(configs.files.saveddata,vars_save{i},'-v6','-append');
-end
 
 %% END
 t_fun_end=toc(t_fun_start);   % end of code
