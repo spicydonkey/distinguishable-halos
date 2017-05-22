@@ -16,8 +16,8 @@ vz=configs.misc.vel_z;
 %% LOAD
 % files -  data file
 configs.load.path='C:\Users\HE BEC\Documents\lab\halo_analysis\data\dist_halo\4_separated_lownum\d';    % path to unindexed data file (e.g. 'a\b\datadir\$DATA_FNAME_TOKEN$')
-configs.load.id=1:1000;         % file id numbers to use for analysis
-configs.load.minCount=1300;     % min counts to use for analysis
+configs.load.id=1:3052;         % file id numbers to use for analysis
+configs.load.minCount=1200;     % min counts to use for analysis
 
 % Detector/trap alignment
 configs.load.rot_angle=0.61;
@@ -31,15 +31,15 @@ configs.load.window{3}=[-35e-3,35e-3];    % Y [m]
 %%% HALO PARAMS: BEC counts + oscillation removal for broad capture of halos
 configs.bec.pos{1}=[4.913*vz,3.0e-3,5.4e-3];   % approx condensate locations (z,x,y)
 configs.bec.Rmax{1}=3e-3;      % max condensate sph radius
-configs.bec.dR_tail{1}=0.8;     % BEC tail radial frac diff
+configs.bec.dR_tail{1}=1.3;     % BEC tail radial frac diff
 configs.bec.pos{2}=[4.912*vz,-10.0e-3,1.2e-3];
 configs.bec.Rmax{2}=3e-3;
-configs.bec.dR_tail{2}=0.8;
+configs.bec.dR_tail{2}=1.1;
 
 configs.halo.R{1}=10e-3;     % estimated radius of halo
-configs.halo.dR{1}=0.15;      % broad radial mask fractional width (in/out)
-configs.halo.R{2}=10e-3;
-configs.halo.dR{2}=0.15;
+configs.halo.dR{1}=0.1;      % broad radial mask fractional width (in/out)
+configs.halo.R{2}=9e-3;
+configs.halo.dR{2}=0.1;
 
 configs.halo.zcap=0.7;   % z-cutoff (fractional wrt radius)
 
@@ -48,10 +48,10 @@ configs.halo.zcap=0.7;   % z-cutoff (fractional wrt radius)
 configs.corr.type{1}.comp=[1,2];           % components to analysis: cross halo 1,2
 configs.corr.type{1}.coord='cart';         % Cartesian (ZXY)
 configs.corr.type{1}.opt='BB';             % BB / CL
-configs.corr.lim{1}{1}=0.3*[-1,1]; % bin limits - Z
+configs.corr.lim{1}{1}=0.35*[-1,1]; % bin limits - Z
 configs.corr.lim{1}{2}=0.3*[-1,1]; % bin limits - X
 configs.corr.lim{1}{3}=0.3*[-1,1]; % bin limits - Y
-configs.corr.nBin{1}=[20,5,5];   % number of bins
+configs.corr.nBin{1}=[22,10,10];   % number of bins
 
 %% correlation analysis
 % % 1. Cross-halo rad/angular correlations
