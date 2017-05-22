@@ -7,6 +7,7 @@ function [halo_k,corr,efit,halo,txy,fout,err]=run_dist_halo(configm)
     %% Initialise
     t_main_start=tic;   % for reporting process duration
     datetimestr=datestr(datetime,'yyyymmdd_HHMMSS');    % timestamp when function called
+    HFIG={};
     
     run(configm);   % run the configuration script
     
@@ -40,7 +41,7 @@ function [halo_k,corr,efit,halo,txy,fout,err]=run_dist_halo(configm)
     end
     
     if do_next
-        [txy,fout]=load_txy(configs.load.path,configs.load.id,...
+        [txy,fout,HFIG{length(HFIG)+1}]=load_txy(configs.load.path,configs.load.id,...
             configs.load.window,configs.load.minCount,...
             configs.load.rot_angle,verbose,configs.flags.graphics);
     end
@@ -49,7 +50,7 @@ function [halo_k,corr,efit,halo,txy,fout,err]=run_dist_halo(configm)
     % TODO
     %   check for preexisting saved files:
     %   should have equal LOAD + HALO
-    [halo,bec,culled,errflag]=halo_capture(txy,fout,configs,verbose);
+    [halo,bec,culled,HFIG{length(HFIG)+1},errflag]=halo_capture(txy,fout,configs,verbose);
     
 
     %% Quick ellipsoid fit
@@ -97,6 +98,9 @@ function [halo_k,corr,efit,halo,txy,fout,err]=run_dist_halo(configm)
             lighting phong;
             xlabel('X [m]'); ylabel('Y [m]'); zlabel('Z [m]');
         end
+        
+        % Update HFIG
+        HFIG{length(HFIG)+1}={hfig_ellipsoid_fit};
     end
     
     %% Transform halos to COM frame
@@ -130,6 +134,9 @@ function [halo_k,corr,efit,halo,txy,fout,err]=run_dist_halo(configm)
         xlabel('$K_{x}$ [m]'); ylabel('$K_{y}$ [m]'); zlabel('$K_{z}$ [m]');
         titlestr='k-space mapped halos';
         title(titlestr);
+        
+        % Update HFIG
+        HFIG{length(HFIG)+1}={hfig_halo_k};
     end
     
     %% Correlation analysis
@@ -141,14 +148,21 @@ function [halo_k,corr,efit,halo,txy,fout,err]=run_dist_halo(configm)
     
     %% Save results
     if configs.flags.savedata
+        %%% fig
+        % TODO - need to be able to save all graphics from each subroutine
+        for ii=1:length(HFIG)
+            for jj=1:length(HFIG{ii})
+                saveas(HFIG{ii}{jj},[configs.files.dirout,'/',sprintf('fig_%d_%d_',ii,jj),datetimestr,'.fig']);
+                saveas(HFIG{ii}{jj},[configs.files.dirout,'/',sprintf('fig_%d_%d_',ii,jj),datetimestr,'.png']);
+            end
+        end
+        clear HFIG;     % clear HFIG graphics handle cell array from workspace
+        
+        %%% data
         % get all vars in workspace except graphics handles
         allvars=whos;
         tosave=cellfun(@isempty,regexp({allvars.class},'^matlab\.(ui|graphics)\.'));
         
-        %%% fig
-        % TODO - need to be able to save all graphics from each subroutine
-        
-        %%% data
         % doesn't save the whole workspace this way
         save([configs.files.dirout,'/',mfilename,'_output_',datetimestr,'.mat'],allvars(tosave).name);
     end

@@ -1,4 +1,4 @@
-function [halo,bec,culled,errflag]=halo_capture(txy,files,configs,verbose)
+function [halo,bec,culled,hfig,errflag]=halo_capture(txy,files,configs,verbose)
 % Process TXY-counts to isolate all posssible halo counts and remove
 % shot-to-shot oscillations
 % DKS 15/05/2017
@@ -12,6 +12,7 @@ end
 if verbose>0, fprintf('Beginning halo capture...\n'), end;
 %% MAIN
 t_fun_start=tic;
+hfig={};
 
 % Exp constants
 v_z=9.8*0.416;    % atom free-fall vert v at detector hit for T-to-Z conversion
@@ -206,6 +207,7 @@ end
 %% Plot captured halo
 % All captured counts (halo only)
 h_haloraw=figure();     % create figure instance for each plot
+hfig{length(hfig)+1}=gcf;
 plot_zxy(halo.zxy,[],1);
 view(3);
 title('captured halos');
@@ -213,6 +215,7 @@ xlabel('X [m]'); ylabel('Y [m]'); zlabel('Z [m]');
 
 % Halo (oscillation compensated, etc)
 h_halooc=figure();
+hfig{length(hfig)+1}=gcf;
 plot_zxy(halo.zxy0,[],1);
 view(3);
 axis equal;

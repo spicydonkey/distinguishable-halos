@@ -73,11 +73,11 @@ for iCorr=1:length(configs.corr.type)
         % Gaussian fit (angular G2 allows fitting both BB,CL)
         % BB fit
         param0=[4,pi,0.1,1];     % fit estimate [amp,mu,sigma,offset]
-        [fitparam_tmp,fit_g2_tmp]=gaussfit(corr_out.bCent{iCorr}{2},g2_1d_tmp,param0,verbose);
+        [fitparam_tmp,fit_g2_tmp]=gaussfit(corr_out.bCent{iCorr}{2},g2_1d_tmp,param0,0);
         
         % CL fit
         param0=[2,0,0.1,1];
-        [fitparam_tmpCL,fit_g2_tmpCL]=gaussfit(corr_out.bCent{iCorr}{2},g2_1d_tmp,param0,verbose);
+        [fitparam_tmpCL,fit_g2_tmpCL]=gaussfit(corr_out.bCent{iCorr}{2},g2_1d_tmp,param0,0);
         
         % Plot
         if configs.flags.graphics   % plotting
@@ -95,11 +95,13 @@ for iCorr=1:length(configs.corr.type)
             plot(ax,fit_g2_tmp.x,fit_g2_tmp.y,'r');     
             plot(ax,fit_g2_tmpCL.x,fit_g2_tmpCL.y,'b--');
             hold(ax,'off');
+            
+            legend({'Data','Gaussian fit'});
         end
         
     elseif isequal(this_corr_type,'cart')
         % TODO - do in X/Y?
-        % Get line through Z-axis
+        %%% Get line through Z-axis @ dkx=dky=0
         ind_zero_tmp=round((configs.corr.nBin{iCorr}+1)/2);    % zero-cent'd bin index for sampling 3D-g2
         
         % Gaussian fit
@@ -109,13 +111,14 @@ for iCorr=1:length(configs.corr.type)
         else
             param0=[2,0,0.1,1];     % CL peaks at 2
         end
+        
         [fitparam_tmp,fit_g2_tmp]=gaussfit(corr_out.bCent{iCorr}{1},...
-            corr_out.g2{iCorr}(:,ind_zero_tmp(2),ind_zero_tmp(3)),param0,verbose);
+            corr_out.g2{iCorr}(:,ind_zero_tmp(2),ind_zero_tmp(3)),param0,0);
         
         % Plot
         if configs.flags.graphics   % plotting
             plot(corr_out.bCent{iCorr}{1},...
-                corr_out.g2{iCorr}(:,ind_zero_tmp(2),ind_zero_tmp(3)),'*');
+                corr_out.g2{iCorr}(:,ind_zero_tmp(2),ind_zero_tmp(3)),'o');
             hold(ax,'on');
             
             title_str=['(',num2str(configs.corr.type{iCorr}.comp),') halos, ',...
@@ -123,9 +126,13 @@ for iCorr=1:length(configs.corr.type)
             title(title_str);
             xlabel('$\Delta K_z$'); ylabel(['$g^{(2)}_{',configs.corr.type{iCorr}.opt,'}$']);
             
-            plot(ax,fit_g2_tmp.x,fit_g2_tmp.y,'r');     % plot the fit
+            plot(ax,fit_g2_tmp.x,fit_g2_tmp.y);     % plot the fit
             hold(ax,'off');
+            
+            legend({'Data','Gaussian fit'});
         end
+        
+        %%% greatest 
     else
         warning('SOMETHING IS WRONG!');
     end
