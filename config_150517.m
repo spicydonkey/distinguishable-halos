@@ -16,8 +16,8 @@ vz=configs.misc.vel_z;
 %% LOAD
 % files -  data file
 configs.load.path='\\AMPLPC29\Users\TDC_user\ProgramFiles\my_read_tdc_gui_v1.0.1\dld_output\xstate_collision_highv\zpush_vhighnum_20170512_failed\d';    % path to unindexed data file (e.g. 'a\b\datadir\$DATA_FNAME_TOKEN$')
-configs.load.id=1:300;         % file id numbers to use for analysis
-configs.load.minCount=1000;     % min counts to use for analysis
+configs.load.id=1:1000;         % file id numbers to use for analysis
+configs.load.minCount=5000;     % min counts to use for analysis
 
 % Detector/trap alignment
 configs.load.rot_angle=0.61;
@@ -37,9 +37,9 @@ configs.bec.Rmax{2}=10e-3;
 configs.bec.dR_tail{2}=0.5;
 
 configs.halo.R{1}=25e-3;     % estimated radius of halo
-configs.halo.dR{1}=0.15;      % broad radial mask fractional width (in/out)
+configs.halo.dR{1}=0.1;      % broad radial mask fractional width (in/out)
 configs.halo.R{2}=20e-3;
-configs.halo.dR{2}=0.15;
+configs.halo.dR{2}=0.1;
 
 configs.halo.zcap=0.8;   % z-cutoff (fractional wrt radius)
 
@@ -51,7 +51,7 @@ configs.corr.type{1}.opt='BB';             % BB / CL
 configs.corr.lim{1}{1}=0.3*[-1,1]; % bin limits - Z
 configs.corr.lim{1}{2}=0.3*[-1,1]; % bin limits - X
 configs.corr.lim{1}{3}=0.3*[-1,1]; % bin limits - Y
-configs.corr.nBin{1}=[10,10,10];   % number of bins
+configs.corr.nBin{1}=[21,5,5];   % number of bins
 
 %% correlation analysis
 % % 1. Cross-halo rad/angular correlations
@@ -125,9 +125,9 @@ configs.corr.nBin{1}=[10,10,10];   % number of bins
 
 %%% ALGORITHM CONFIGS
 % DO NOT ADJUST
-% configs.files.saveddata=[configs.load.path,'_data.mat'];     % path to store saved data
-configs.files.archive=[configs.load.path,'_archive'];   % dir to archive folder
-configs.files.dirout=[configs.load.path,'_output'];      % output directory
+configs.files.dir_data=fileparts(configs.load.path);    % fullpath to data directory
+configs.files.archive=fullfile(configs.files.dir_data,'archive');   % dir to archive folder
+configs.files.dirout=fullfile(configs.files.dir_data,'output');      % output directory
 
 do_next=force_all_stages;  % flag for executing stages for efficiency (do not change)
 
