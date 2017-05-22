@@ -3,7 +3,7 @@
 %% TODO
 % map to sphere
     
-function [halo,efit,corr_out,txy,files_out,err]=run_dist_halo(configm)
+function [halo_k,corr,efit,halo,txy,fout,err]=run_dist_halo(configm)
     %% Initialise
     t_main_start=tic;   % for reporting process duration
     datetimestr=datestr(datetime,'yyyymmdd_HHMMSS');    % timestamp when function called
@@ -40,7 +40,7 @@ function [halo,efit,corr_out,txy,files_out,err]=run_dist_halo(configm)
     end
     
     if do_next
-        [txy,files_out]=load_txy(configs.load.path,configs.load.id,...
+        [txy,fout]=load_txy(configs.load.path,configs.load.id,...
             configs.load.window,configs.load.minCount,...
             configs.load.rot_angle,verbose,configs.flags.graphics);
     end
@@ -49,7 +49,7 @@ function [halo,efit,corr_out,txy,files_out,err]=run_dist_halo(configm)
     % TODO
     %   check for preexisting saved files:
     %   should have equal LOAD + HALO
-    [halo,bec,culled,errflag]=halo_capture(txy,files_out,configs,verbose);
+    [halo,bec,culled,errflag]=halo_capture(txy,fout,configs,verbose);
     
 
     %% Quick ellipsoid fit
@@ -68,7 +68,7 @@ function [halo,efit,corr_out,txy,files_out,err]=run_dist_halo(configm)
     % plot ellipsoid fit
     if configs.flags.graphics
         COLOR={'b','r'};
-        figure();
+        hfig_ellipsoid_fit=figure();
         for ii=1:2
             subplot(1,2,ii);
             hold on;
@@ -121,7 +121,7 @@ function [halo,efit,corr_out,txy,files_out,err]=run_dist_halo(configm)
     
     % Plot k-space mapped halos
     if configs.flags.graphics
-        figure();
+        hfig_halo_k=figure();
         plot_zxy(halo_k,1e5);
         
         axis equal;
@@ -136,11 +136,20 @@ function [halo,efit,corr_out,txy,files_out,err]=run_dist_halo(configm)
     % TODO
     %   check for preexisting saved files passed for above
     if do_corr_analysis
-        corr_out=halo_g2_manager(halo_k,configs,verbose);
+        corr=halo_g2_manager(halo_k,configs,verbose);
     end
     
     %% Save results
+    % get all vars in workspace except graphics handles
+    allvars=whos;
+    tosave=cellfun(@isempty,regexp({allvars.class},'^matlab\.(ui|graphics)\.'));
     
+    %%% fig
+        % TODO - need to be able to save all graphics from each subroutine
+    
+    %%% data
+    % doesn't save the whole workspace this way
+    save([configs.files.dirout,'/',mfilename,'_output_',datetimestr,'.mat'],allvars(tosave).name);
     
     %% end of code %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     t_main_end=toc(t_main_start);   % end of code
