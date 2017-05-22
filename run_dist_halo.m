@@ -140,16 +140,18 @@ function [halo_k,corr,efit,halo,txy,fout,err]=run_dist_halo(configm)
     end
     
     %% Save results
-    % get all vars in workspace except graphics handles
-    allvars=whos;
-    tosave=cellfun(@isempty,regexp({allvars.class},'^matlab\.(ui|graphics)\.'));
-    
-    %%% fig
+    if configs.flags.savedata
+        % get all vars in workspace except graphics handles
+        allvars=whos;
+        tosave=cellfun(@isempty,regexp({allvars.class},'^matlab\.(ui|graphics)\.'));
+        
+        %%% fig
         % TODO - need to be able to save all graphics from each subroutine
-    
-    %%% data
-    % doesn't save the whole workspace this way
-    save([configs.files.dirout,'/',mfilename,'_output_',datetimestr,'.mat'],allvars(tosave).name);
+        
+        %%% data
+        % doesn't save the whole workspace this way
+        save([configs.files.dirout,'/',mfilename,'_output_',datetimestr,'.mat'],allvars(tosave).name);
+    end
     
     %% end of code %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     t_main_end=toc(t_main_start);   % end of code
