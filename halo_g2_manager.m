@@ -11,6 +11,11 @@ if verbose>0, fprintf('Starting correlation analysis...\n'), end;
 %% MAIN
 t_fun_start=tic;
 
+% misc graphics
+markers = {'+','o','*','.','x','s','d','^','v','>','<','p','h'};
+colors = distinguishable_colors(3);
+coords = {'Z','X','Y'};
+
 % get paths
 dir_output=configs.files.dirout;
 
@@ -120,26 +125,44 @@ for iCorr=1:n_corr_analysis
         else
             param0=[2,0,0.1,1];     % CL peaks at 2
         end
-        
-        [fitparam_tmp,fit_g2_tmp]=gaussfit(corr_out_this.bCent{1},...
-            corr_out_this.g2(:,ind_zero_tmp(2),ind_zero_tmp(3)),param0,0);
-        
-        % Plot
-        if configs.flags.graphics   % plotting
-            plot(corr_out_this.bCent{1},...
-                corr_out_this.g2(:,ind_zero_tmp(2),ind_zero_tmp(3)),'o');
-            hold(ax,'on');
             
-            title_str=['(',num2str(corr_this.type.comp),') halos, ',...
-                corr_this.type.opt,', ','$Z$-axis'];
-            title(title_str);
-            xlabel('$\Delta K_z$'); ylabel(['$g^{(2)}_{',corr_this.type.opt,'}$']);
+        perm_vect=[2,3,1];      % 1,2,3-->2,3,1 cyclic map
+        g2=corr_out_this.g2;    % 3D g2 in ZXY coord
+        for jj=1:3
+            % take line profile thru the bin center (d~=0)
+            [fitparam_tmp{jj},fit_g2_tmp{jj}]=gaussfit(corr_out_this.bCent{jj},...
+                g2(:,ind_zero_tmp(2),ind_zero_tmp(3)),param0,0);
             
-            plot(ax,fit_g2_tmp.x,fit_g2_tmp.y);     % plot the fit
-            hold(ax,'off');
+            % Plot
+            if configs.flags.graphics
+                hold on;
+                
+                % plot data
+                plot(corr_out_this.bCent{jj},g2(:,ind_zero_tmp(2),ind_zero_tmp(3)),...
+                    markers{jj},'MarkerEdgeColor',colors(jj,:),...
+                    'DisplayName',coords{jj});
+                
+                % plot gaussian fit
+                plot(ax,fit_g2_tmp{jj}.x,fit_g2_tmp{jj}.y,...
+                    'Color',colors(jj,:),'LineWidth',1.5,...
+                    'HandleVisibility','off');
+            end
             
-            legend({'Data','Gaussian fit'});
+            % cyclically permute the 3D vectors: CAREFUL! don't use after
+            % this loop
+            g2=permute(g2,perm_vect);
+            ind_zero_tmp=ind_zero_tmp(perm_vect);
         end
+        % figure annotation
+        if configs.flags.graphics
+            title_str=['(',num2str(corr_this.type.comp),') halos, ',...
+                corr_this.type.opt,', ','single-axis'];
+            title(title_str);
+            xlabel('$\Delta K_i$'); ylabel(['$g^{(2)}_{',corr_this.type.opt,'}$']);
+            legend('show');
+            box on;
+        end
+        
     else
         warning('SOMETHING IS WRONG!');
     end
