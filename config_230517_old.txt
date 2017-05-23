@@ -14,7 +14,7 @@ vz=configs.misc.vel_z;
 %% LOAD
 % files -  data file
 configs.load.path='C:\Users\HE BEC\Documents\lab\halo_analysis\data\dist_halo\4_separated_lownum\d';    % path to unindexed data file (e.g. 'a\b\datadir\$DATA_FNAME_TOKEN$')
-configs.load.id=1:3052;         % file id numbers to use for analysis
+configs.load.id=1:100;         % file id numbers to use for analysis
 configs.load.mincount=1000;     % min counts to use for analysis
 configs.load.maxcount=2000;      
 
