@@ -3,7 +3,7 @@
 
 function [configs,err]=load_config(config_file_path)
 % initialise output
-configs=[];
+configs=struct();
 err=0;
 
 % open config file
@@ -20,6 +20,7 @@ while true
     if ~ischar(this_line)
         break;
     end     % enf of file
+%     disp(this_line);
     eval(this_line);
 end     % user defined "config" is built
 fclose(fi_config);
