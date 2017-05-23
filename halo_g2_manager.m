@@ -59,7 +59,7 @@ for iCorr=1:n_corr_analysis
         drawnow;
         
         % save figs
-        fname_str=['corr_',num2str(iCorr)];
+        fname_str=['corr_',num2str(iCorr),'_',datestr(datetime,'yyyymmdd_HHMMSS')];
         saveas(hfig_g2_this,fullfile(dir_output,[fname_str,'.fig']));
         saveas(hfig_g2_this,fullfile(dir_output,[fname_str,'.png']));
     end
@@ -173,7 +173,7 @@ for iCorr=1:n_corr_analysis
     
     % Save figs
     if configs.flags.graphics   % plotting
-        fname_str=['corr1d_',num2str(iCorr)];
+        fname_str=['corr1d_',num2str(iCorr),'_',datestr(datetime,'yyyymmdd_HHMMSS')];
         saveas(hfig_g2_1d_this,fullfile(dir_output,[fname_str,'.fig']));
         saveas(hfig_g2_1d_this,fullfile(dir_output,[fname_str,'.png']));
     end
