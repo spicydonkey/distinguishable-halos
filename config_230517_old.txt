@@ -14,7 +14,7 @@ vz=configs.misc.vel_z;
 %% LOAD
 % files -  data file
 configs.load.path='C:\Users\HE BEC\Documents\lab\halo_analysis\data\dist_halo\4_separated_lownum\d';    % path to unindexed data file (e.g. 'a\b\datadir\$DATA_FNAME_TOKEN$')
-configs.load.id=1:100;         % file id numbers to use for analysis
+configs.load.id=1:3000;         % file id numbers to use for analysis
 configs.load.mincount=1000;     % min counts to use for analysis
 configs.load.maxcount=2000;      
 
@@ -49,13 +49,13 @@ configs.halo.zcap=0.7;   % z-cutoff (fractional wrt radius)
 
 %% CORR
 % % TEST
-configs.corr.type{1}.comp=[1,2];           % components to analysis: cross halo 1,2
-configs.corr.type{1}.coord='cart';         % Cartesian (ZXY)
-configs.corr.type{1}.opt='BB';             % BB / CL
-configs.corr.lim{1}{1}=0.40*[-1,1]; % bin limits - Z
-configs.corr.lim{1}{2}=0.40*[-1,1]; % bin limits - X
-configs.corr.lim{1}{3}=0.40*[-1,1]; % bin limits - Y
-configs.corr.nBin{1}=[25,25,25];   % number of bins
+configs.corr{1}.type.comp=[1,2];           % components to analysis: cross halo 1,2
+configs.corr{1}.type.coord='cart';         % Cartesian (ZXY)
+configs.corr{1}.type.opt='BB';             % BB / CL
+configs.corr{1}.lim(1,:)=0.40*[-1,1]; % bin limits - Z
+configs.corr{1}.lim(2,:)=0.40*[-1,1]; % bin limits - X
+configs.corr{1}.lim(3,:)=0.40*[-1,1]; % bin limits - Y
+configs.corr{1}.nBin=[25,25,25];   % number of bins
 
 %% correlation analysis
 % % 1. Cross-halo rad/angular correlations

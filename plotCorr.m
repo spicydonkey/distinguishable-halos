@@ -1,4 +1,4 @@
-function [HFIG]=plotCorr(FIGNUM,CORRDATA,CORRCONFIG,INDEX)
+function plotCorr(CORRDATA,CORRCONFIG)
 % wrapper to plot correlation functions
 % Plots correlation function data in CORRDATA - INDEX locates which config
 %
@@ -13,11 +13,11 @@ function [HFIG]=plotCorr(FIGNUM,CORRDATA,CORRCONFIG,INDEX)
 % HFIG: generated figure handle
 %
 
-if isequal(CORRCONFIG.type{INDEX}.coord,'angular')
-    HFIG=plotCorrAngle(FIGNUM,CORRDATA,CORRCONFIG,INDEX);
+if isequal(CORRCONFIG.type.coord,'angular')
+    plotCorrAngle(CORRDATA,CORRCONFIG);
     return
-elseif isequal(CORRCONFIG.type{INDEX}.coord,'cart')
-    HFIG=plotCorrCart(FIGNUM,CORRDATA,CORRCONFIG,INDEX); 
+elseif isequal(CORRCONFIG.type.coord,'cart')
+    plotCorrCart(CORRDATA,CORRCONFIG); 
     return
 else
     error('Correlation must in evaluated in "angular" or "cart".');
