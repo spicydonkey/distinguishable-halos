@@ -1,11 +1,9 @@
 % Configuration file for distinguishable_halos.m
 
 %%% GENERAL
-do_corr_analysis=1;
-force_all_stages=1;    % force all the stages to run (useful for debug)
-verbose=3;
-
-%%% FLAGS
+configs.flags.do_corr_analysis=1;
+configs.flags.force_all_stages=1;    % force all the stages to run (useful for debug)
+configs.flags.verbose=3;
 configs.flags.savedata=1;       % TODO - req'd currently since each stage passes data by save/load to disk
 configs.flags.graphics=1;       % toggle to control graphics/plotting options
 
@@ -17,8 +15,8 @@ vz=configs.misc.vel_z;
 % files -  data file
 configs.load.path='C:\Users\HE BEC\Documents\lab\halo_analysis\data\dist_halo\4_separated_lownum\d';    % path to unindexed data file (e.g. 'a\b\datadir\$DATA_FNAME_TOKEN$')
 configs.load.id=1:3052;         % file id numbers to use for analysis
-configs.load.mincount=1200;     % min counts to use for analysis
-configs.load.maxcount=Inf;      
+configs.load.mincount=1000;     % min counts to use for analysis
+configs.load.maxcount=2000;      
 
 % Detector/trap alignment
 configs.load.rot_angle=0.61;
@@ -27,6 +25,11 @@ configs.load.rot_angle=0.61;
 configs.load.window{1}=[4.905,4.92];      % T [s]
 configs.load.window{2}=[-35e-3,35e-3];    % X [m]
 configs.load.window{3}=[-35e-3,35e-3];    % Y [m]
+
+%% DIRECTORIES
+configs.files.dir_data=fileparts(configs.load.path);    % fullpath to data directory
+configs.files.archive=fullfile(configs.files.dir_data,'archive');   % dir to archive folder
+configs.files.dirout=fullfile(configs.files.dir_data,'output');      % output directory
 
 %% HALO
 %%% HALO PARAMS: BEC counts + oscillation removal for broad capture of halos
@@ -124,12 +127,5 @@ configs.corr.nBin{1}=[22,10,10];   % number of bins
 %     analysis.corr.lim{#}{3}=0.8*[-1,1]; % bin limits - Y
 %     analysis.corr.nBin{#}=[51,13,13];   % number of bins
 
-%%% ALGORITHM CONFIGS
-% DO NOT ADJUST
-configs.files.dir_data=fileparts(configs.load.path);    % fullpath to data directory
-configs.files.archive=fullfile(configs.files.dir_data,'archive');   % dir to archive folder
-configs.files.dirout=fullfile(configs.files.dir_data,'output');      % output directory
-
-do_next=force_all_stages;  % flag for executing stages for efficiency (do not change)
 
 %% END
