@@ -42,7 +42,7 @@ function [halo_k,corr,efit,halo,txy,fout,err]=run_dist_halo(configm)
     
     if do_next
         [txy,fout,HFIG{length(HFIG)+1}]=load_txy(configs.load.path,configs.load.id,...
-            configs.load.window,configs.load.minCount,...
+            configs.load.window,configs.load.mincount,configs.load.maxcount,...
             configs.load.rot_angle,verbose,configs.flags.graphics);
     end
 
@@ -53,6 +53,13 @@ function [halo_k,corr,efit,halo,txy,fout,err]=run_dist_halo(configm)
     [halo,bec,culled,HFIG{length(HFIG)+1},errflag]=halo_capture(txy,fout,configs,verbose);
     
 
+    %% Characterise halos
+    % TODO
+    %   num in halo (+ mode occupancy - needs corr volume)
+    %   halo thickness + distribution
+    %   number distribution
+    
+    
     %% Quick ellipsoid fit
     efit_flag='';
     efit=cell(2,1);

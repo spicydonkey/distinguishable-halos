@@ -17,7 +17,8 @@ vz=configs.misc.vel_z;
 % files -  data file
 configs.load.path='\\AMPLPC29\Users\TDC_user\ProgramFiles\my_read_tdc_gui_v1.0.1\dld_output\xstate_collision_highv\zpush_vhighnum_20170512_failed\d';    % path to unindexed data file (e.g. 'a\b\datadir\$DATA_FNAME_TOKEN$')
 configs.load.id=1:1000;         % file id numbers to use for analysis
-configs.load.minCount=5000;     % min counts to use for analysis
+configs.load.mincount=5000;         % min counts in window - 0 for no min
+configs.load.maxcount=6000;          % max counts in window - Inf for no max
 
 % Detector/trap alignment
 configs.load.rot_angle=0.61;
@@ -41,7 +42,7 @@ configs.halo.dR{1}=0.1;      % broad radial mask fractional width (in/out)
 configs.halo.R{2}=20e-3;
 configs.halo.dR{2}=0.1;
 
-configs.halo.zcap=0.8;   % z-cutoff (fractional wrt radius)
+configs.halo.zcap=0.7;   % z-cutoff (fractional wrt radius)
 
 %% CORR
 % % TEST
@@ -51,7 +52,7 @@ configs.corr.type{1}.opt='BB';             % BB / CL
 configs.corr.lim{1}{1}=0.3*[-1,1]; % bin limits - Z
 configs.corr.lim{1}{2}=0.3*[-1,1]; % bin limits - X
 configs.corr.lim{1}{3}=0.3*[-1,1]; % bin limits - Y
-configs.corr.nBin{1}=[21,5,5];   % number of bins
+configs.corr.nBin{1}=[20,5,5];   % number of bins
 
 %% correlation analysis
 % % 1. Cross-halo rad/angular correlations

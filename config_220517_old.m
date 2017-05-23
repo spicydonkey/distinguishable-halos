@@ -17,7 +17,8 @@ vz=configs.misc.vel_z;
 % files -  data file
 configs.load.path='C:\Users\HE BEC\Documents\lab\halo_analysis\data\dist_halo\4_separated_lownum\d';    % path to unindexed data file (e.g. 'a\b\datadir\$DATA_FNAME_TOKEN$')
 configs.load.id=1:3052;         % file id numbers to use for analysis
-configs.load.minCount=1200;     % min counts to use for analysis
+configs.load.mincount=1200;     % min counts to use for analysis
+configs.load.maxcount=Inf;      
 
 % Detector/trap alignment
 configs.load.rot_angle=0.61;
