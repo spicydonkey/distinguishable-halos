@@ -205,23 +205,26 @@ if nBadshots>0
 end
 
 %% Plot captured halo
-% All captured counts (halo only)
-h_haloraw=figure();     % create figure instance for each plot
-hfig{length(hfig)+1}=gcf;
-plot_zxy(halo.zxy,[],1);
-view(3);
-title('captured halos');
-xlabel('X [m]'); ylabel('Y [m]'); zlabel('Z [m]');
-
-% Halo (oscillation compensated, etc)
-h_halooc=figure();
-hfig{length(hfig)+1}=gcf;
-plot_zxy(halo.zxy0,[],1);
-view(3);
-axis equal;
-title('halos: oscillation compensated');
-xlabel('X [m]'); ylabel('Y [m]'); zlabel('Z [m]');
-
+if configs.flags.graphics
+    % All captured counts (halo only)
+    h_haloraw=figure();     % create figure instance for each plot
+    hfig{length(hfig)+1}=gcf;
+    plot_zxy(halo.zxy,[],1);
+    view(3);
+    title('captured halos');
+    xlabel('X [m]'); ylabel('Y [m]'); zlabel('Z [m]');
+    drawnow;
+    
+    % Halo (oscillation compensated, etc)
+    h_halooc=figure();
+    hfig{length(hfig)+1}=gcf;
+    plot_zxy(halo.zxy0,[],1);
+    view(3);
+    axis equal;
+    title('halos: oscillation compensated');
+    xlabel('X [m]'); ylabel('Y [m]'); zlabel('Z [m]');
+    drawnow;
+end
 
 %% Summary
 if verbose>0

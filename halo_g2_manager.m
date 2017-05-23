@@ -49,6 +49,8 @@ if configs.flags.graphics
         nfig_tmp=10+iCorr;  % g2 figures start from figure 11
         hfig=plotCorr(nfig_tmp,corr_out,configs.corr,iCorr);
         
+        drawnow;
+        
         % save figs
         fname_str=['corr_',num2str(iCorr)];
         saveas(hfig,fullfile(dir_output,[fname_str,'.fig']));
@@ -96,7 +98,7 @@ for iCorr=1:length(configs.corr.type)
             plot(ax,fit_g2_tmpCL.x,fit_g2_tmpCL.y,'b--');
             hold(ax,'off');
             
-            legend({'Data','Gaussian fit'});
+            legend({'Data','Gaussian fit'});            
         end
         
     elseif isequal(this_corr_type,'cart')
@@ -136,6 +138,7 @@ for iCorr=1:length(configs.corr.type)
     else
         warning('SOMETHING IS WRONG!');
     end
+    drawnow;
     
     % Get fit params
     corr_out.fit{iCorr}=fitparam_tmp;

@@ -113,6 +113,7 @@ function [halo_k,corr,efit,halo,txy,fout,err]=run_dist_halo(config_file)
             lighting phong;
             xlabel('X [m]'); ylabel('Y [m]'); zlabel('Z [m]');
         end
+        drawnow;
         
         % Update HFIG
         HFIG{length(HFIG)+1}={hfig_ellipsoid_fit};
@@ -149,6 +150,7 @@ function [halo_k,corr,efit,halo,txy,fout,err]=run_dist_halo(config_file)
         xlabel('$K_{x}$ [m]'); ylabel('$K_{y}$ [m]'); zlabel('$K_{z}$ [m]');
         titlestr='k-space mapped halos';
         title(titlestr);
+        drawnow;
         
         % Update HFIG
         HFIG{length(HFIG)+1}={hfig_halo_k};
