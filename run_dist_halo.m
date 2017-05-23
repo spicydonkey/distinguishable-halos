@@ -3,13 +3,21 @@
 %% TODO
 % map to sphere
     
-function [halo_k,corr,efit,halo,txy,fout,err]=run_dist_halo(configm)
+function [halo_k,corr,efit,halo,txy,fout,err]=run_dist_halo(config_file)
     %% Initialise
+    % configure
+    [configs,err_cf]=load_config(config_file);
+    if err_cf~=0
+        error('config file could not be loaded.');
+    end
+    
+    do_corr_analysis=configs.flags.do_corr_analysis;
+    do_next=configs.flags.force_all_stages;
+    verbose=configs.flags.verbose;
+    
     t_main_start=tic;   % for reporting process duration
     datetimestr=datestr(datetime,'yyyymmdd_HHMMSS');    % timestamp when function called
     HFIG={};
-    
-    run(configm);   % run the configuration script
     
     % output directory
     if ~isdir(configs.files.dirout)
