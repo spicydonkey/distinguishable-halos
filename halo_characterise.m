@@ -46,6 +46,8 @@ if verbose>0
     title('Halo radial distribution');
     xlabel('Radius');
     ylabel('Number in radial bin');
+    
+    drawnow;
 end
 
 %% number of scattered atoms

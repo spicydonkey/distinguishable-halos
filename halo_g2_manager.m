@@ -121,17 +121,24 @@ for iCorr=1:n_corr_analysis
         % Gaussian fit
         % Set initial params
         if strcmp(corr_this.type.opt,'BB')
-            param0=[4,0,0.1,1];     % fit estimate [amp,mu,sigma,offset]
+            param0=[4,0,0.1];     % fit estimate [amp,mu,sigma,offset]
         else
-            param0=[2,0,0.1,1];     % CL peaks at 2
+            param0=[2,0.1];     % CL peaks at 2
         end
             
         perm_vect=[2,3,1];      % 1,2,3-->2,3,1 cyclic map
         g2=corr_out_this.g2;    % 3D g2 in ZXY coord
         for jj=1:3
             % take line profile thru the bin center (d~=0)
-            [fitparam_tmp{jj},fit_g2_tmp{jj}]=gaussfit(corr_out_this.bCent{jj},...
-                g2(:,ind_zero_tmp(2),ind_zero_tmp(3)),param0,0);
+            if strcmp(corr_this.type.opt,'BB')
+                [fitparam_tmp{jj},fit_g2_tmp{jj}]=gaussfit2(corr_out_this.bCent{jj},...
+                    g2(:,ind_zero_tmp(2),ind_zero_tmp(3)),param0,0);
+            else
+                [fitparam_tmp{jj},fit_g2_tmp{jj}]=gaussfit3(corr_out_this.bCent{jj},...
+                    g2(:,ind_zero_tmp(2),ind_zero_tmp(3)),param0,0);
+            end
+%             [fitparam_tmp{jj},fit_g2_tmp{jj}]=gaussfit(corr_out_this.bCent{jj},...
+%                 g2(:,ind_zero_tmp(2),ind_zero_tmp(3)),param0,0);
             
             % Plot
             if configs.flags.graphics
