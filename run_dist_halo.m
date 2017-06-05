@@ -2,6 +2,12 @@
 % DKS 15/05/2017
 %% TODO
 % map to sphere
+% Characterise halos
+    %   mode occupancy - correlation volume from CL
+% halo transform scan for g2
+    %   center
+    %   rotation
+    %   scaling
     
 function [halo_k,corr,efit,halo,txy,fout,err]=run_dist_halo(config_file)
     %% Initialise
@@ -66,7 +72,6 @@ function [halo_k,corr,efit,halo,txy,fout,err]=run_dist_halo(config_file)
     %   num in halo (+ mode occupancy - needs corr volume)
     %   halo thickness + distribution
     %   number distribution
-    
     
     %% Quick ellipsoid fit
     efit_flag='';
@@ -154,6 +159,15 @@ function [halo_k,corr,efit,halo,txy,fout,err]=run_dist_halo(config_file)
         
         % Update HFIG
         HFIG{length(HFIG)+1}={hfig_halo_k};
+    end
+    
+    %% Characterise halos - spherically mapped
+    Nsc=cell(1,size(halo_k,2));     % total number in halo
+    dk=zeros(1,size(halo_k,2));     % halo rms width
+%     gfit=cell(1,size(halo_k,2));    % gaussian fit to radial dist
+    
+    for ii=1:size(halo_k,2)
+        [Nsc{ii},dk(ii),~]=halo_characterise(halo_k(:,ii),configs.halo.zcap,verbose);
     end
     
     %% Correlation analysis
