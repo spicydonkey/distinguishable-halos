@@ -40,7 +40,28 @@ for iCorr=1:n_corr_analysis
     % TODO - insert debug code for G2 and zxy manipulator
     [G2_shot_tmp,G2_all_tmp]=G2_caller(zxy(:,corr_this.type.comp),...
         bin_edge_tmp,corr_this.type.coord,corr_this.type.opt,verbose);
-    g2_tmp=size(zxy,1)*G2_shot_tmp./G2_all_tmp;      % normalised g2
+    
+    
+    n_shots=size(zxy,1);    % TODO: normalisation factor is WRONG for low counts per shot
+    %     norm_factor=n_shots;    % INCORRECT norm factor
+    
+    % normalisation factor
+    n_counts=cell2mat(cellfun(@(C) size(C,1),zxy,'UniformOutput',false));   % number of counts per shot
+    nn1=n_counts(:,1);      % counts in species 1
+    nn2=n_counts(:,end);    % counts in species 2
+    % TODO: do for CL/BB cases X-state/normal
+    if length(corr_this.type.comp)==2
+        % for x-species, BB correlation
+        N_pair_uncorr=(sum(nn1)*sum(nn2)-sum(nn1.*nn2))/2;
+        N_pair_corr=sum(nn1.*nn2);
+    else
+        warning('g2 normalisation factor should not be trusted.');
+        N_pair_uncorr=n_shots;
+        N_pair_corr=1;
+    end
+    norm_factor=N_pair_uncorr/N_pair_corr;
+    
+    g2_tmp=norm_factor*G2_shot_tmp./G2_all_tmp;      % normalised g2
     
     % Get results
     corr_out_this.bEdge=bin_edge_tmp;
