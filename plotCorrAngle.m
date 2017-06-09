@@ -2,7 +2,7 @@ function plotCorrAngle(CORRDATA,CORRCONFIG)
 % Plot correlation function in angular configuration
 
 % create domain grid for surf
-[drad,dtheta]=meshgrid(CORRDATA.bCent{1},CORRDATA.bCent{}{2});
+[drad,dtheta]=meshgrid(CORRDATA.bCent{1},CORRDATA.bCent{2});
 
 subplot(1,3,1);
 surf(drad',dtheta',CORRDATA.G2shot,'edgecolor','none');
