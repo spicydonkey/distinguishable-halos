@@ -23,6 +23,7 @@ function [halo_k,corr,efit,halo,txy,fout,err]=run_dist_halo(config_file)
     
     t_main_start=tic;   % for reporting process duration
     datetimestr=datestr(datetime,'yyyymmdd_HHMMSS');    % timestamp when function called
+    configs.files.dirout=[configs.files.dirout,'_',datetimestr];
     HFIG={};
     
     % output directory
@@ -183,8 +184,8 @@ function [halo_k,corr,efit,halo,txy,fout,err]=run_dist_halo(config_file)
         % TODO - need to be able to save all graphics from each subroutine
         for ii=1:length(HFIG)
             for jj=1:length(HFIG{ii})
-                saveas(HFIG{ii}{jj},[configs.files.dirout,'/',sprintf('fig_%d_%d_',ii,jj),datetimestr,'.fig']);
-                saveas(HFIG{ii}{jj},[configs.files.dirout,'/',sprintf('fig_%d_%d_',ii,jj),datetimestr,'.png']);
+                saveas(HFIG{ii}{jj},[configs.files.dirout,'/',sprintf('fig_%d_%d',ii,jj),'.png']);
+                saveas(HFIG{ii}{jj},[configs.files.dirout,'/',sprintf('fig_%d_%d',ii,jj),'.fig']);
             end
         end
         clear HFIG;     % clear HFIG graphics handle cell array from workspace
@@ -195,7 +196,7 @@ function [halo_k,corr,efit,halo,txy,fout,err]=run_dist_halo(config_file)
         tosave=cellfun(@isempty,regexp({allvars.class},'^matlab\.(ui|graphics)\.'));
         
         % doesn't save the whole workspace this way
-        save([configs.files.dirout,'/',mfilename,'_output_',datetimestr,'.mat'],allvars(tosave).name);
+        save([configs.files.dirout,'/',mfilename,'_data','.mat'],allvars(tosave).name);
     end
     
     %% end of code %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
