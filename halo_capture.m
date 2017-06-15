@@ -25,7 +25,7 @@ f_idok=files.id_ok;     % id's of files in txy (loaded ok from source)
 
 % Initialise vars
 halo.zxy=cell(length(f_idok),2);    % halo counts
-halo.zxy0=cell(length(f_idok),2);   % halo counts (oscillations compensated)
+halo.zxy0=cell(length(f_idok),2);   % halo counts (oscillations compensated + cap removed)
 halo.cent=cell(length(f_idok),2);   % halo centres
 halo.R=cell(length(f_idok),2);      % halo radii 
 bec.zxy=cell(length(f_idok),2);     % BEC counts
