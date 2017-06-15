@@ -202,7 +202,7 @@ for iCorr=1:n_corr_analysis
     corr_out{iCorr}.fit=fitparam_tmp;
     
     % Save figs
-    if configs.flags.graphics||configs.flags.savedata   % plotting
+    if configs.flags.graphics&&configs.flags.savedata   % plotting
         fname_str=['corr1d_',num2str(iCorr),'_',datestr(datetime,'yyyymmdd_HHMMSS')];
         saveas(hfig_g2_1d_this,fullfile(dir_output,[fname_str,'.fig']));
         saveas(hfig_g2_1d_this,fullfile(dir_output,[fname_str,'.png']));

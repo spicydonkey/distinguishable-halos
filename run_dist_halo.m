@@ -26,10 +26,12 @@ function [halo_k,corr,efit,halo,txy,fout,err]=run_dist_halo(config_file)
     configs.files.dirout=[configs.files.dirout,'_',datetimestr];
     HFIG={};
     
-    % output directory
-    if ~isdir(configs.files.dirout)
-        warning(['output directory "',configs.files.dirout,'" does not exist. Creating directory...']);
-        mkdir(configs.files.dirout);
+    if configs.flags.savedata
+        % output directory
+        if ~isdir(configs.files.dirout)
+            warning(['output directory "',configs.files.dirout,'" does not exist. Creating directory...']);
+            mkdir(configs.files.dirout);
+        end
     end
     
     %% Load TXY data
@@ -176,6 +178,8 @@ function [halo_k,corr,efit,halo,txy,fout,err]=run_dist_halo(config_file)
     %   check for preexisting saved files passed for above
     if do_corr_analysis
         corr=halo_g2_manager(halo_k,configs,verbose);
+    else
+        corr=NaN;       % need to return corr
     end
     
     %% Save results
