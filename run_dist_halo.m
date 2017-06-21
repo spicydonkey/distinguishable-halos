@@ -1,11 +1,13 @@
 %% distinguishable halo analysis
 % DKS 15/05/2017
+
 %% TODO
-% map to sphere
 % Characterise halos
-    %   mode occupancy - correlation volume from CL
+    %   mode occupancy - correlation volume (from CL) from BB (Sean's
+    %   paper)
 % halo transform scan for g2
-    %   center
+    %   center --> g2 peaks at 0 for each x,y,z axis; could do 3D Gaussian
+    %   fit
     %   rotation
     %   scaling
     

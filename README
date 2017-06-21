@@ -1,0 +1,7 @@
+# DISTINGUISHABLE HALO ANALYSIS
+
+## Getting started
+1. Configure the analysis by creating a Matlab script using config_090617_1" as an example template
+	* turn the correlation analysis flag (+ savedata) off when getting started with a new dataset or experimenting with halo captures
+2. Open Matlab and run:
+	[halo_k,corr,efit,halo,txy,fout]=run_dist_halo(PATH_TO_CONFIG);
