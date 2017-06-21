@@ -1,12 +1,14 @@
 # DISTINGUISHABLE HALO ANALYSIS
+2017.06.21 - David Shin
 
-## Getting started
+
+## GETTING STARTED
 1. Configure the analysis by creating a Matlab script using config_090617_1" as an example template
 	* turn the correlation analysis flag (+ savedata) off when getting started with a new dataset or experimenting with halo captures
 2. Open Matlab and run:
 	[halo_k,corr,efit,halo,txy,fout]=run_dist_halo(PATH_TO_CONFIG);
 
-## Methods
+## METHODS
 ### g2
 #### x-state (2 component); BB; Cartesian
 1. Correlated pairs
@@ -23,4 +25,4 @@
 	3.1. g2(dk):=G2_corr(dk)/G2_uncorr(dk)
 
 ## BUGS
-* g2 normalisation seems a factor x2 off - g2 plateaus at 0.5 which is disturbing. I think I know why - uncorr pairs counting may be off by a factor of 2
+* 2017.06.21 - FIXED - formula for g2 normalisation incorrect by a factor of 2 - g2 plateauxing at 1/2 was a danger sign 
