@@ -1,4 +1,4 @@
-function corr_out=halo_g2_manager(zxy,configs,verbose)
+function [corr_out,hfig]=halo_g2_manager(zxy,configs,verbose)
 % Correlation task manager
 
 % input check
@@ -10,14 +10,12 @@ end
 if verbose>0, fprintf('Starting correlation analysis...\n'), end;
 %% MAIN
 t_fun_start=tic;
+hfig={};
 
 % misc graphics
 markers = {'+','o','*','.','x','s','d','^','v','>','<','p','h'};
 colors = distinguishable_colors(3);
 coords = {'Z','X','Y'};
-
-% get paths
-dir_output=configs.files.dirout;
 
 n_corr_analysis=length(configs.corr);
 corr_out=cell(n_corr_analysis,1);
@@ -75,16 +73,11 @@ for iCorr=1:n_corr_analysis
     %% Plot g2 result
     if configs.flags.graphics
         hfig_g2_this=figure();
+        hfig{length(hfig)+1}=gcf;
+        
         plotCorr(corr_out_this,configs.corr{iCorr});
         
         drawnow;
-        
-        if configs.flags.savedata
-            % save figs
-            fname_str=['corr_',num2str(iCorr),'_',datestr(datetime,'yyyymmdd_HHMMSS')];
-            saveas(hfig_g2_this,fullfile(dir_output,[fname_str,'.fig']));
-            saveas(hfig_g2_this,fullfile(dir_output,[fname_str,'.png']));
-        end
     end
 end
 % clear workspace
@@ -98,6 +91,7 @@ for iCorr=1:n_corr_analysis
     % prepare graphics
     if configs.flags.graphics   
         hfig_g2_1d_this=figure();
+        hfig{length(hfig)+1}=gcf;
         ax=gca;
     end
     
@@ -200,13 +194,6 @@ for iCorr=1:n_corr_analysis
     
     % Get fit params
     corr_out{iCorr}.fit=fitparam_tmp;
-    
-    % Save figs
-    if configs.flags.graphics&&configs.flags.savedata   % plotting
-        fname_str=['corr1d_',num2str(iCorr),'_',datestr(datetime,'yyyymmdd_HHMMSS')];
-        saveas(hfig_g2_1d_this,fullfile(dir_output,[fname_str,'.fig']));
-        saveas(hfig_g2_1d_this,fullfile(dir_output,[fname_str,'.png']));
-    end
 end
 clear g2_1d_tmp param0 fitparam_tmp fit_g2_tmp ax this_corr_type;
 

@@ -179,7 +179,7 @@ function [halo_k,corr,efit,halo,txy,fout,err]=run_dist_halo(config_file)
     % TODO
     %   check for preexisting saved files passed for above
     if do_corr_analysis
-        corr=halo_g2_manager(halo_k,configs,verbose);
+        [corr,HFIG{length(HFIG)+1}]=halo_g2_manager(halo_k,configs,verbose);
     else
         corr=NaN;       % need to return corr
     end
