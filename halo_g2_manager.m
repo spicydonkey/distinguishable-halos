@@ -50,7 +50,7 @@ for iCorr=1:n_corr_analysis
     % TODO: do for CL/BB cases X-state/normal
     if length(corr_this.type.comp)==2
         % for x-species, BB correlation
-        N_pair_uncorr=(sum(nn1)*sum(nn2)-sum(nn1.*nn2))/2;
+        N_pair_uncorr=sum(nn1)*sum(nn2)-sum(nn1.*nn2);
         N_pair_corr=sum(nn1.*nn2);
     else
         warning('g2 normalisation factor should not be trusted.');

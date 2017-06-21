@@ -81,8 +81,8 @@ if ncomp==2
     if isequal(CORR_INFO,'BB')
         % Back-to-back G2 analysis
         for i=1:nShot
-            nAtom=size(data1{i},1); % number of counts in DATA1
-            Npairs=size(data2{i},1);
+            nAtom=size(data1{i},1);         % number of counts in shot - comp #1
+            Npairs=size(data2{i},1);        % number of counts in shot - comp #2
             
             for j=1:nAtom
                 % back-to-back condition
