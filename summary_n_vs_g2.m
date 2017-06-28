@@ -1,7 +1,7 @@
 % SUMMARY OF BB g2 amplitude and scattering halo mode occupancy
 
-n_exp=[0.017,0.025,0.18,0.04,0.86];
-g2_exp=[85,20,4.5,32,3.1];
+n_exp=[0.017,0.025,0.18,0.04,0.86,0.19];
+g2_exp=[85,20,4.5,32,3.1,12];
 
 r=3;
 n=linspace(min(n_exp)/r,r*max(n_exp),1000);       % logs
