@@ -28,12 +28,17 @@
 % dk=0.12;
 % Nsc=38;
 
-% RUN4
-kr=1;
-wbb=0.03;
-dk=0.033;
-Nsc=160;
+% % RUN4
+% kr=1;
+% wbb=0.03;
+% dk=0.033;
+% Nsc=160;
 
+% RUN5 - high n!
+kr=1;
+wbb=0.033;
+dk=0.021;       % smaller than others!
+Nsc=1900;
 
 Vm=(2*pi)^(3/2)*(wbb/1.1)^3        % mode/phase grain volume
 Vs=4*pi*sqrt(2*pi)*kr^2*dk         % total scattering volume
