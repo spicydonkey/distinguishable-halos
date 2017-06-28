@@ -30,14 +30,14 @@
 
 % % RUN4
 % kr=1;
-% wbb=0.03;
-% dk=0.033;
-% Nsc=160;
+% wbb=0.028;
+% dk=0.034;
+% Nsc=170;
 
 % RUN5 - high n!
 kr=1;
 wbb=0.033;
-dk=0.021;       % smaller than others!
+dk=0.03;
 Nsc=1900;
 
 Vm=(2*pi)^(3/2)*(wbb/1.1)^3        % mode/phase grain volume
