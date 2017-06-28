@@ -65,6 +65,83 @@ function [halo_k,corr,efit,halo,txy,fout,err]=run_dist_halo(config_file)
             configs.load.rot_angle,verbose,configs.flags.graphics);
     end
 
+    %% Density profiles
+    % TODO
+    %   [] run only when debug flag ON: this is an optional analysis for
+    %       checking unprocessed TXY
+    %   [*] inspect halo + background density profile: background count density
+    %   [] inspect BEC/thermal density profile
+    
+    % 1. Collision COM frame
+    % from TXY crop out a disk perpendicular to the collision axis
+    ddiskheight=0.1;   % thickness of disk in halo radius unit
+    
+    % calculate halo centre in TXY
+    cent_halo=configs.bec.pos;      % get rough estimate of BEC position (in ZXY)
+    for ii=1:2
+        cent_halo{ii}=cent_halo{ii}+(-1)^(ii-1)*configs.halo.R{ii}*[1,0,0];     % estimate of halo centres (TXY)
+        cent_halo{ii}(1)=cent_halo{ii}(1)/configs.misc.vel_z;       % Z-->T
+    end
+    
+    % get counts in thin disk
+    txy_disk=cell(size(txy,1),2);
+    for ii=1:2
+        R=configs.halo.R{ii};   % halo capture radius [m]
+        txy_disk(:,ii)=cellfun(@(x) cylindercull(x,cent_halo{ii},[2*R,ddiskheight*R/configs.misc.vel_z],1),txy,'UniformOutput',false);  % capture counts in thin disk
+    end
+    
+    % merge shots
+    txy_disk_collated=cell(1,2);
+    for ii=1:2
+        txy_disk_collated{ii}=vertcat(txy_disk{:,ii});
+    end
+    
+    % centre halo
+    for ii=1:2
+        txy_disk_collated{ii}=txy_disk_collated{ii}-repmat(cent_halo{ii},[size(txy_disk_collated{ii},1),1]);
+    end
+    
+    % plot captured counts in disk
+    hfig_halo_disk=figure();
+    plot_zxy(txy_disk_collated);
+    box on;
+    view(2);    % XY plane
+    xlabel('X [m]');
+    ylabel('Y [m]');
+    titlestr='Point cloud through centre of halo';
+    title(titlestr);
+    legend({'$m_F=0$','$m_F=1$'});
+    
+    % get radii
+    r_disk_com=cell(1,2);
+    for ii=1:2
+        r_disk_com{ii}=sqrt(sum(txy_disk_collated{ii}(:,2:3).^2,2))/configs.halo.R{ii};     % radii in halo radius unit
+    end
+    
+    % histogram radially
+    [n_r_halo,r_edges]=cellfun(@(x) histcounts(x,100),r_disk_com,'UniformOutput',false);
+    r_cents=cellfun(@(x) x(1:end-1)+0.5*diff(x),r_edges,'UniformOutput',false);
+    
+    for ii=1:2
+        den_r_halo{ii}=n_r_halo{ii}./(2*pi*r_cents{ii}.*diff(r_edges{ii})*ddiskheight);     % radial density
+    end
+    
+    % plot density profile
+    hfig_com_den_profile=figure();
+    hold on;
+    for ii=1:2
+        plot(r_cents{ii},den_r_halo{ii},'*-');
+    end
+    box on;
+    xlabel('$r$ [m]');
+    ylabel('$\rho(r)$ [m$^{-3}$]');
+    titlestr='Radial density profile about the halo';
+    title(titlestr);
+    legend({'$m_F=0$','$m_F=1$'});
+    
+    % 2. BEC-thermal
+    
+    
     %% Capture halos
     % TODO
     %   check for preexisting saved files:
