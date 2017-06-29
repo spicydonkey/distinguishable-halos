@@ -11,7 +11,7 @@
     %   rotation
     %   scaling
     
-function [halo_k,corr,efit,halo,txy,fout,err]=run_dist_halo(config_file)
+function [halo_k0,corr,efit,halo,txy,fout,err]=run_dist_halo(config_file)
     %% Initialise
     % configure
     [configs,err_cf]=load_config(config_file);
@@ -252,11 +252,17 @@ function [halo_k,corr,efit,halo,txy,fout,err]=run_dist_halo(config_file)
         [Nsc{ii},dk(ii),~]=halo_characterise(halo_k(:,ii),configs.halo.zcap,verbose);
     end
     
+    %% Correct for halo centre
+    halo_k0=cell(size(halo_k));     % boosted halo in k-space
+    for ii=1:2
+        halo_k0(:,ii)=boost_zxy(halo_k(:,ii),configs.halo.boost{ii});   % boost each halo as defined
+    end
+    
     %% Correlation analysis
     % TODO
     %   check for preexisting saved files passed for above
     if do_corr_analysis
-        [corr,HFIG{length(HFIG)+1}]=halo_g2_manager(halo_k,configs,verbose);
+        [corr,HFIG{length(HFIG)+1}]=halo_g2_manager(halo_k0,configs,verbose);
     else
         corr=NaN;       % need to return corr
     end
