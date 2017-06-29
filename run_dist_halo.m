@@ -36,35 +36,64 @@ function [halo_k0,corr,efit,halo,txy,fout,err]=run_dist_halo(config_file)
         end
     end
     
+    % check for archive directory
+    if ~isdir(configs.files.archive)
+        warning(['archive directory "',configs.files.archive,'"does not exist. Creating directory...']);
+        mkdir(configs.files.archive);
+    end
+    
+    
     %% Load TXY data
+    % TODO - what if there's multiple TXY files with same load config? e.g.
+    % from updating load TXY --> versioning!
+    loadconfigs=configs.load;   % abbreviated configs storing only txy load part
+    
     if ~do_next
         % check for existing saved file for preloaded data
-        mat_list=dir([configs.files.dirout,'/*.mat']);      % list of saved data
-        if size(mat_list,1)==0
-            do_next=1;  % no previously saved data files
-        else
+        arch_mat_list=dir([configs.files.archive,'/txy_*.mat']);      % list of saved data
+        
+        do_next=1;      % to do all task until saved data found
+        if size(arch_mat_list,1)~=0
             % look for file with same load configs
-            for ii=1:size(mat_list,1)
-                this_file=mat_list(ii).name;
-                % TODO - will throw error if $configs is not a variable in data
-                S_temp=load(this_file,'configs');  % load configs from prev data
+            for ii=1:size(arch_mat_list,1)
+                this_file=arch_mat_list(ii).name;
+                S_temp=load([configs.files.archive,'/',this_file],'loadconfigs');   % load configs from prev data
                 
-                % check if relevant configs equal
-                if ~isequal(S_temp.configs.load,configs.load)
-                    warning('Raw data: Existing data has different configs. Setting do_next=1.');
-                    do_next=1;
+                if isequal(S_temp.loadconfigs,loadconfigs)
+                    % success! this is the data to be loaded
+                    warning('Loading TXY: Match found in archive. Loading %s.',[configs.files.archive,'/',this_file]);
+                    load([configs.files.archive,'/',this_file],'txy','fout');
+                    do_next=0;      % skip full stage
+                    break
                 end
             end
-            clear S_temp;
+            
+            % no saved txy found
+            if do_next
+                warning('Loading TXY: No relevant TXY data found in archive. Setting do_next=1.');
+            end
+            
+        end
+    end
+    clear S_temp this_file arch_mat_list;       % clean workspace
+    
+    if do_next
+        [txy,fout,HFIG{length(HFIG)+1}]=load_txy(configs.files.path,configs.load.id,...
+            configs.load.window,configs.load.mincount,configs.load.maxcount,...
+            configs.load.rot_angle,verbose,configs.flags.graphics);
+        
+        % save loaded TXY data to archive for fast loading
+        if configs.flags.archive_txy&&(~configs.flags.force_all_stages)     % don't save when debugging - creates multiplicity
+            % save the loaded txy, output log, and configs used
+            fpath_txy_archive=[configs.files.archive,'/txy_',datetimestr,'.mat'];
+            warning('Archiving TXY data as .mat file: %s',fpath_txy_archive);
+            save(fpath_txy_archive,'txy','fout','loadconfigs');
         end
     end
     
-    if do_next
-        [txy,fout,HFIG{length(HFIG)+1}]=load_txy(configs.load.path,configs.load.id,...
-            configs.load.window,configs.load.mincount,configs.load.maxcount,...
-            configs.load.rot_angle,verbose,configs.flags.graphics);
-    end
-
+    clear loadconfigs fpath_txy_archive;  % clean workspace
+    
+    
     %% Density profiles
     % TODO
     %   [] run only when debug flag ON: this is an optional analysis for
