@@ -14,7 +14,7 @@ vz=configs.misc.vel_z;
 %% LOAD
 % files -  data file
 % path to unindexed data file (e.g. 'a\b\datadir\$DATA_FNAME_TOKEN$')
-configs.load.path='\\AMPLPC29\Users\TDC_user\ProgramFiles\my_read_tdc_gui_v1.0.1\dld_output\xstate_collision_highv\20170627_1912_ncond1500\d';
+configs.load.path='\\AMPLPC29\Users\TDC_user\ProgramFiles\my_read_tdc_gui_v1.0.1\dld_output\xstate_collision_highv\4\d';
 configs.load.id=1:2368;         % file id numbers to use for analysis
 configs.load.mincount=0;         % min counts in window - 0 for no min
 configs.load.maxcount=Inf;          % max counts in window - Inf for no max

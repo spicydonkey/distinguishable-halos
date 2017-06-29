@@ -1,7 +1,7 @@
 % Configuration file for distinguishable_halos.m
 
 %%% FLAGS
-configs.flags.do_corr_analysis=0;
+configs.flags.do_corr_analysis=1;
 configs.flags.force_all_stages=1;    % force all the stages to run (useful for debug)
 configs.flags.verbose=2;
 configs.flags.savedata=1;       % TODO - req'd currently since each stage passes data by save/load to disk
@@ -35,28 +35,33 @@ configs.load.window{3}=[-30e-3,35e-3];    % Y [m]
 %% HALO
 %%% HALO PARAMS: BEC counts + oscillation removal for broad capture of halos
 configs.bec.pos{1}=[0.405*vz,-3.3e-3,4.1e-3];   % approx condensate locations (z,x,y)
-configs.bec.Rmax{1}=5e-3;      % max condensate sph radius
-configs.bec.dR_tail{1}=2.8;     % BEC tail radial frac diff
+configs.bec.Rmax{1}=6e-3;      % max condensate sph radius
+configs.bec.dR_tail{1}=1;     % BEC tail radial frac diff
 configs.bec.pos{2}=[0.403*vz,-3.3e-3,0.0e-3];
-configs.bec.Rmax{2}=5e-3;
-configs.bec.dR_tail{2}=2.8;
+configs.bec.Rmax{2}=6e-3;
+configs.bec.dR_tail{2}=1;
 
-configs.halo.R{1}=25.5e-3;     % estimated radius of halo
-configs.halo.dR{1}=0.18;      % broad radial mask fractional width (in/out)
-configs.halo.R{2}=21.5e-3;
-configs.halo.dR{2}=0.18;
+configs.halo.R{1}=26e-3;     % estimated radius of halo
+configs.halo.dR{1}=0.2;      % broad radial mask fractional width (in/out)
+configs.halo.R{2}=24e-3;
+configs.halo.dR{2}=0.2;
 
-configs.halo.zcap=0.75;   % z-cutoff (fractional wrt radius)
+configs.halo.zcap=0.70;   % z-cutoff (fractional wrt radius)
+
+% TODO - does boost need to be optimised for different g2 analysis?
+%   currently SINGLE boost applied to halo2 to obtain best g2_01_BB
+configs.halo.boost{1}=zeros(1,3);
+configs.halo.boost{2}=[0.0505,0.005,-0.015];
 
 %% CORRELATION ANALYSIS
 % 1) X-halo Cart BB
 configs.corr{1}.type.comp=[1,2];           % components to analysis: cross halo 1,2
 configs.corr{1}.type.coord='cart';         % Cartesian (ZXY)
 configs.corr{1}.type.opt='BB';             % BB / CL
-configs.corr{1}.lim(1,:)=0.12*[-1,1]; % bin limits - Z
-configs.corr{1}.lim(2,:)=0.12*[-1,1]; % bin limits - X
-configs.corr{1}.lim(3,:)=0.12*[-1,1]; % bin limits - Y
-configs.corr{1}.nBin=[11,11,11];   % number of bins
+configs.corr{1}.lim(1,:)=0.2*[-1,1]; % bin limits - Z
+configs.corr{1}.lim(2,:)=0.2*[-1,1]; % bin limits - X
+configs.corr{1}.lim(3,:)=0.2*[-1,1]; % bin limits - Y
+configs.corr{1}.nBin=15*[1,1,1];   % number of bins
 
 % % 1. Cross-halo rad/angular correlations
 % configs.corr{2}.type.comp=[1,2];           % components to analysis: cross halo 1,2

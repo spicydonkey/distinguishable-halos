@@ -1,7 +1,7 @@
 % Configuration file for distinguishable_halos.m
 
 %%% FLAGS
-configs.flags.do_corr_analysis=0;
+configs.flags.do_corr_analysis=1;
 configs.flags.force_all_stages=1;    % force all the stages to run (useful for debug)
 configs.flags.verbose=2;
 configs.flags.savedata=1;       % TODO - req'd currently since each stage passes data by save/load to disk
@@ -14,10 +14,10 @@ vz=configs.misc.vel_z;
 %% LOAD
 % files -  data file
 % path to unindexed data file (e.g. 'a\b\datadir\$DATA_FNAME_TOKEN$')
-configs.load.path='\\AMPLPC29\Users\TDC_user\ProgramFiles\my_read_tdc_gui_v1.0.1\dld_output\d';
-configs.load.id=1:105;         % file id numbers to use for analysis
-configs.load.mincount=0;         % min counts in window - 0 for no min
-configs.load.maxcount=Inf;          % max counts in window - Inf for no max
+configs.load.path='\\AMPLPC29\Users\TDC_user\ProgramFiles\my_read_tdc_gui_v1.0.1\dld_output\xstate_collision_highv\5_hinum\d';
+configs.load.id=1:505;         % file id numbers to use for analysis
+configs.load.mincount=2700;         % min counts in window - 0 for no min
+configs.load.maxcount=3900;          % max counts in window - Inf for no max
 
 %%% DIRECTORIES
 configs.files.dir_data=fileparts(configs.load.path);    % fullpath to data directory
@@ -47,6 +47,9 @@ configs.halo.R{2}=24e-3;
 configs.halo.dR{2}=0.25;
 
 configs.halo.zcap=0.8;   % z-cutoff (fractional wrt radius)
+
+configs.halo.boost{1}=zeros(1,3);
+configs.halo.boost{2}=[0.03,0,-0.015];
 
 %% CORRELATION ANALYSIS
 % 1) X-halo Cart BB

@@ -14,10 +14,10 @@ vz=configs.misc.vel_z;
 %% LOAD
 % files -  data file
 % path to unindexed data file (e.g. 'a\b\datadir\$DATA_FNAME_TOKEN$')
-configs.load.path='\\AMPLPC29\Users\TDC_user\ProgramFiles\my_read_tdc_gui_v1.0.1\dld_output\d';
-configs.load.id=1:230;         % file id numbers to use for analysis
-configs.load.mincount=0;         % min counts in window - 0 for no min
-configs.load.maxcount=Inf;          % max counts in window - Inf for no max
+configs.load.path='\\AMPLPC29\Users\TDC_user\ProgramFiles\my_read_tdc_gui_v1.0.1\dld_output\xstate_collision_highv\6_mednum\d';
+configs.load.id=1:2848;         % file id numbers to use for analysis
+configs.load.mincount=1200;         % min counts in window - 0 for no min
+configs.load.maxcount=2100;          % max counts in window - Inf for no max
 
 %%% DIRECTORIES
 configs.files.dir_data=fileparts(configs.load.path);    % fullpath to data directory
@@ -48,14 +48,19 @@ configs.halo.dR{2}=0.25;
 
 configs.halo.zcap=0.8;   % z-cutoff (fractional wrt radius)
 
+% TODO - does boost need to be optimised for different g2 analysis?
+%   currently SINGLE boost applied to halo2 to obtain best g2_01_BB
+configs.halo.boost{1}=zeros(1,3);
+configs.halo.boost{2}=[0.035,-0.002,-0.025];
+
 %% CORRELATION ANALYSIS
 % 1) X-halo Cart BB
 configs.corr{1}.type.comp=[1,2];           % components to analysis: cross halo 1,2
 configs.corr{1}.type.coord='cart';         % Cartesian (ZXY)
 configs.corr{1}.type.opt='BB';             % BB / CL
-configs.corr{1}.lim(1,:)=0.24*[-1,1]; % bin limits - Z
-configs.corr{1}.lim(2,:)=0.24*[-1,1]; % bin limits - X
-configs.corr{1}.lim(3,:)=0.24*[-1,1]; % bin limits - Y
+configs.corr{1}.lim(1,:)=0.2*[-1,1]; % bin limits - Z
+configs.corr{1}.lim(2,:)=0.2*[-1,1]; % bin limits - X
+configs.corr{1}.lim(3,:)=0.2*[-1,1]; % bin limits - Y
 configs.corr{1}.nBin=15*[1,1,1];   % number of bins
 
 % % 1. Cross-halo rad/angular correlations

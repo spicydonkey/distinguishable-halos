@@ -15,9 +15,9 @@ vz=configs.misc.vel_z;
 % files -  data file
 % path to unindexed data file (e.g. 'a\b\datadir\$DATA_FNAME_TOKEN$')
 configs.load.path='\\AMPLPC29\Users\TDC_user\ProgramFiles\my_read_tdc_gui_v1.0.1\dld_output\xstate_collision_highv\20170622\d';
-configs.load.id=1:2849;         % file id numbers to use for analysis
-configs.load.mincount=15000;         % min counts in window - 0 for no min
-configs.load.maxcount=17000;          % max counts in window - Inf for no max
+configs.load.id=1:500;         % file id numbers to use for analysis
+configs.load.mincount=0;         % min counts in window - 0 for no min
+configs.load.maxcount=Inf;          % max counts in window - Inf for no max
 
 %%% DIRECTORIES
 configs.files.dir_data=fileparts(configs.load.path);    % fullpath to data directory
@@ -35,28 +35,33 @@ configs.load.window{3}=[-35e-3,35e-3];    % Y [m]
 %% HALO
 %%% HALO PARAMS: BEC counts + oscillation removal for broad capture of halos
 configs.bec.pos{1}=[0.405*vz,-3.6e-3,4.3e-3];   % approx condensate locations (z,x,y)
-configs.bec.Rmax{1}=4e-3;      % max condensate sph radius
-configs.bec.dR_tail{1}=4.5;     % BEC tail radial frac diff
+configs.bec.Rmax{1}=8e-3;      % max condensate sph radius
+configs.bec.dR_tail{1}=2;     % BEC tail radial frac diff
 configs.bec.pos{2}=[0.398*vz,-2.5e-3,0.6e-3];
-configs.bec.Rmax{2}=4e-3;
-configs.bec.dR_tail{2}=3;
+configs.bec.Rmax{2}=8e-3;
+configs.bec.dR_tail{2}=1.75;
 
-configs.halo.R{1}=24e-3;     % estimated radius of halo
-configs.halo.dR{1}=0.15;      % broad radial mask fractional width (in/out)
-configs.halo.R{2}=20e-3;
-configs.halo.dR{2}=0.15;
+configs.halo.R{1}=27e-3;     % estimated radius of halo
+configs.halo.dR{1}=0.2;      % broad radial mask fractional width (in/out)
+configs.halo.R{2}=24e-3;
+configs.halo.dR{2}=0.25;
 
-configs.halo.zcap=0.6;   % z-cutoff (fractional wrt radius)
+configs.halo.zcap=1;   % z-cutoff (fractional wrt radius)
+
+% TODO - does boost need to be optimised for different g2 analysis?
+%   currently SINGLE boost applied to halo2 to obtain best g2_01_BB
+configs.halo.boost{1}=zeros(1,3);
+configs.halo.boost{2}=[0,-0.01,-0.03];
 
 %% CORRELATION ANALYSIS
 % 1) X-halo Cart BB
 configs.corr{1}.type.comp=[1,2];           % components to analysis: cross halo 1,2
 configs.corr{1}.type.coord='cart';         % Cartesian (ZXY)
 configs.corr{1}.type.opt='BB';             % BB / CL
-configs.corr{1}.lim(1,:)=0.12*[-1,1]; % bin limits - Z
-configs.corr{1}.lim(2,:)=0.12*[-1,1]; % bin limits - X
-configs.corr{1}.lim(3,:)=0.12*[-1,1]; % bin limits - Y
-configs.corr{1}.nBin=[11,11,11];   % number of bins
+configs.corr{1}.lim(1,:)=0.2*[-1,1]; % bin limits - Z
+configs.corr{1}.lim(2,:)=0.2*[-1,1]; % bin limits - X
+configs.corr{1}.lim(3,:)=0.2*[-1,1]; % bin limits - Y
+configs.corr{1}.nBin=15*[1,1,1];   % number of bins
 
 % % 1. Cross-halo rad/angular correlations
 % configs.corr{2}.type.comp=[1,2];           % components to analysis: cross halo 1,2

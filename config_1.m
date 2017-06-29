@@ -48,6 +48,11 @@ configs.halo.dR{2}=0.15;
 
 configs.halo.zcap=0.8;   % z-cutoff (fractional wrt radius)
 
+% TODO - does boost need to be optimised for different g2 analysis?
+%   currently SINGLE boost applied to halo2 to obtain best g2_01_BB
+configs.halo.boost{1}=zeros(1,3);
+configs.halo.boost{2}=[0.075,0.005,0];
+
 %% CORRELATION ANALYSIS
 % 1) X-halo Cart BB
 configs.corr{1}.type.comp=[1,2];           % components to analysis: cross halo 1,2
