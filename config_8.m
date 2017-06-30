@@ -1,7 +1,7 @@
 % Configuration file for distinguishable_halos.m
 
 %%% FLAGS
-configs.flags.do_corr_analysis=1;
+configs.flags.do_corr_analysis=0;
 configs.flags.force_all_stages=0;    % force all the stages to run (useful for debug)
 configs.flags.verbose=2;
 configs.flags.savedata=1;       % TODO - req'd currently since each stage passes data by save/load to disk
@@ -17,7 +17,7 @@ vz=configs.misc.vel_z;
 configs.files.path='\\AMPLPC29\Users\TDC_user\ProgramFiles\my_read_tdc_gui_v1.0.1\dld_output\xstate_collision_highv\8_vvlownum\d';
 
 % WARNING: MODIFYING BELOW DIR SETTINGS ARE NOT RECOMMENDED
-configs.files.dir_data=fileparts(configs.load.path);    % fullpath to data directory
+configs.files.dir_data=fileparts(configs.files.path);    % fullpath to data directory
 configs.files.archive=fullfile(configs.files.dir_data,'archive');   % dir to archive folder
 configs.files.dirout=fullfile(configs.files.dir_data,'output');      % output directory (will be time-stamped)
 
