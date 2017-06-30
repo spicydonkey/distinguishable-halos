@@ -4,7 +4,7 @@ function plotCorr(CORRDATA,CORRCONFIG)
 %
 % INPUT
 % CORRDATA: correlation results
-%   contains fields including:  bEdge, bCent, G2shot, G2all, g2,
+%   contains fields including:  bEdge, bCent, G2_corr, G2_uncorr, g2,
 %
 % CORRCONFIG: type, nBin
 % INDEX: which one?

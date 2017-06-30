@@ -137,7 +137,7 @@ if ncomp==2
             for j=1:nAtom
                 % colinear condition
                 this_atom=data1{i}(j,:);    % ZXY-vector for this atom (to find pairs)
-                diff_tmp=data2{i}-repmat(this_atom,[Npairs,1]);   % "diff" for diff_CL in k-space
+                diff_tmp=abs(data2{i}-repmat(this_atom,[Npairs,1]));   % "absolute valued-DIFF" for diff_CL in k-space
                 
                 G2_corr=G2_corr+nhist(diff_tmp,BIN_EDGE);	% update G2
             end
@@ -164,7 +164,7 @@ if ncomp==2
             for j=1:nAtom
                 % colinear condition
                 this_atom=data1{i}(j,:);
-                diff_tmp=data_collated-repmat(this_atom,[Ntotpair,1]);   % diff for CL
+                diff_tmp=abs(data_collated-repmat(this_atom,[Ntotpair,1]));   % abs-diff for CL
                 
                 G2_uncorr=G2_uncorr+nhist(diff_tmp,BIN_EDGE);     % update G2
             end

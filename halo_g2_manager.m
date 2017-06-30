@@ -50,14 +50,10 @@ for iCorr=1:n_corr_analysis
         %% correlation in cartesian coordinate system
         if length(corr_this.type.comp)==2
             %% X-state
-            if isequal(corr_this.type.opt,'BB')
-                % BB
+            if isequal(corr_this.type.opt,'BB')||isequal(corr_this.type.opt,'CL')
+                % BB/CL
                 N_pair_uncorr=sum(nn1)*sum(nn2)-sum(nn1.*nn2);
                 N_pair_corr=sum(nn1.*nn2);
-            elseif isequal(corr_this.type.opt,'CL')
-                % CL
-                % TODO
-                
             else
                 % OTHER
                 warning('g2 normalisation factor should not be trusted.');
@@ -174,8 +170,10 @@ for iCorr=1:n_corr_analysis
     elseif isequal(this_corr_type,'cart')
         %%% Get line through Z-axis @ dkx=dky=0
         % TODO - $ind_zero assumes bin centers are symmetric about 0 and 0
-        % is indeed a bin center (i.e. odd nBin)
-        ind_zero=round((corr_this.nBin+1)/2);    % zero-cent'd bin index for sampling 3D-g2
+        % is indeed a bin center (i.e. odd nBin) - get index st bin centre
+        % closest to 0
+        [~,I_zero]=cellfun(@(x) min(abs(x)),corr_out_this.bCent);   % index to bin centre nearest 0
+%         I_zero=round((corr_this.nBin+1)/2);    % NOT ROBUST: zero-cent'd bin index for sampling 3D-g2
         
         % Gaussian fit
         % Set initial params - for Gaussian with offset 1
@@ -191,10 +189,10 @@ for iCorr=1:n_corr_analysis
             % take line profile thru the bin center (d~=0)
             if strcmp(corr_this.type.opt,'BB')
                 [fitparam{jj},fit_g2{jj}]=gaussfit2(corr_out_this.bCent{jj},...
-                    g2(:,ind_zero(2),ind_zero(3)),param0,0);
+                    g2(:,I_zero(2),I_zero(3)),param0,0);
             else
                 [fitparam{jj},fit_g2{jj}]=gaussfit3(corr_out_this.bCent{jj},...
-                    g2(:,ind_zero(2),ind_zero(3)),param0,0);
+                    g2(:,I_zero(2),I_zero(3)),param0,0);
             end
             
             % Plot
@@ -202,7 +200,7 @@ for iCorr=1:n_corr_analysis
                 hold on;
                 
                 % plot data
-                plot(corr_out_this.bCent{jj},g2(:,ind_zero(2),ind_zero(3)),...
+                plot(corr_out_this.bCent{jj},g2(:,I_zero(2),I_zero(3)),...
                     markers{jj},'MarkerEdgeColor',colors(jj,:),...
                     'DisplayName',coords{jj});
                 
@@ -215,7 +213,7 @@ for iCorr=1:n_corr_analysis
             % cyclically permute the 3D vectors: CAREFUL! don't use after
             % this loop
             g2=permute(g2,perm_vect);
-            ind_zero=ind_zero(perm_vect);
+            I_zero=I_zero(perm_vect);
         end
         % figure annotation
         if configs.flags.graphics
