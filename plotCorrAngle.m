@@ -5,7 +5,7 @@ function plotCorrAngle(CORRDATA,CORRCONFIG)
 [drad,dtheta]=meshgrid(CORRDATA.bCent{1},CORRDATA.bCent{2});
 
 subplot(1,3,1);
-surf(drad',dtheta',CORRDATA.G2shot,'edgecolor','none');
+surf(drad',dtheta',CORRDATA.G2_corr,'edgecolor','none');
 title_str=['(',num2str(CORRCONFIG.type.comp),') halos,',CORRCONFIG.type.coord,',shots'];
 title(title_str);
 xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel(['$G^{(2)}_{(',num2str(CORRCONFIG.type.comp),')}$']);
@@ -13,7 +13,7 @@ axis tight;
 shading interp;
 
 subplot(1,3,2);
-surf(drad',dtheta',CORRDATA.G2all,'edgecolor','none');
+surf(drad',dtheta',CORRDATA.G2_uncorr,'edgecolor','none');
 title_str=['(',num2str(CORRCONFIG.type.comp),') halos,',CORRCONFIG.type.coord,',all'];
 title(title_str);
 xlabel('$\delta k$'); ylabel('$\delta\theta$'); zlabel(['$G^{(2)}_{(',num2str(CORRCONFIG.type.comp),')}$']);

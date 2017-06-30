@@ -1,4 +1,4 @@
-function [G2_SINGLE,G2_ALL]=G2_angular(DATA,BIN_EDGE,VERBOSE)
+function [G2_corr,G2_uncorr]=G2_angular(DATA,BIN_EDGE,VERBOSE)
 % Unnormalised G2 calculator in 2D radial-angular separation with cartesian
 %   count format
 % DKS 14/11/16
@@ -8,8 +8,9 @@ function [G2_SINGLE,G2_ALL]=G2_angular(DATA,BIN_EDGE,VERBOSE)
 % BIN_EDGE - 1x2 cell of bin edges in radial and angular separation
 %
 % OUTPUT
-% G2_SINGLE - G2 summed for each shot
-% G2_ALL - G2 for all data collated (for normalisation)
+% G2_corr - G2 for correlated pairs
+% G2_uncorr - G2 for all uncorrelated pairs
+%
 
 if VERBOSE>0
     t_fun_start=tic;
@@ -58,8 +59,8 @@ if VERBOSE>0
     disp('----------------------------------------------');
     disp([num2str(nShot),' shots to analyse in G2_angular...']);
 end
-G2_SINGLE=zeros(nBin);
-G2_ALL=zeros(nBin);
+G2_corr=zeros(nBin);
+G2_uncorr=zeros(nBin);
 
 
 % Branch G2 analysis so that condition is out of loop: just add other
@@ -82,7 +83,7 @@ if ncomp==2
             dotp_tmp=sum(data2{i}.*repmat(this_atom,[Npairs,1]),2); % dot product
             diff_tmp(:,2)=real(acos(dotp_tmp./(norm_this_atom*norm_tmp)));    % angular diff
             
-            G2_SINGLE=G2_SINGLE+nhist(diff_tmp,BIN_EDGE);	% update G2
+            G2_corr=G2_corr+nhist(diff_tmp,BIN_EDGE);	% update G2
         end
         
         % Progress report
@@ -115,7 +116,7 @@ if ncomp==2
             dotp_tmp=sum(data_collated.*repmat(this_atom,[Ntotpair,1]),2); % dot product           
             diff_tmp(:,2)=real(acos(dotp_tmp./(norm_this_atom*norm_tmp)));    % angular diff
             
-            G2_ALL=G2_ALL+nhist(diff_tmp,BIN_EDGE);     % update G2
+            G2_uncorr=G2_uncorr+nhist(diff_tmp,BIN_EDGE);     % update G2
         end
         
         % Progress report
@@ -152,7 +153,7 @@ elseif ncomp==1
             dotp_tmp=sum(other_tmp.*repmat(this_atom,[nAtom-j,1]),2);
             diff_tmp(:,2)=real(acos(dotp_tmp./(norm_this_atom*norm_tmp)));
 
-            G2_SINGLE=G2_SINGLE+nhist(diff_tmp,BIN_EDGE);   % update G2
+            G2_corr=G2_corr+nhist(diff_tmp,BIN_EDGE);   % update G2
         end
         
         % Progress report
@@ -187,7 +188,7 @@ elseif ncomp==1
             dotp_tmp=sum(data_collated.*repmat(this_atom,[Ntotpair,1]),2);
             diff_tmp(:,2)=real(acos(dotp_tmp./(norm_this_atom*norm_tmp)));
             
-            G2_ALL=G2_ALL+nhist(diff_tmp,BIN_EDGE); % update G2
+            G2_uncorr=G2_uncorr+nhist(diff_tmp,BIN_EDGE); % update G2
         end
         
         % Progress report

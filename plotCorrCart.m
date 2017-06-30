@@ -9,7 +9,7 @@ function plotCorrCart(CORRDATA,CORRCONFIG)
 ind_zero=round((CORRCONFIG.nBin+1)/2); % zero-cent'd bin index for sampling 3D-g2
 
 subplot(1,3,1);
-surf(dX',dY',squeeze(CORRDATA.G2shot(ind_zero(1),:,:)),'edgecolor','none');
+surf(dX',dY',squeeze(CORRDATA.G2_corr(ind_zero(1),:,:)),'edgecolor','none');
 
 title_str=['(',num2str(CORRCONFIG.type.comp),') halos,',CORRCONFIG.type.coord,',shots'];
 title(title_str);
@@ -19,7 +19,7 @@ axis tight;
 shading interp;
 
 subplot(1,3,2);
-surf(dX',dY',squeeze(CORRDATA.G2all(ind_zero(1),:,:)),'edgecolor','none');
+surf(dX',dY',squeeze(CORRDATA.G2_uncorr(ind_zero(1),:,:)),'edgecolor','none');
 
 title_str=['(',num2str(CORRCONFIG.type.comp),') halos,',CORRCONFIG.type.coord,',all'];
 title(title_str);

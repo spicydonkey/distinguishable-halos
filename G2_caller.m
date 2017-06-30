@@ -1,4 +1,4 @@
-function [G2_SINGLE,G2_ALL]=G2_caller(DATA,BIN_EDGE,TYPE,OPTIONAL,VERBOSE)
+function [G2_corr,G2_uncorr]=G2_caller(DATA,BIN_EDGE,TYPE,OPTIONAL,VERBOSE)
 % Wrapper to call different G2 routines
 %
 % INPUT
@@ -15,9 +15,9 @@ if ~(isequal(TYPE,'cart')||isequal(TYPE,'angular'))
 end
 
 if isequal(TYPE,'cart')
-    [G2_SINGLE,G2_ALL]=G2_cart(DATA,BIN_EDGE,OPTIONAL,VERBOSE);
+    [G2_corr,G2_uncorr]=G2_cart(DATA,BIN_EDGE,OPTIONAL,VERBOSE);
 elseif isequal(TYPE,'angular')
-    [G2_SINGLE,G2_ALL]=G2_angular(DATA,BIN_EDGE,VERBOSE);
+    [G2_corr,G2_uncorr]=G2_angular(DATA,BIN_EDGE,VERBOSE);
 else
     % some other routine would go here
     return

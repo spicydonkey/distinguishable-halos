@@ -1,4 +1,4 @@
-function [G2_SINGLE,G2_ALL]=G2_cart(DATA,BIN_EDGE,CORR_INFO,VERBOSE)
+function [G2_corr,G2_uncorr]=G2_cart(DATA,BIN_EDGE,CORR_INFO,VERBOSE)
 % Unnormalised G2 calculator for more general applicaton. e.g. cross-halo
 % DKS 06/11/2016
 %
@@ -10,8 +10,8 @@ function [G2_SINGLE,G2_ALL]=G2_cart(DATA,BIN_EDGE,CORR_INFO,VERBOSE)
 % BIN_EDGE - 1x3 cell, bin-edges deltaK in ZXY axis
 %
 % OUTPUT
-% G2_SINGLE - G2 summed for each shot
-% G2_ALL - G2 for all data collated (for normalisation)
+% G2_corr - G2 for correlated pairs
+% G2_uncorr - G2 for all uncorrelated pairs
 %
 
 if VERBOSE>0
@@ -32,13 +32,12 @@ if ~isequal(size(BIN_EDGE),[1,3])
 end
 
 % CORR_INFO
-if ~exist('CORR_INFO','var')  % missing arg - default
-    warning('CORR_INFO is not set by user: default to back-to-back (BB) G(2) analysis');
-    CORR_INFO='BB';
+if ~exist('CORR_INFO','var')  % missing arg
+    error('CORR_INFO must be "BB" or "CL". Setting to default "BB"');
 elseif ~(isequal(CORR_INFO,'BB')||isequal(CORR_INFO,'CL'))  % invalid input
-    warning('CORR_INFO must be "BB" or "CL". Setting to default "BB"');
-    CORR_INFO='BB';
+    error('CORR_INFO must be "BB" or "CL". Setting to default "BB"');
 end
+
 % VERBOSE
 if ~exist('VERBOSE','var')
     VERBOSE=0;  % default is quiet
@@ -57,7 +56,7 @@ elseif size(DATA,2)==1
 else
     error('DATA must be a 1 or 2 column cell');
 end
-clear DATA;
+clear DATA;     % clean workspace
 
 nBin=zeros(1,length(BIN_EDGE));
 for i=1:length(BIN_EDGE)
@@ -70,8 +69,8 @@ if VERBOSE>0
     disp('----------------------------------------------');
     disp([num2str(nShot),' shots to analyse for G2_cart...']);
 end
-G2_SINGLE=zeros(nBin);
-G2_ALL=zeros(nBin);
+G2_corr=zeros(nBin);
+G2_uncorr=zeros(nBin);
 
 % Branch G2 analysis so that condition is out of loop: just add other
 %   conditions as a conditional branch following one as template
@@ -79,7 +78,8 @@ erase_str='';   % initialise for progress reporting
 if ncomp==2
     %% 2 component G(2) analysis
     if isequal(CORR_INFO,'BB')
-        % Back-to-back G2 analysis
+        %% Back-to-back G2 analysis - x-state
+        % correlated pairs G2
         for i=1:nShot
             nAtom=size(data1{i},1);         % number of counts in shot - comp #1
             Npairs=size(data2{i},1);        % number of counts in shot - comp #2
@@ -89,7 +89,7 @@ if ncomp==2
                 this_atom=data1{i}(j,:);    % ZXY-vector for this atom (to find pairs)
                 diff_tmp=data2{i}+repmat(this_atom,[Npairs,1]);   % sum for diff_BB in k-space
                 
-                G2_SINGLE=G2_SINGLE+nhist(diff_tmp,BIN_EDGE);	% update G2
+                G2_corr=G2_corr+nhist(diff_tmp,BIN_EDGE);	% update G2
             end
             
             % Progress report
@@ -105,9 +105,9 @@ if ncomp==2
             erase_str='';   % reset to null
         end
         
-        % all shots - except self
+        % UNcorrelated pairs G2
         for i=1:nShot
-            data_collated=vertcat(data2{[1:i-1,i+1:end]});  % except self
+            data_collated=vertcat(data2{[1:i-1,i+1:end]});  % all shots except self
             Ntotpair=size(data_collated,1);  % total number of counts in the cross-species
             nAtom=size(data1{i},1);
             
@@ -116,7 +116,7 @@ if ncomp==2
                 this_atom=data1{i}(j,:);
                 diff_tmp=data_collated+repmat(this_atom,[Ntotpair,1]);   % sum for BB
                 
-                G2_ALL=G2_ALL+nhist(diff_tmp,BIN_EDGE);     % update G2
+                G2_uncorr=G2_uncorr+nhist(diff_tmp,BIN_EDGE);     % update G2
             end
             
             % Progress report
@@ -128,7 +128,8 @@ if ncomp==2
         end
         
     elseif isequal(CORR_INFO,'CL')
-        % Colinear G2 analysis
+        %% Colinear G2 analysis - x-state
+        % correlated pairs G2
         for i=1:nShot
             nAtom=size(data1{i},1); % number of counts in DATA1
             Npairs=size(data2{i},1);
@@ -138,7 +139,7 @@ if ncomp==2
                 this_atom=data1{i}(j,:);    % ZXY-vector for this atom (to find pairs)
                 diff_tmp=data2{i}-repmat(this_atom,[Npairs,1]);   % "diff" for diff_CL in k-space
                 
-                G2_SINGLE=G2_SINGLE+nhist(diff_tmp,BIN_EDGE);	% update G2
+                G2_corr=G2_corr+nhist(diff_tmp,BIN_EDGE);	% update G2
             end
             
             % Progress report
@@ -154,9 +155,9 @@ if ncomp==2
             erase_str='';   % reset to null
         end
         
-        % all shots - except self
+        % UNcorrelated pairs G2
         for i=1:nShot
-            data_collated=vertcat(data2{[1:i-1,i+1:end]});  % except self
+            data_collated=vertcat(data2{[1:i-1,i+1:end]});  % all shots except self
             Ntotpair=size(data_collated,1);  % total number of counts in the cross-species
             nAtom=size(data1{i},1);
             
@@ -165,7 +166,7 @@ if ncomp==2
                 this_atom=data1{i}(j,:);
                 diff_tmp=data_collated-repmat(this_atom,[Ntotpair,1]);   % diff for CL
                 
-                G2_ALL=G2_ALL+nhist(diff_tmp,BIN_EDGE);     % update G2
+                G2_uncorr=G2_uncorr+nhist(diff_tmp,BIN_EDGE);     % update G2
             end
             
             % Progress report
@@ -199,7 +200,7 @@ elseif ncomp==1
                 % Get BB-diff vectors for all pairs except self
                 diff_tmp=shot_tmp((j+1):end,:)+repmat(this_atom,[nAtom-j,1]);  % BB-diff for unique pairs
                 
-                G2_SINGLE=G2_SINGLE+nhist(diff_tmp,BIN_EDGE);   % update G2
+                G2_corr=G2_corr+nhist(diff_tmp,BIN_EDGE);   % update G2
             end
             
             % Progress report
@@ -226,7 +227,7 @@ elseif ncomp==1
                 this_atom=data1{i}(j,:);
                 diff_tmp=data_collated+repmat(this_atom,[Ntotpair,1]);   % BB-diff
                 
-                G2_ALL=G2_ALL+nhist(diff_tmp,BIN_EDGE); % update G2
+                G2_uncorr=G2_uncorr+nhist(diff_tmp,BIN_EDGE); % update G2
             end
             
             % Progress report
@@ -247,7 +248,7 @@ elseif ncomp==1
                 this_atom=shot_tmp(j,:);    % ZXY-vector for this atom (to find pairs)
                 % Get "CL"-diff vectors for all pairs except self
                 diff_tmp=abs(shot_tmp((j+1):end,:)-repmat(this_atom,[nAtom-j,1]));  % remove ordering by subtraction with abs
-                G2_SINGLE=G2_SINGLE+nhist(diff_tmp,BIN_EDGE);   % update G2
+                G2_corr=G2_corr+nhist(diff_tmp,BIN_EDGE);   % update G2
             end
             
             % Progress report
@@ -275,7 +276,7 @@ elseif ncomp==1
                 this_atom=data1{i}(j,:);
                 diff_tmp=abs(data_collated-repmat(this_atom,[Ntotpair,1]));
                 
-                G2_ALL=G2_ALL+nhist(diff_tmp,BIN_EDGE); % update G2
+                G2_uncorr=G2_uncorr+nhist(diff_tmp,BIN_EDGE); % update G2
             end
             
             % Progress report

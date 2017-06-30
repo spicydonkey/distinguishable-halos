@@ -17,8 +17,11 @@ markers = {'+','o','*','.','x','s','d','^','v','>','<','p','h'};
 colors = distinguishable_colors(3);
 coords = {'Z','X','Y'};
 
+n_shots=size(zxy,1);
+
 n_corr_analysis=length(configs.corr);
 corr_out=cell(n_corr_analysis,1);
+
 %% Do tasked correlation analysis
 for iCorr=1:n_corr_analysis
     corr_this=configs.corr{iCorr};
@@ -36,37 +39,74 @@ for iCorr=1:n_corr_analysis
     
     % Evaluate G2 correlation
     % TODO - insert debug code for G2 and zxy manipulator
-    [G2_shot_tmp,G2_all_tmp]=G2_caller(zxy(:,corr_this.type.comp),...
+    [G2_corr,G2_uncorr]=G2_caller(zxy(:,corr_this.type.comp),...
         bin_edge_tmp,corr_this.type.coord,corr_this.type.opt,verbose);
-    
-    
-    n_shots=size(zxy,1);    % TODO: normalisation factor is WRONG for low counts per shot
-    %     norm_factor=n_shots;    % INCORRECT norm factor
     
     % normalisation factor
     n_counts=cell2mat(cellfun(@(C) size(C,1),zxy,'UniformOutput',false));   % number of counts per shot
     nn1=n_counts(:,1);      % counts in species 1
     nn2=n_counts(:,end);    % counts in species 2
-    % TODO: do for CL/BB cases X-state/normal
-    if length(corr_this.type.comp)==2
-        % for x-species, BB correlation
-        N_pair_uncorr=sum(nn1)*sum(nn2)-sum(nn1.*nn2);
-        N_pair_corr=sum(nn1.*nn2);
+    if isequal(corr_this.type.coord,'cart')
+        %% correlation in cartesian coordinate system
+        if length(corr_this.type.comp)==2
+            %% X-state
+            if isequal(corr_this.type.opt,'BB')
+                % BB
+                N_pair_uncorr=sum(nn1)*sum(nn2)-sum(nn1.*nn2);
+                N_pair_corr=sum(nn1.*nn2);
+            elseif isequal(corr_this.type.opt,'CL')
+                % CL
+                % TODO
+                
+            else
+                % OTHER
+                warning('g2 normalisation factor should not be trusted.');
+                N_pair_uncorr=n_shots;
+                N_pair_corr=1;
+            end
+        else
+            %% Single-halo
+            if isequal(corr_this.type.opt,'BB')
+                % BB
+                % TODO
+                
+            elseif isequal(corr_this.type.opt,'CL')
+                % CL
+                % TODO
+                
+            else
+                % OTHER
+                warning('g2 normalisation factor should not be trusted.');
+                N_pair_uncorr=n_shots;
+                N_pair_corr=1;
+            end
+            warning('g2 normalisation factor should not be trusted.');
+            N_pair_uncorr=n_shots;
+            N_pair_corr=1;
+        end
     else
+        %% correlation in Polar coordinate system
+        % TODO
+        if length(corr_this.type.comp)==2
+            %% X-state
+        else
+            %% Single-halo
+        end
         warning('g2 normalisation factor should not be trusted.');
         N_pair_uncorr=n_shots;
         N_pair_corr=1;
     end
     norm_factor=N_pair_uncorr/N_pair_corr;
     
-    g2_tmp=norm_factor*G2_shot_tmp./G2_all_tmp;      % normalised g2
+    % TODO - try smoothing G2 before calculating g2
+    g2=norm_factor*G2_corr./G2_uncorr;      % normalised g2 RAW
     
     % Get results
     corr_out_this.bEdge=bin_edge_tmp;
     corr_out_this.bCent=bin_cent_tmp;
-    corr_out_this.G2shot=G2_shot_tmp;
-    corr_out_this.G2all=G2_all_tmp;
-    corr_out_this.g2=g2_tmp;
+    corr_out_this.G2_corr=G2_corr;
+    corr_out_this.G2_uncorr=G2_uncorr;
+    corr_out_this.g2=g2;
     
     corr_out{iCorr}=corr_out_this;
     
@@ -81,7 +121,7 @@ for iCorr=1:n_corr_analysis
     end
 end
 % clear workspace
-clear bin_dim bin_edge_tmp bin_cent_tmp G2_shot_tmp G2_all_tmp g2_tmp;
+clear bin_dim bin_edge_tmp bin_cent_tmp G2_corr G2_uncorr g2;
 
 %% 1D correlation profile and Gaussian fit
 for iCorr=1:n_corr_analysis
@@ -90,7 +130,7 @@ for iCorr=1:n_corr_analysis
     
     % prepare graphics
     if configs.flags.graphics   
-        hfig_g2_1d_this=figure();
+        hfig_g2_1d=figure();
         hfig{length(hfig)+1}=gcf;
         ax=gca;
     end
@@ -99,21 +139,22 @@ for iCorr=1:n_corr_analysis
     % Get integrated or sliced 1D correlation profile
     if isequal(this_corr_type,'angular')
         % TODO: correlations - dk integrated (may reduce peak height)
-        g2_1d_tmp=size(zxy,1)*sum(corr_out_this.G2shot,1)./sum(corr_out_this.G2all,1);
+        % TODO - norm factor is incorrect
+        g2_1d=n_shots*sum(corr_out_this.G2_corr,1)./sum(corr_out_this.G2_uncorr,1);
         
-        % Gaussian fit (angular G2 allows fitting both BB,CL)
+        % Gaussian fit (offset=1) (angular G2 allows fitting both BB,CL)
         % BB fit
-        param0=[4,pi,0.1,1];     % fit estimate [amp,mu,sigma,offset]
-        [fitparam_tmp,fit_g2_tmp]=gaussfit(corr_out_this.bCent{2},g2_1d_tmp,param0,0);
+        param0=[4,pi,0.1];     % fit estimate [amp,mu,sigma]
+        [fitparam{1},fit_g2{1}]=gaussfit2(corr_out_this.bCent{2},g2_1d,param0,0);
         
         % CL fit
-        param0=[2,0,0.1,1];
-        [fitparam_tmpCL,fit_g2_tmpCL]=gaussfit(corr_out_this.bCent{2},g2_1d_tmp,param0,0);
+        param0=[2,0,0.1];
+        [fitparam{2},fit_g2{2}]=gaussfit2(corr_out_this.bCent{2},g2_1d,param0,0);
         
         % Plot
         if configs.flags.graphics   % plotting
             % calculated 1D correlation profile
-            plot(corr_out_this.bCent{2},g2_1d_tmp,'*');
+            plot(corr_out_this.bCent{2},g2_1d,'*');
             
             hold(ax,'on');
             title_str=['$\Delta k$-integrated, ',...
@@ -123,51 +164,50 @@ for iCorr=1:n_corr_analysis
             xlim([0,pi]); ylim auto;
             
             % plot the fits
-            plot(ax,fit_g2_tmp.x,fit_g2_tmp.y,'r');     
-            plot(ax,fit_g2_tmpCL.x,fit_g2_tmpCL.y,'b--');
+            plot(ax,fit_g2{1}.x,fit_g2{1}.y,'r');     
+            plot(ax,fit_g2{2}.x,fit_g2{2}.y,'b--');
             hold(ax,'off');
             
             legend({'Data','Gaussian fit'});            
         end
         
     elseif isequal(this_corr_type,'cart')
-        % TODO - do in X/Y?
         %%% Get line through Z-axis @ dkx=dky=0
-        ind_zero_tmp=round((corr_this.nBin+1)/2);    % zero-cent'd bin index for sampling 3D-g2
+        % TODO - $ind_zero assumes bin centers are symmetric about 0 and 0
+        % is indeed a bin center (i.e. odd nBin)
+        ind_zero=round((corr_this.nBin+1)/2);    % zero-cent'd bin index for sampling 3D-g2
         
         % Gaussian fit
-        % Set initial params
+        % Set initial params - for Gaussian with offset 1
         if strcmp(corr_this.type.opt,'BB')
-            param0=[4,0,0.1];     % fit estimate [amp,mu,sigma,offset]
+            param0=[4,0,0.1];       % BB [amp,mu,sigma]
         else
-            param0=[2,0.1];     % CL peaks at 2
+            param0=[2,0.1];         % CL amplitude ~2 - centred around 0 (symmetric)
         end
             
-        perm_vect=[2,3,1];      % 1,2,3-->2,3,1 cyclic map
+        perm_vect=[2,3,1];      % cyclic map (1,2,3-->2,3,1) to take 1D profile in Z,X,Y
         g2=corr_out_this.g2;    % 3D g2 in ZXY coord
         for jj=1:3
             % take line profile thru the bin center (d~=0)
             if strcmp(corr_this.type.opt,'BB')
-                [fitparam_tmp{jj},fit_g2_tmp{jj}]=gaussfit2(corr_out_this.bCent{jj},...
-                    g2(:,ind_zero_tmp(2),ind_zero_tmp(3)),param0,0);
+                [fitparam{jj},fit_g2{jj}]=gaussfit2(corr_out_this.bCent{jj},...
+                    g2(:,ind_zero(2),ind_zero(3)),param0,0);
             else
-                [fitparam_tmp{jj},fit_g2_tmp{jj}]=gaussfit3(corr_out_this.bCent{jj},...
-                    g2(:,ind_zero_tmp(2),ind_zero_tmp(3)),param0,0);
+                [fitparam{jj},fit_g2{jj}]=gaussfit3(corr_out_this.bCent{jj},...
+                    g2(:,ind_zero(2),ind_zero(3)),param0,0);
             end
-%             [fitparam_tmp{jj},fit_g2_tmp{jj}]=gaussfit(corr_out_this.bCent{jj},...
-%                 g2(:,ind_zero_tmp(2),ind_zero_tmp(3)),param0,0);
             
             % Plot
             if configs.flags.graphics
                 hold on;
                 
                 % plot data
-                plot(corr_out_this.bCent{jj},g2(:,ind_zero_tmp(2),ind_zero_tmp(3)),...
+                plot(corr_out_this.bCent{jj},g2(:,ind_zero(2),ind_zero(3)),...
                     markers{jj},'MarkerEdgeColor',colors(jj,:),...
                     'DisplayName',coords{jj});
                 
                 % plot gaussian fit
-                plot(ax,fit_g2_tmp{jj}.x,fit_g2_tmp{jj}.y,...
+                plot(ax,fit_g2{jj}.x,fit_g2{jj}.y,...
                     'Color',colors(jj,:),'LineWidth',1.5,...
                     'HandleVisibility','off');
             end
@@ -175,7 +215,7 @@ for iCorr=1:n_corr_analysis
             % cyclically permute the 3D vectors: CAREFUL! don't use after
             % this loop
             g2=permute(g2,perm_vect);
-            ind_zero_tmp=ind_zero_tmp(perm_vect);
+            ind_zero=ind_zero(perm_vect);
         end
         % figure annotation
         if configs.flags.graphics
@@ -193,9 +233,10 @@ for iCorr=1:n_corr_analysis
     drawnow;
     
     % Get fit params
-    corr_out{iCorr}.fit=fitparam_tmp;
+    corr_out{iCorr}.fit=fitparam;
+    
+    clear fitparam fit_g2;    % clean temp looping data
 end
-clear g2_1d_tmp param0 fitparam_tmp fit_g2_tmp ax this_corr_type;
 
 %% END
 t_fun_end=toc(t_fun_start);   % end of code
