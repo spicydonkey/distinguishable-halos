@@ -4,25 +4,31 @@
 configs.flags.do_corr_analysis=1;
 configs.flags.force_all_stages=0;    % force all the stages to run (useful for debug)
 configs.flags.verbose=2;
-configs.flags.savedata=0;       % TODO - req'd currently since each stage passes data by save/load to disk
+configs.flags.savedata=1;       % TODO - req'd currently since each stage passes data by save/load to disk
+configs.flags.archive_txy=1;        % archives loaded TXY as .mat file for future reuse
 configs.flags.graphics=1;       % toggle to control graphics/plotting options
 
 %%% MISCELLANEOUS
 configs.misc.vel_z=9.8*0.416;    % atom free-fall vert v at detector hit for T-to-Z conversion;
 vz=configs.misc.vel_z;
 
-%% LOAD
-% files -  data file
-% path to unindexed data file (e.g. 'a\b\datadir\$DATA_FNAME_TOKEN$')
-configs.load.path='\\AMPLPC29\Users\TDC_user\ProgramFiles\my_read_tdc_gui_v1.0.1\dld_output\xstate_collision_highv\7_vlownum\d';
-configs.load.id=1:350;         % file id numbers to use for analysis
-configs.load.mincount=0;         % min counts in window - 0 for no min
-configs.load.maxcount=Inf;          % max counts in window - Inf for no max
 
-%%% DIRECTORIES
+%% FILES
+configs.files.path='\\AMPLPC29\Users\TDC_user\ProgramFiles\my_read_tdc_gui_v1.0.1\dld_output\xstate_collision_highv\8_vvlownum\d';
+
+% WARNING: MODIFYING BELOW DIR SETTINGS ARE NOT RECOMMENDED
 configs.files.dir_data=fileparts(configs.load.path);    % fullpath to data directory
 configs.files.archive=fullfile(configs.files.dir_data,'archive');   % dir to archive folder
 configs.files.dirout=fullfile(configs.files.dir_data,'output');      % output directory (will be time-stamped)
+
+
+%% LOAD
+configs.load.version=1;         % TXY load stage version number
+
+% file ID and simple pass/fail
+configs.load.id=1:198;         % file id numbers to use for analysis
+configs.load.mincount=0;         % min counts in window - 0 for no min
+configs.load.maxcount=Inf;          % max counts in window - Inf for no max
 
 % Detector/trap alignment
 configs.load.rot_angle=0.61;
@@ -46,7 +52,7 @@ configs.halo.dR{1}=0.2;      % broad radial mask fractional width (in/out)
 configs.halo.R{2}=24e-3;
 configs.halo.dR{2}=0.2;
 
-configs.halo.zcap=0.8;   % z-cutoff (fractional wrt radius)
+configs.halo.zcap=1;   % z-cutoff (fractional wrt radius)
 
 % TODO - does boost need to be optimised for different g2 analysis?
 %   currently SINGLE boost applied to halo2 to obtain best g2_01_BB

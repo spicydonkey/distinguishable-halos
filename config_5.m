@@ -2,27 +2,33 @@
 
 %%% FLAGS
 configs.flags.do_corr_analysis=1;
-configs.flags.force_all_stages=1;    % force all the stages to run (useful for debug)
+configs.flags.force_all_stages=0;    % force all the stages to run (useful for debug)
 configs.flags.verbose=2;
 configs.flags.savedata=1;       % TODO - req'd currently since each stage passes data by save/load to disk
+configs.flags.archive_txy=1;        % archives loaded TXY as .mat file for future reuse
 configs.flags.graphics=1;       % toggle to control graphics/plotting options
 
 %%% MISCELLANEOUS
 configs.misc.vel_z=9.8*0.416;    % atom free-fall vert v at detector hit for T-to-Z conversion;
 vz=configs.misc.vel_z;
 
+
+%% FILES
+configs.files.path='\\AMPLPC29\Users\TDC_user\ProgramFiles\my_read_tdc_gui_v1.0.1\dld_output\xstate_collision_highv\5_hinum\d';
+
+% WARNING: MODIFYING BELOW DIR SETTINGS ARE NOT RECOMMENDED
+configs.files.dir_data=fileparts(configs.files.path);    % fullpath to data directory
+configs.files.archive=fullfile(configs.files.dir_data,'archive');   % dir to archive folder
+configs.files.dirout=fullfile(configs.files.dir_data,'output');      % output directory (will be time-stamped)
+
+
 %% LOAD
-% files -  data file
-% path to unindexed data file (e.g. 'a\b\datadir\$DATA_FNAME_TOKEN$')
-configs.load.path='\\AMPLPC29\Users\TDC_user\ProgramFiles\my_read_tdc_gui_v1.0.1\dld_output\xstate_collision_highv\5_hinum\d';
+configs.load.version=1;         % TXY load stage version number
+
+% file ID and simple pass/fail
 configs.load.id=1:505;         % file id numbers to use for analysis
 configs.load.mincount=2700;         % min counts in window - 0 for no min
 configs.load.maxcount=3900;          % max counts in window - Inf for no max
-
-%%% DIRECTORIES
-configs.files.dir_data=fileparts(configs.load.path);    % fullpath to data directory
-configs.files.archive=fullfile(configs.files.dir_data,'archive');   % dir to archive folder
-configs.files.dirout=fullfile(configs.files.dir_data,'output');      % output directory (will be time-stamped)
 
 % Detector/trap alignment
 configs.load.rot_angle=0.61;

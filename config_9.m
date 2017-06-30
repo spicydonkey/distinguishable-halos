@@ -27,8 +27,8 @@ configs.load.version=1;         % TXY load stage version number
 
 % file ID and simple pass/fail
 configs.load.id=1:2700;         % file id numbers to use for analysis
-configs.load.mincount=0;         % min counts in window - 0 for no min
-configs.load.maxcount=Inf;          % max counts in window - Inf for no max
+configs.load.mincount=700;         % min counts in window - 0 for no min
+configs.load.maxcount=1100;          % max counts in window - Inf for no max
 
 % Detector/trap alignment
 configs.load.rot_angle=0.61;
