@@ -62,23 +62,16 @@ for iCorr=1:n_corr_analysis
             end
         else
             %% Single-halo
-            if isequal(corr_this.type.opt,'BB')
-                % BB
-                % TODO
-                
-            elseif isequal(corr_this.type.opt,'CL')
-                % CL
-                % TODO
-                
+            if isequal(corr_this.type.opt,'BB')||isequal(corr_this.type.opt,'CL')
+                % BB/CL
+                N_pair_corr=sum(nn1.*(nn1-1)/2);
+                N_pair_uncorr=(sum(nn1)^2-sum(nn1.^2))/2;
             else
                 % OTHER
                 warning('g2 normalisation factor should not be trusted.');
                 N_pair_uncorr=n_shots;
                 N_pair_corr=1;
             end
-            warning('g2 normalisation factor should not be trusted.');
-            N_pair_uncorr=n_shots;
-            N_pair_corr=1;
         end
     else
         %% correlation in Polar coordinate system
@@ -240,6 +233,6 @@ end
 t_fun_end=toc(t_fun_start);   % end of code
 if verbose>0
     disp('-----------------------------------------------');
-    fprintf('Total elapsed time for %s (s): %7.1f\n','corrTaskManager',t_fun_end);
+    fprintf('Total elapsed time for %s (s): %7.1f\n',mfilename,t_fun_end);
     disp('-----------------------------------------------');
 end

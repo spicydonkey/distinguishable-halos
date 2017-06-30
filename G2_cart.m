@@ -189,7 +189,8 @@ elseif ncomp==1
     % TODO - BUG with CL because counts are ordered in Z (in a shot, CL-diff is always positive)
     %% Single component G(2) analysis
     if isequal(CORR_INFO,'BB')
-        % Back-to-back G2 analysis
+        %% Back-to-back G2 analysis - in-halo
+        % correlated pairs G2
         for i=1:nShot
             shot_tmp=data1{i};
             nAtom=size(shot_tmp,1); % number of counts in this shot
@@ -216,9 +217,9 @@ elseif ncomp==1
             erase_str='';   % reset to null
         end
         
-        % all shots - except self
+        % UNcorrelated pairs G2
         for i=1:(nShot-1)     % skip last shot - no unique pairs left
-            data_collated=vertcat(data1{(i+1):end});  % all shots except self and unique pairs
+            data_collated=vertcat(data1{(i+1):end});  % all shots except self for unique unordered pairing
             Ntotpair=size(data_collated,1);     % total number of counts to search pairs
             nAtom=size(data1{i},1);     % counts in this shot
             
@@ -238,7 +239,8 @@ elseif ncomp==1
             end
         end
     elseif isequal(CORR_INFO,'CL')
-        % Colinear G2 analysis
+        %% Colinear G2 analysis - in-halo
+        % correlated pairs G2
         for i=1:nShot
             shot_tmp=data1{i};
             nAtom=size(shot_tmp,1); % number of counts in this shot
@@ -264,10 +266,9 @@ elseif ncomp==1
             erase_str='';   % reset to null
         end
         
-        % all shots - except self
+        % UNcorrelated pairs G2
         for i=1:(nShot-1)  % skip last shot - no unique pairs left
-            %data_collated=vertcat(data1{[1:i-1,i+1:end]});  % all shots except self
-            data_collated=vertcat(data1{(i+1):end});  % all shots except self and unique pairs
+            data_collated=vertcat(data1{(i+1):end});  % all shots except self for unique unordered pairing
             Ntotpair=size(data_collated,1);     % total number of counts to search pairs
             nAtom=size(data1{i},1);     % counts in this shot
             
