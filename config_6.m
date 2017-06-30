@@ -26,9 +26,12 @@ configs.files.dirout=fullfile(configs.files.dir_data,'output');      % output di
 configs.load.version=1;         % TXY load stage version number
 
 % file ID and simple pass/fail
+% configs.load.id=1:1500;         % file id numbers to use for analysis
+% configs.load.mincount=1500;         % min counts in window - 0 for no min
+% configs.load.maxcount=1700;          % max counts in window - Inf for no max
 configs.load.id=1:2848;         % file id numbers to use for analysis
-configs.load.mincount=1200;         % min counts in window - 0 for no min
-configs.load.maxcount=2100;          % max counts in window - Inf for no max
+configs.load.mincount=1400;         % min counts in window - 0 for no min
+configs.load.maxcount=1800;          % max counts in window - Inf for no max
 
 % Detector/trap alignment
 configs.load.rot_angle=0.61;
@@ -65,88 +68,48 @@ configs.corr{1}.type.comp=[1,2];           % components to analysis: cross halo 
 configs.corr{1}.type.coord='cart';         % Cartesian (ZXY)
 configs.corr{1}.type.opt='BB';             % BB / CL
 configs.corr{1}.lim(1,:)=0.2*[-1,1]; % bin limits - Z
+% configs.corr{1}.lim(1,:)=[-0.12,0.17]; % bin limits - Z
 configs.corr{1}.lim(2,:)=0.2*[-1,1]; % bin limits - X
+% configs.corr{1}.lim(2,:)=[-0.1,0.3]; % bin limits - X
 configs.corr{1}.lim(3,:)=0.2*[-1,1]; % bin limits - Y
+% configs.corr{1}.lim(3,:)=[-0.3,0.1]; % bin limits - Y
 configs.corr{1}.nBin=15*[1,1,1];   % number of bins
 
-% % 1. Cross-halo rad/angular correlations
-% configs.corr{2}.type.comp=[1,2];           % components to analysis: cross halo 1,2
-% configs.corr{2}.type.coord='angular';      % angular coordinate
-% configs.corr{2}.type.opt=[];               % 'angular' has no optional feature atm
-% configs.corr{2}.lim(1,:)=0.2*[-1,1];  % bin limits - radial separation
-% configs.corr{2}.lim(2,:)=pi*[0.7,1];      % bin limits - angular separation
-% configs.corr{2}.nBin=[21,41];          % number of bins
+% 2) X-halo Cart CL
+configs.corr{2}.type.comp=[1,2];
+configs.corr{2}.type.coord='cart';
+configs.corr{2}.type.opt='CL';
+configs.corr{2}.lim=0.3*repmat([0,1],[3,1]);
+configs.corr{2}.nBin=7*[1,1,1];   % number of bins
 
-% % 2) Single-halo cart CL - m_J=0
-% configs.corr{2}.type.comp=1;
-% configs.corr{2}.type.coord='cart';
-% configs.corr{2}.type.opt='CL';
-% configs.corr{2}.lim(1,:)=0.5*[-1,1]; % bin limits - Z
-% configs.corr{2}.lim(2,:)=0.5*[-1,1]; % bin limits - X
-% configs.corr{2}.lim(3,:)=0.5*[-1,1]; % bin limits - Y
-% configs.corr{2}.nBin=[31,31,31];   % number of bins
+% 3) Single-halo cart CL - m_J=0
+configs.corr{3}.type.comp=1;
+configs.corr{3}.type.coord='cart';
+configs.corr{3}.type.opt='CL';
+configs.corr{3}.lim=0.2*repmat([0,1],[3,1]);
+configs.corr{3}.nBin=11*[1,1,1];   % number of bins
 
-% % 3) Single-halo cart CL - m_J=1
-% configs.corr{3}.type.comp=2;
-% configs.corr{3}.type.coord='cart';
-% configs.corr{3}.type.opt='CL';
-% configs.corr{3}.lim(1,:)=0.5*[-1,1]; % bin limits - Z
-% configs.corr{3}.lim(2,:)=0.5*[-1,1]; % bin limits - X
-% configs.corr{3}.lim(3,:)=0.5*[-1,1]; % bin limits - Y
-% configs.corr{3}.nBin=[31,31,31];   % number of bins
+% 3) Single-halo cart CL - m_J=1
+configs.corr{4}.type.comp=2;
+configs.corr{4}.type.coord='cart';
+configs.corr{4}.type.opt='CL';
+configs.corr{4}.lim=0.2*repmat([0,1],[3,1]);
+configs.corr{4}.nBin=11*[1,1,1];
 
-%% correlation analysis
-% % 1. Cross-halo rad/angular correlations
-% configs.corr.type{1}.comp=[1,2];           % components to analysis: cross halo 1,2
-% configs.corr.type{1}.coord='angular';      % angular coordinate
-% configs.corr.type{1}.opt=[];               % 'angular' has no optional feature atm
-% configs.corr.lim{1}{1}=0.2*[-1,1];  % bin limits - radial separation
-% configs.corr.lim{1}{2}=pi*[0.7,1];      % bin limits - angular separation
-% configs.corr.nBin{1}=[11,31];          % number of bins
+% 4) Single-halo cart BB - m_J=0
+configs.corr{5}.type.comp=1;
+configs.corr{5}.type.coord='cart';
+configs.corr{5}.type.opt='BB';
+configs.corr{5}.lim=0.2*repmat([-1,1],[3,1]);
+configs.corr{5}.nBin=11*[1,1,1];   % number of bins
 
-% % 2. Cross-halo cartesian BB-correlations
-% configs.corr.type{2}.comp=[1,2];           % components to analysis: cross halo 1,2
-% configs.corr.type{2}.coord='cart';         % Cartesian (ZXY)
-% configs.corr.type{2}.opt='BB';             % BB / CL
-% configs.corr.lim{2}{1}=0.8*[-1,1]; % bin limits - Z
-% configs.corr.lim{2}{2}=0.8*[-1,1]; % bin limits - X
-% configs.corr.lim{2}{3}=0.8*[-1,1]; % bin limits - Y
-% configs.corr.nBin{2}=[51,13,13];   % number of bins
-% 
-% % 3. Single-halo (1) rad/angular correlations
-% configs.corr.type{3}.comp=1;           % single component
-% configs.corr.type{3}.coord='angular';
-% configs.corr.type{3}.opt=[];
-% configs.corr.lim{3}{1}=0.3*[-1,1];  % bin limits - radial separation
-% configs.corr.lim{3}{2}=[0,pi];      % bin limits - angular separation
-% configs.corr.nBin{3}=[11,101];          % number of bins
-% 
-% % 4. Single-halo (1) cartesian BB-correlations
-% configs.corr.type{4}.comp=1;
-% configs.corr.type{4}.coord='cart';
-% configs.corr.type{4}.opt='BB';
-% configs.corr.lim{4}{1}=0.8*[-1,1]; % bin limits - Z
-% configs.corr.lim{4}{2}=0.8*[-1,1]; % bin limits - X
-% configs.corr.lim{4}{3}=0.8*[-1,1]; % bin limits - Y
-% configs.corr.nBin{4}=[51,13,13];   % number of bins
-% 
-% % 5. Cross-halo cartesian CL-correlations
-% configs.corr.type{5}.comp=[1,2];
-% configs.corr.type{5}.coord='cart';
-% configs.corr.type{5}.opt='CL';
-% configs.corr.lim{5}{1}=0.8*[-1,1]; % bin limits - Z
-% configs.corr.lim{5}{2}=0.8*[-1,1]; % bin limits - X
-% configs.corr.lim{5}{3}=0.8*[-1,1]; % bin limits - Y
-% configs.corr.nBin{5}=[51,13,13];   % number of bins
-% 
-% % 6. Single-halo (1) cartesian CL-correlations
-% configs.corr.type{6}.comp=1;
-% configs.corr.type{6}.coord='cart';
-% configs.corr.type{6}.opt='CL';
-% configs.corr.lim{6}{1}=0.8*[-1,1]; % bin limits - Z
-% configs.corr.lim{6}{2}=0.8*[-1,1]; % bin limits - X
-% configs.corr.lim{6}{3}=0.8*[-1,1]; % bin limits - Y
-% configs.corr.nBin{6}=[51,13,13];   % number of bins
+% 5) Single-halo cart BB - m_J=1
+configs.corr{6}.type.comp=2;
+configs.corr{6}.type.coord='cart';
+configs.corr{6}.type.opt='BB';
+configs.corr{6}.lim=0.2*repmat([-1,1],[3,1]);
+configs.corr{6}.nBin=11*[1,1,1];   % number of bins
+
 
 %     % #. <TEMPLATE ANGULAR>
 %     analysis.corr.type{#}.comp=[1,2];           % components to analysis: cross halo 1,2
