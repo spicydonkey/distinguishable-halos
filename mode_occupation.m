@@ -52,6 +52,12 @@
 % Nsc=60;
 % wbb=0.02;
 
+% RUN9 - very low number
+kr=1;
+dk=0.047;
+Nsc=36;
+wbb=0.02;
+
 
 Vm=(2*pi)^(3/2)*(wbb/1.1)^3        % mode/phase grain volume
 Vs=4*pi*sqrt(2*pi)*kr^2*dk         % total scattering volume
