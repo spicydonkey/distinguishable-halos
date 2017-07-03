@@ -132,6 +132,19 @@ if ncomp==2
         end
     end
     
+    %% normalise G2 function
+    % get number of detected atoms in each shot/species
+    nn1=cell2mat(cellfun(@(C) size(C,1),data1,'UniformOutput',false));      % counts in shot (species 1)
+    nn2=cell2mat(cellfun(@(C) size(C,1),data2,'UniformOutput',false));      % counts in shot (species 2)
+    
+    % X-state unique/unordered pair counting
+    N_pair_corr=sum(nn1.*nn2);
+    N_pair_uncorr=sum(nn1)*sum(nn2)-sum(nn1.*nn2);
+    
+    % normalise with respect to all possible pairs
+    G2_corr=G2_corr/N_pair_corr;
+    G2_uncorr=G2_uncorr/N_pair_uncorr;
+    
     if VERBOSE>1
         % new-line at the end of report
         fprintf('\n');
@@ -215,6 +228,18 @@ elseif ncomp==1
             erase_str=repmat(sprintf('\b'),1,length(prog_msg));
         end
     end
+    
+    %% normalise G2 function
+    % get number of detected atoms in each shot/species
+    nn1=cell2mat(cellfun(@(C) size(C,1),data1,'UniformOutput',false));      % counts in shot
+    
+    % single-species unique/unordered pair counting
+    N_pair_corr=sum(nn1.*(nn1-1)/2);
+    N_pair_uncorr=(sum(nn1)^2-sum(nn1.^2))/2;
+    
+    % normalise with respect to all possible pairs
+    G2_corr=G2_corr/N_pair_corr;
+    G2_uncorr=G2_uncorr/N_pair_uncorr;
     
     if VERBOSE>1
         % new-line at the end of report

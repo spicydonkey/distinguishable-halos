@@ -27,7 +27,7 @@ for iCorr=1:n_corr_analysis
     corr_this=configs.corr{iCorr};
     
     % Set up bins
-    bin_dim=length(corr_this.lim);  % get binning dims
+    bin_dim=size(corr_this.lim,1);      % get binning dims
     bin_edge_tmp=cell(1,bin_dim);
     bin_cent_tmp=cell(1,bin_dim);
     for i=1:bin_dim
@@ -42,53 +42,26 @@ for iCorr=1:n_corr_analysis
     [G2_corr,G2_uncorr]=G2_caller(zxy(:,corr_this.type.comp),...
         bin_edge_tmp,corr_this.type.coord,corr_this.type.opt,verbose);
     
-    % normalisation factor
-    n_counts=cell2mat(cellfun(@(C) size(C,1),zxy,'UniformOutput',false));   % number of counts per shot
-    nn1=n_counts(:,1);      % counts in species 1
-    nn2=n_counts(:,end);    % counts in species 2
-    if isequal(corr_this.type.coord,'cart')
-        %% correlation in cartesian coordinate system
-        if length(corr_this.type.comp)==2
-            %% X-state
-            if isequal(corr_this.type.opt,'BB')||isequal(corr_this.type.opt,'CL')
-                % BB/CL
-                N_pair_uncorr=sum(nn1)*sum(nn2)-sum(nn1.*nn2);
-                N_pair_corr=sum(nn1.*nn2);
-            else
-                % OTHER
-                warning('g2 normalisation factor should not be trusted.');
-                N_pair_uncorr=n_shots;
-                N_pair_corr=1;
-            end
-        else
-            %% Single-halo
-            if isequal(corr_this.type.opt,'BB')||isequal(corr_this.type.opt,'CL')
-                % BB/CL
-                N_pair_corr=sum(nn1.*(nn1-1)/2);
-                N_pair_uncorr=(sum(nn1)^2-sum(nn1.^2))/2;
-            else
-                % OTHER
-                warning('g2 normalisation factor should not be trusted.');
-                N_pair_uncorr=n_shots;
-                N_pair_corr=1;
-            end
-        end
-    else
-        %% correlation in Polar coordinate system
-        % TODO
-        if length(corr_this.type.comp)==2
-            %% X-state
-        else
-            %% Single-halo
-        end
-        warning('g2 normalisation factor should not be trusted.');
-        N_pair_uncorr=n_shots;
-        N_pair_corr=1;
-    end
-    norm_factor=N_pair_uncorr/N_pair_corr;
+%     % normalisation factor
+%     n_counts=cell2mat(cellfun(@(C) size(C,1),zxy,'UniformOutput',false));   % number of counts per shot
+%     nn1=n_counts(:,1);      % counts in species 1
+%     nn2=n_counts(:,end);    % counts in species 2
+%     % normalisation factor for g2 correlation depends only on number of
+%     % components
+%     if length(corr_this.type.comp)==2
+%         % X-state
+%         N_pair_uncorr=sum(nn1)*sum(nn2)-sum(nn1.*nn2);
+%         N_pair_corr=sum(nn1.*nn2);
+%     else
+%         % Single-halo
+%         N_pair_corr=sum(nn1.*(nn1-1)/2);
+%         N_pair_uncorr=(sum(nn1)^2-sum(nn1.^2))/2;
+%     end
+%     norm_factor=N_pair_uncorr/N_pair_corr;
     
     % TODO - try smoothing G2 before calculating g2
-    g2=norm_factor*G2_corr./G2_uncorr;      % normalised g2 RAW
+%     g2=norm_factor*G2_corr./G2_uncorr;      % normalised g2 RAW
+    g2=G2_corr./G2_uncorr;
     
     % Get results
     corr_out_this.bEdge=bin_edge_tmp;
@@ -127,10 +100,12 @@ for iCorr=1:n_corr_analysis
     this_corr_type=corr_this.type.coord;
     % Get integrated or sliced 1D correlation profile
     if isequal(this_corr_type,'angular')
-        % TODO: correlations - dk integrated (may reduce peak height)
-        % TODO - norm factor is incorrect
-        g2_1d=n_shots*sum(corr_out_this.G2_corr,1)./sum(corr_out_this.G2_uncorr,1);
-        
+        % TODO - correlations - dk integrated (may reduce peak height)
+        % TODO - 1D g2 angular properly - norm factor etc.
+        %         g2=corr_out_this.g2;    % 3D g2 in ZXY coord
+        %         g2_1d=n_shots*sum(corr_out_this.G2_corr,1)./sum(corr_out_this.G2_uncorr,1);
+        g2_1d=sum(corr_out_this.G2_corr,1)./sum(corr_out_this.G2_uncorr,1);     % average dk
+
         % Gaussian fit (offset=1) (angular G2 allows fitting both BB,CL)
         % BB fit
         param0=[4,pi,0.1];     % fit estimate [amp,mu,sigma]
