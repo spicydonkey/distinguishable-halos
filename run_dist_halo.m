@@ -80,7 +80,7 @@ function [halo_k0,corr,efit,halo,txy,fout,err]=run_dist_halo(config_file)
     if do_next
         [txy,fout,HFIG{length(HFIG)+1}]=load_txy(configs.files.path,configs.load.id,...
             configs.load.window,configs.load.mincount,configs.load.maxcount,...
-            configs.load.rot_angle,verbose,configs.flags.graphics);
+            configs.load.rot_angle,configs.flags.build_txy,verbose,configs.flags.graphics);
         
         % save loaded TXY data to archive for fast loading
         if configs.flags.archive_txy&&(~configs.flags.force_all_stages)     % don't save when debugging - creates multiplicity
