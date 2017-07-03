@@ -68,20 +68,23 @@ G2_uncorr=zeros(nBin);
 erase_str='';   % initialise for progress reporting
 if ncomp==2
     %% 2 component G(2) analysis
-    % Single-shot correlations    
+    % correlated pairs G2   
     for i=1:nShot
         nAtom=size(data1{i},1);     % number of counts in DATA1
         Npairs=size(data2{i},1);    % number of 'pairable' counts in counterpart
         diff_tmp=[];   % diff vectors for pair search (dradius,dangle)
         
+        r_shot=sqrt(sum(data1{i}.^2,2));    % radial dist for counts in halo1
+        r_pairs=sqrt(sum(data2{i}.^2,2));   % radial dist for counts in halo2 (pair)
+        
         for j=1:nAtom
-            this_atom=data1{i}(j,:);    % ZXY-vector for this atom (to find pairs)
-            norm_this_atom=sqrt(sum(this_atom.^2,2));   % norm of this atom
-            norm_tmp=sqrt(sum(data2{i}.^2,2));  % norm of counterpart atoms (same shot)
+            zxy_this=data1{i}(j,:);    % ZXY-vector for this atom (to find pairs)
+            r_this=r_shot(j);   % norm of this atom
+%             r_pairs=sqrt(sum(data2{i}.^2,2));  % norm of counterpart atoms (same shot)
             
-            diff_tmp(:,1)=norm_tmp-norm_this_atom;   % radial diff
-            dotp_tmp=sum(data2{i}.*repmat(this_atom,[Npairs,1]),2); % dot product
-            diff_tmp(:,2)=real(acos(dotp_tmp./(norm_this_atom*norm_tmp)));    % angular diff
+            diff_tmp(:,1)=abs(r_pairs-r_this);   % radial diff - remove ordering with abs
+            dotp_tmp=sum(data2{i}.*repmat(zxy_this,[Npairs,1]),2); % dot product
+            diff_tmp(:,2)=real(acos(dotp_tmp./(r_this*r_pairs)));    % angular diff
             
             G2_corr=G2_corr+nhist(diff_tmp,BIN_EDGE);	% update G2
         end
@@ -99,22 +102,24 @@ if ncomp==2
         erase_str='';   % reset to null
     end
     
-    % all shots - except self
+    % UNcorrelated pairs G2
     for i=1:nShot
         data_collated=vertcat(data2{[1:i-1,i+1:end]});  % except self
-        %data_collated=vertcat(data2{:}); % collate all shots inc. self
         Ntotpair=size(data_collated,1);  % total number of counts in the cross-species
         nAtom=size(data1{i},1);
         diff_tmp=[];
         
+        r_shot=sqrt(sum(data1{i}.^2,2));        % radial dist for counts in halo1
+        r_pairs=sqrt(sum(data_collated.^2,2));  % radial dist for all counts - uncorr pairs
+        
         for j=1:nAtom
-            this_atom=data1{i}(j,:);
-            norm_this_atom=sqrt(sum(this_atom.^2,2));   % norm of this atom
-            norm_tmp=sqrt(sum(data_collated.^2,2));  % norm of counterpart atoms (same shot)
+            zxy_this=data1{i}(j,:);
+            r_this=r_shot(j);   % norm of this atom
+%             r_pairs=sqrt(sum(data_collated.^2,2));  % norm of counterpart atoms (same shot)
             
-            diff_tmp(:,1)=norm_tmp-norm_this_atom;   % radial diff
-            dotp_tmp=sum(data_collated.*repmat(this_atom,[Ntotpair,1]),2); % dot product           
-            diff_tmp(:,2)=real(acos(dotp_tmp./(norm_this_atom*norm_tmp)));    % angular diff
+            diff_tmp(:,1)=abs(r_pairs-r_this);   % radial diff - remove ordering with abs
+            dotp_tmp=sum(data_collated.*repmat(zxy_this,[Ntotpair,1]),2); % dot product           
+            diff_tmp(:,2)=real(acos(dotp_tmp./(r_this*r_pairs)));    % angular diff
             
             G2_uncorr=G2_uncorr+nhist(diff_tmp,BIN_EDGE);     % update G2
         end
@@ -133,25 +138,33 @@ if ncomp==2
     end
     
 elseif ncomp==1
-    % TODO - DEBUG: pairs should be counted just once
     %% Single component G(2) analysis
+    % correlated pairs G2
     for i=1:nShot
         shot_tmp=data1{i};
         nAtom=size(shot_tmp,1); % number of counts in this shot
         
+        r_all=sqrt(sum(shot_tmp.^2,2));    % radial dist for all counts in this shot
+        
         for j=1:(nAtom-1)   % skip last atom - no unique pairs
             diff_tmp=[];   % initialise diff vectors for pair search 
             
-            this_atom=shot_tmp(j,:);    % ZXY-vector for this atom (to find pairs)
-            other_tmp=shot_tmp((j+1):end,:);    % rem count available for unique pairing
+            zxy_this=shot_tmp(j,:);    % ZXY-vector for this atom (to find pairs)
+            zxy_pairs=shot_tmp((j+1):end,:);    % rem count available for unique pairing
             
             % Get rad/angular diff vectors for all pairs except self
-            norm_this_atom=sqrt(sum(this_atom.^2,2));
-            norm_tmp=sqrt(sum(other_tmp.^2,2));
+            % norms of zxy vector
+%             r_this=sqrt(sum(zxy_this.^2,2));
+%             r_pairs=sqrt(sum(zxy_pairs.^2,2));
+            r_this=r_all(j);
+            r_pairs=r_all(j+1:end);
             
-            diff_tmp(:,1)=norm_tmp-norm_this_atom;
-            dotp_tmp=sum(other_tmp.*repmat(this_atom,[nAtom-j,1]),2);
-            diff_tmp(:,2)=real(acos(dotp_tmp./(norm_this_atom*norm_tmp)));
+            % radial diff - remove ordering with abs
+            diff_tmp(:,1)=abs(r_pairs-r_this);      
+            
+            % calculate angular difference
+            dotp_tmp=sum(zxy_pairs.*repmat(zxy_this,[nAtom-j,1]),2);    % vector inner-product
+            diff_tmp(:,2)=real(acos(dotp_tmp./(r_this*r_pairs)));
 
             G2_corr=G2_corr+nhist(diff_tmp,BIN_EDGE);   % update G2
         end
@@ -169,24 +182,28 @@ elseif ncomp==1
         erase_str='';   % reset to null
     end
     
-    % all shots - except self
+    % UNcorrelated pairs G2
     for i=1:(nShot-1)   % skip last shot - no unique pairs
         data_collated=vertcat(data1{(i+1):end});  % all shots except self
         Ntotpair=size(data_collated,1);     % total number of counts to search pairs
         nAtom=size(data1{i},1);     % counts in this shot
         
+        r_shot=sqrt(sum(data1{i}.^2,2));            % radial dist for counts in this shot
+        r_pairs=sqrt(sum(data_collated.^2,2));      % radial dist for all counts - uncorr pairs
+        
         for j=1:nAtom
             diff_tmp=[];   % initialise diff vectors
             
-            this_atom=data1{i}(j,:);
+            zxy_this=data1{i}(j,:);
             
             % Get rad/angular diff vectors for all pairs
-            norm_this_atom=sqrt(sum(this_atom.^2,2));
-            norm_tmp=sqrt(sum(data_collated.^2,2));
+%             r_this=sqrt(sum(zxy_this.^2,2));
+%             r_pairs=sqrt(sum(data_collated.^2,2));
+            r_this=r_shot(j);
             
-            diff_tmp(:,1)=norm_tmp-norm_this_atom;
-            dotp_tmp=sum(data_collated.*repmat(this_atom,[Ntotpair,1]),2);
-            diff_tmp(:,2)=real(acos(dotp_tmp./(norm_this_atom*norm_tmp)));
+            diff_tmp(:,1)=abs(r_pairs-r_this);
+            dotp_tmp=sum(data_collated.*repmat(zxy_this,[Ntotpair,1]),2);
+            diff_tmp(:,2)=real(acos(dotp_tmp./(r_this*r_pairs)));
             
             G2_uncorr=G2_uncorr+nhist(diff_tmp,BIN_EDGE); % update G2
         end
