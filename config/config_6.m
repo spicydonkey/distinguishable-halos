@@ -90,41 +90,44 @@ configs.corr{3}.type.opt='CL';
 configs.corr{3}.lim=0.2*repmat([0,1],[3,1]);
 configs.corr{3}.nBin=11*[1,1,1];   % number of bins
 
-% 3) Single-halo cart CL - m_J=1
+% 4) Single-halo cart CL - m_J=1
 configs.corr{4}.type.comp=2;
 configs.corr{4}.type.coord='cart';
 configs.corr{4}.type.opt='CL';
 configs.corr{4}.lim=0.2*repmat([0,1],[3,1]);
 configs.corr{4}.nBin=11*[1,1,1];
 
-% 4) Single-halo cart BB - m_J=0
+% 5) Single-halo cart BB - m_J=0
 configs.corr{5}.type.comp=1;
 configs.corr{5}.type.coord='cart';
 configs.corr{5}.type.opt='BB';
 configs.corr{5}.lim=0.2*repmat([-1,1],[3,1]);
 configs.corr{5}.nBin=11*[1,1,1];   % number of bins
 
-% 5) Single-halo cart BB - m_J=1
+% 6) Single-halo cart BB - m_J=1
 configs.corr{6}.type.comp=2;
 configs.corr{6}.type.coord='cart';
 configs.corr{6}.type.opt='BB';
 configs.corr{6}.lim=0.2*repmat([-1,1],[3,1]);
 configs.corr{6}.nBin=11*[1,1,1];   % number of bins
 
+% 7) X-halo Angular
+configs.corr{7}.type.comp=[1,2];
+configs.corr{7}.type.coord='angular';
+configs.corr{7}.type.opt=[];
+configs.corr{7}.lim=[0,0.3;0,pi];
+configs.corr{7}.nBin=[31,301];
 
-%     % #. <TEMPLATE ANGULAR>
-%     analysis.corr.type{#}.comp=[1,2];           % components to analysis: cross halo 1,2
-%     analysis.corr.type{#}.coord='angular';      % angular coordinate
-%     analysis.corr.type{#}.opt=[];               % 'angular' has no optional feature atm
-%     analysis.corr.lim{#}{1}=0.3*[-1,1];  % bin limits - radial separation
-%     analysis.corr.lim{#}{2}=[0,pi];      % bin limits - angular separation
-%     analysis.corr.nBin{#}=[11,51];          % number of bins
-%
-%     % #. <TEMPLATE CARTESIAN>
-%     analysis.corr.type{#}.comp=[1,2];           % components to analysis: cross halo 1,2
-%     analysis.corr.type{#}.coord='cart';         % Cartesian (ZXY)
-%     analysis.corr.type{#}.opt='BB';             % BB / CL
-%     analysis.corr.lim{#}{1}=0.8*[-1,1]; % bin limits - Z
-%     analysis.corr.lim{#}{2}=0.8*[-1,1]; % bin limits - X
-%     analysis.corr.lim{#}{3}=0.8*[-1,1]; % bin limits - Y
-%     analysis.corr.nBin{#}=[51,13,13];   % number of bins
+% 8) Single-halo Angular - m_J=0
+configs.corr{8}.type.comp=1;           
+configs.corr{8}.type.coord='angular';
+configs.corr{8}.type.opt=[];
+configs.corr{8}.lim=[0,0.3;0,pi];
+configs.corr{8}.nBin=[31,301];
+
+% 9) Single-halo Angular - m_J=1
+configs.corr{9}.type.comp=2;           
+configs.corr{9}.type.coord='angular';
+configs.corr{9}.type.opt=[];
+configs.corr{9}.lim=[0,0.3;0,pi];
+configs.corr{9}.nBin=[31,301];

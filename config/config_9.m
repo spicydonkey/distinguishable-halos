@@ -1,10 +1,10 @@
 % Configuration file for distinguishable_halos.m
 
 %%% FLAGS
-configs.flags.do_corr_analysis=0;
+configs.flags.do_corr_analysis=1;
 configs.flags.force_all_stages=0;    % force all the stages to run (useful for debug)
 configs.flags.verbose=2;
-configs.flags.savedata=0;       % TODO - req'd currently since each stage passes data by save/load to disk
+configs.flags.savedata=1;       % TODO - req'd currently since each stage passes data by save/load to disk
 configs.flags.archive_txy=1;        % archives loaded TXY as .mat file for future reuse
 configs.flags.graphics=1;       % toggle to control graphics/plotting options
 configs.flags.build_txy=0;
@@ -59,7 +59,7 @@ configs.halo.zcap=0.8;   % z-cutoff (fractional wrt radius)
 %   currently SINGLE boost applied to halo2 to obtain best g2_01_BB
 configs.halo.boost{1}=zeros(1,3);
 % configs.halo.boost{2}=[0.01,-0.025,0.005];
-configs.halo.boost{2}=[0.0,0.0,0.0];
+configs.halo.boost{2}=[0.03,-0.02,0.01];
 
 %% CORRELATION ANALYSIS
 % 1) X-halo Cart BB
@@ -69,4 +69,60 @@ configs.corr{1}.type.opt='BB';             % BB / CL
 configs.corr{1}.lim(1,:)=0.2*[-1,1]; % bin limits - Z
 configs.corr{1}.lim(2,:)=0.2*[-1,1]; % bin limits - X
 configs.corr{1}.lim(3,:)=0.2*[-1,1]; % bin limits - Y
-configs.corr{1}.nBin=15*[1,1,1];   % number of bins
+configs.corr{1}.nBin=13*[1,1,1];   % number of bins
+
+% 2) X-halo Cart CL
+configs.corr{2}.type.comp=[1,2];
+configs.corr{2}.type.coord='cart';
+configs.corr{2}.type.opt='CL';
+configs.corr{2}.lim=0.3*repmat([0,1],[3,1]);
+configs.corr{2}.nBin=7*[1,1,1];   % number of bins
+
+% 3) Single-halo cart CL - m_J=0
+configs.corr{3}.type.comp=1;
+configs.corr{3}.type.coord='cart';
+configs.corr{3}.type.opt='CL';
+configs.corr{3}.lim=0.2*repmat([0,1],[3,1]);
+configs.corr{3}.nBin=11*[1,1,1];   % number of bins
+
+% 4) Single-halo cart CL - m_J=1
+configs.corr{4}.type.comp=2;
+configs.corr{4}.type.coord='cart';
+configs.corr{4}.type.opt='CL';
+configs.corr{4}.lim=0.2*repmat([0,1],[3,1]);
+configs.corr{4}.nBin=11*[1,1,1];
+
+% 5) Single-halo cart BB - m_J=0
+configs.corr{5}.type.comp=1;
+configs.corr{5}.type.coord='cart';
+configs.corr{5}.type.opt='BB';
+configs.corr{5}.lim=0.2*repmat([-1,1],[3,1]);
+configs.corr{5}.nBin=11*[1,1,1];   % number of bins
+
+% 6) Single-halo cart BB - m_J=1
+configs.corr{6}.type.comp=2;
+configs.corr{6}.type.coord='cart';
+configs.corr{6}.type.opt='BB';
+configs.corr{6}.lim=0.2*repmat([-1,1],[3,1]);
+configs.corr{6}.nBin=11*[1,1,1];   % number of bins
+
+% % 7) X-halo Angular
+% configs.corr{7}.type.comp=[1,2];
+% configs.corr{7}.type.coord='angular';
+% configs.corr{7}.type.opt=[];
+% configs.corr{7}.lim=[0,0.3;0,pi];
+% configs.corr{7}.nBin=[11,11];
+% 
+% % 8) Single-halo Angular - m_J=0
+% configs.corr{8}.type.comp=1;           
+% configs.corr{8}.type.coord='angular';
+% configs.corr{8}.type.opt=[];
+% configs.corr{8}.lim=[0,0.3;0,pi];
+% configs.corr{8}.nBin=[11,11];
+% 
+% % 9) Single-halo Angular - m_J=1
+% configs.corr{9}.type.comp=2;           
+% configs.corr{9}.type.coord='angular';
+% configs.corr{9}.type.opt=[];
+% configs.corr{9}.lim=[0,0.3;0,pi];
+% configs.corr{9}.nBin=[11,11];
