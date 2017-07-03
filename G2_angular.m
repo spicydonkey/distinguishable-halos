@@ -68,8 +68,9 @@ G2_uncorr=zeros(nBin);
 erase_str='';   % initialise for progress reporting
 if ncomp==2
     %% 2 component G(2) analysis
-    % correlated pairs G2   
-    for i=1:nShot
+    % correlated pairs G2
+    %     for i=1:nShot
+    parfor i=1:nShot
         nAtom=size(data1{i},1);     % number of counts in DATA1
         Npairs=size(data2{i},1);    % number of 'pairable' counts in counterpart
         diff_tmp=[];   % diff vectors for pair search (dradius,dangle)
@@ -89,21 +90,23 @@ if ncomp==2
             G2_corr=G2_corr+nhist(diff_tmp,BIN_EDGE);	% update G2
         end
         
-        % Progress report
-        if VERBOSE>1
-            prog_msg=sprintf('[1/2]: %4.1f',100*i/nShot);
-            fprintf([erase_str,prog_msg]);
-            erase_str=repmat(sprintf('\b'),1,length(prog_msg));
-        end
+%         % Progress report - serial
+%         if VERBOSE>1
+%             prog_msg=sprintf('[1/2]: %4.1f',100*i/nShot);
+%             fprintf([erase_str,prog_msg]);
+%             erase_str=repmat(sprintf('\b'),1,length(prog_msg));
+%         end
     end
     
-    if VERBOSE>1
-        fprintf('\n');
-        erase_str='';   % reset to null
-    end
+%     % clean progress report - serial
+%     if VERBOSE>1
+%         fprintf('\n');
+%         erase_str='';   % reset to null
+%     end
     
     % UNcorrelated pairs G2
-    for i=1:nShot
+    parfor i=1:nShot
+%     for i=1:nShot
         data_collated=vertcat(data2{[1:i-1,i+1:end]});  % except self
         Ntotpair=size(data_collated,1);  % total number of counts in the cross-species
         nAtom=size(data1{i},1);
@@ -124,12 +127,12 @@ if ncomp==2
             G2_uncorr=G2_uncorr+nhist(diff_tmp,BIN_EDGE);     % update G2
         end
         
-        % Progress report
-        if VERBOSE>1
-            prog_msg=sprintf('[2/2]: %4.1f',100*i/nShot);
-            fprintf([erase_str,prog_msg]);
-            erase_str=repmat(sprintf('\b'),1,length(prog_msg));
-        end
+%         % Progress report - serial
+%         if VERBOSE>1
+%             prog_msg=sprintf('[2/2]: %4.1f',100*i/nShot);
+%             fprintf([erase_str,prog_msg]);
+%             erase_str=repmat(sprintf('\b'),1,length(prog_msg));
+%         end
     end
     
     %% normalise G2 function
@@ -145,15 +148,17 @@ if ncomp==2
     G2_corr=G2_corr/N_pair_corr;
     G2_uncorr=G2_uncorr/N_pair_uncorr;
     
-    if VERBOSE>1
-        % new-line at the end of report
-        fprintf('\n');
-    end
+%     % clean progress report - serial
+%     if VERBOSE>1
+%         % new-line at the end of report
+%         fprintf('\n');
+%     end
     
 elseif ncomp==1
     %% Single component G(2) analysis
     % correlated pairs G2
-    for i=1:nShot
+%     for i=1:nShot
+    parfor i=1:nShot
         shot_tmp=data1{i};
         nAtom=size(shot_tmp,1); % number of counts in this shot
         
@@ -182,21 +187,23 @@ elseif ncomp==1
             G2_corr=G2_corr+nhist(diff_tmp,BIN_EDGE);   % update G2
         end
         
-        % Progress report
-        if VERBOSE>1
-            prog_msg=sprintf('[1/2]: %4.1f',100*i/nShot);
-            fprintf([erase_str,prog_msg]);
-            erase_str=repmat(sprintf('\b'),1,length(prog_msg));
-        end
+%         % Progress report - serial
+%         if VERBOSE>1
+%             prog_msg=sprintf('[1/2]: %4.1f',100*i/nShot);
+%             fprintf([erase_str,prog_msg]);
+%             erase_str=repmat(sprintf('\b'),1,length(prog_msg));
+%         end
     end
     
-    if VERBOSE>1
-        fprintf('\n');
-        erase_str='';   % reset to null
-    end
+%     % clean progress report - serial
+%     if VERBOSE>1
+%         fprintf('\n');
+%         erase_str='';   % reset to null
+%     end
     
     % UNcorrelated pairs G2
-    for i=1:(nShot-1)   % skip last shot - no unique pairs
+    parfor i=1:(nShot-1)   % skip last shot - no unique pairs
+%     for i=1:(nShot-1)   % skip last shot - no unique pairs
         data_collated=vertcat(data1{(i+1):end});  % all shots except self
         Ntotpair=size(data_collated,1);     % total number of counts to search pairs
         nAtom=size(data1{i},1);     % counts in this shot
@@ -221,12 +228,12 @@ elseif ncomp==1
             G2_uncorr=G2_uncorr+nhist(diff_tmp,BIN_EDGE); % update G2
         end
         
-        % Progress report
-        if VERBOSE>1
-            prog_msg=sprintf('[2/2]: %4.1f',100*i/nShot);
-            fprintf([erase_str,prog_msg]);
-            erase_str=repmat(sprintf('\b'),1,length(prog_msg));
-        end
+%         % Progress report - serial
+%         if VERBOSE>1
+%             prog_msg=sprintf('[2/2]: %4.1f',100*i/nShot);
+%             fprintf([erase_str,prog_msg]);
+%             erase_str=repmat(sprintf('\b'),1,length(prog_msg));
+%         end
     end
     
     %% normalise G2 function
@@ -241,10 +248,11 @@ elseif ncomp==1
     G2_corr=G2_corr/N_pair_corr;
     G2_uncorr=G2_uncorr/N_pair_uncorr;
     
-    if VERBOSE>1
-        % new-line at the end of report
-        fprintf('\n');
-    end
+%         % clean progress report - serial
+%     if VERBOSE>1
+%         % new-line at the end of report
+%         fprintf('\n');
+%     end
     
 end
 
