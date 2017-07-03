@@ -7,6 +7,7 @@ configs.flags.verbose=2;
 configs.flags.savedata=1;       % TODO - req'd currently since each stage passes data by save/load to disk
 configs.flags.archive_txy=1;        % archives loaded TXY as .mat file for future reuse
 configs.flags.graphics=1;       % toggle to control graphics/plotting options
+configs.flags.build_txy=1;
 
 %%% MISCELLANEOUS
 configs.misc.vel_z=9.8*0.416;    % atom free-fall vert v at detector hit for T-to-Z conversion;
@@ -14,7 +15,7 @@ vz=configs.misc.vel_z;
 
 
 %% FILES
-configs.files.path='\\AMPLPC29\Users\TDC_user\ProgramFiles\my_read_tdc_gui_v1.0.1\dld_output\xstate_collision_highv\4\d';
+configs.files.path='\\AMPLPC29\He BEC Archive\EXPERIMENT-DATA\xstate_mom_corr\90deg_raman_beams\4\d';
 
 % WARNING: MODIFYING BELOW DIR SETTINGS ARE NOT RECOMMENDED
 configs.files.dir_data=fileparts(configs.files.path);    % fullpath to data directory

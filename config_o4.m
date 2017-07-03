@@ -6,6 +6,7 @@ configs.flags.verbose=2;
 configs.flags.savedata=1;           
 configs.flags.archive_txy=1;        % archives loaded TXY as .mat file for future reuse
 configs.flags.graphics=1;           % toggle to control graphics/plotting options
+configs.flags.build_txy=1;
 
 %%% MISCELLANEOUS
 configs.misc.vel_z=9.8*0.416;    % atom free-fall vert v at detector hit for T-to-Z conversion;
