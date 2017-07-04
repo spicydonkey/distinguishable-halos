@@ -27,9 +27,13 @@ configs.files.dirout=fullfile(configs.files.dir_data,'output');      % output di
 configs.load.version=1;         % TXY load stage version number
 
 % file ID and simple pass/fail
-configs.load.id=1:5074;         % file id numbers to use for analysis
+% configs.load.id=1:5074;         % file id numbers to use for analysis
+% configs.load.mincount=700;         % min counts in window - 0 for no min
+% configs.load.maxcount=1000;          % max counts in window - Inf for no max
+configs.load.id=1:5529;         % file id numbers to use for analysis
 configs.load.mincount=700;         % min counts in window - 0 for no min
-configs.load.maxcount=1000;          % max counts in window - Inf for no max
+configs.load.maxcount=1200;          % max counts in window - Inf for no max
+
 
 % Detector/trap alignment
 configs.load.rot_angle=0.61;
@@ -58,8 +62,10 @@ configs.halo.zcap=0.8;   % z-cutoff (fractional wrt radius)
 % TODO - does boost need to be optimised for different g2 analysis?
 %   currently SINGLE boost applied to halo2 to obtain best g2_01_BB
 configs.halo.boost{1}=zeros(1,3);
+% configs.halo.boost{2}=zeros(1,3);
 % configs.halo.boost{2}=[0.01,-0.025,0.005];
-configs.halo.boost{2}=[0.03,-0.02,0.01];
+% configs.halo.boost{2}=[0.03,-0.02,0.01];
+configs.halo.boost{2}=[0.05,0,0];       % all merged
 
 %% CORRELATION ANALYSIS
 % 1) X-halo Cart BB
@@ -106,23 +112,23 @@ configs.corr{6}.type.opt='BB';
 configs.corr{6}.lim=0.2*repmat([-1,1],[3,1]);
 configs.corr{6}.nBin=11*[1,1,1];   % number of bins
 
-% % 7) X-halo Angular
-% configs.corr{7}.type.comp=[1,2];
-% configs.corr{7}.type.coord='angular';
-% configs.corr{7}.type.opt=[];
-% configs.corr{7}.lim=[0,0.3;0,pi];
-% configs.corr{7}.nBin=[11,11];
-% 
-% % 8) Single-halo Angular - m_J=0
-% configs.corr{8}.type.comp=1;           
-% configs.corr{8}.type.coord='angular';
-% configs.corr{8}.type.opt=[];
-% configs.corr{8}.lim=[0,0.3;0,pi];
-% configs.corr{8}.nBin=[11,11];
-% 
-% % 9) Single-halo Angular - m_J=1
-% configs.corr{9}.type.comp=2;           
-% configs.corr{9}.type.coord='angular';
-% configs.corr{9}.type.opt=[];
-% configs.corr{9}.lim=[0,0.3;0,pi];
-% configs.corr{9}.nBin=[11,11];
+% 7) X-halo Angular
+configs.corr{7}.type.comp=[1,2];
+configs.corr{7}.type.coord='angular';
+configs.corr{7}.type.opt=[];
+configs.corr{7}.lim=[0,0.15;0,pi];
+configs.corr{7}.nBin=[15,501];
+
+% 8) Single-halo Angular - m_J=0
+configs.corr{8}.type.comp=1;           
+configs.corr{8}.type.coord='angular';
+configs.corr{8}.type.opt=[];
+configs.corr{8}.lim=[0,0.15;0,pi];
+configs.corr{8}.nBin=[15,501];
+
+% 9) Single-halo Angular - m_J=1
+configs.corr{9}.type.comp=2;           
+configs.corr{9}.type.coord='angular';
+configs.corr{9}.type.opt=[];
+configs.corr{9}.lim=[0,0.15;0,pi];
+configs.corr{9}.nBin=[15,501];

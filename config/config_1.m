@@ -4,7 +4,7 @@
 configs.flags.do_corr_analysis=1;
 configs.flags.force_all_stages=0;    % force all the stages to run (useful for debug)
 configs.flags.verbose=2;
-configs.flags.savedata=0;       % TODO - req'd currently since each stage passes data by save/load to disk
+configs.flags.savedata=1;       % TODO - req'd currently since each stage passes data by save/load to disk
 configs.flags.archive_txy=1;        % archives loaded TXY as .mat file for future reuse
 configs.flags.graphics=1;       % toggle to control graphics/plotting options
 configs.flags.build_txy=1;
@@ -108,19 +108,19 @@ configs.corr{6}.nBin=15*[1,1,1];   % number of bins
 configs.corr{7}.type.comp=[1,2];
 configs.corr{7}.type.coord='angular';
 configs.corr{7}.type.opt=[];
-configs.corr{7}.lim=[0,0.3;0,pi];
-configs.corr{7}.nBin=[33,55];
+configs.corr{7}.lim=[0,0.1;0,pi];
+configs.corr{7}.nBin=[11,501];
 
 % 8) Single-halo Angular - m_J=0
 configs.corr{8}.type.comp=1;           
 configs.corr{8}.type.coord='angular';
 configs.corr{8}.type.opt=[];
-configs.corr{8}.lim=[0,0.3;0,pi];
-configs.corr{8}.nBin=[33,55];
+configs.corr{8}.lim=[0,0.1;0,pi];
+configs.corr{8}.nBin=[11,501];
 
 % 9) Single-halo Angular - m_J=1
 configs.corr{9}.type.comp=2;           
 configs.corr{9}.type.coord='angular';
 configs.corr{9}.type.opt=[];
-configs.corr{9}.lim=[0,0.3;0,pi];
-configs.corr{9}.nBin=[33,55];
+configs.corr{9}.lim=[0,0.1;0,pi];
+configs.corr{9}.nBin=[11,501];
