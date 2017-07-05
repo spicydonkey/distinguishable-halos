@@ -24,7 +24,9 @@ configs.files.dirout=fullfile(configs.files.dir_data,'output');      % output di
 
 
 %% LOAD
-configs.load.version=1;         % TXY load stage version number
+% version 1 - 10ns txy dead time
+% version 2 - 100ns txy dead time
+configs.load.version=2;         % TXY load stage version number
 
 % file ID and simple pass/fail
 % configs.load.id=1:1500;         % file id numbers to use for analysis
