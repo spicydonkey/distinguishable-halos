@@ -79,5 +79,10 @@ halo_k=cellfun(@(x) circshift(x,1,2),halo_k,'UniformOutput',false);
 [Nsc,dk]=halo_characterise(halo_k,configs.halo.zcap,verbose);
 
 
+%% Halo centering
+% boost for best g2 BB centering
+halo_k=boost_zxy(halo_k,configs.halo.boost{1});
+
+
 %% Correlation analysis
 corr=halo_g2_manager(halo_k,configs,verbose);
