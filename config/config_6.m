@@ -15,7 +15,7 @@ vz=configs.misc.vel_z;
 
 
 %% FILES
-configs.files.path='\\AMPLPC29\He BEC Archive\EXPERIMENT-DATA\xstate_mom_corr\90deg_raman_beams\6_mednum\d';
+configs.files.path='C:\Users\HE BEC\Documents\lab\halo_analysis\data\dist_halo\90deg\6\d';
 
 % WARNING: MODIFYING BELOW DIR SETTINGS ARE NOT RECOMMENDED
 configs.files.dir_data=fileparts(configs.files.path);    % fullpath to data directory
@@ -32,7 +32,7 @@ configs.load.version=2;         % TXY load stage version number
 % configs.load.id=1:1500;         % file id numbers to use for analysis
 % configs.load.mincount=1500;         % min counts in window - 0 for no min
 % configs.load.maxcount=1700;          % max counts in window - Inf for no max
-configs.load.id=1:2848;         % file id numbers to use for analysis
+configs.load.id=1:999;         % file id numbers to use for analysis
 configs.load.mincount=1400;         % min counts in window - 0 for no min
 configs.load.maxcount=1800;          % max counts in window - Inf for no max
 
@@ -58,7 +58,7 @@ configs.halo.dR{1}=0.25;      % broad radial mask fractional width (in/out)
 configs.halo.R{2}=24e-3;
 configs.halo.dR{2}=0.25;
 
-configs.halo.zcap=0.8;   % z-cutoff (fractional wrt radius)
+configs.halo.zcap=0.6;   % z-cutoff (fractional wrt radius)
 
 % TODO - does boost need to be optimised for different g2 analysis?
 %   currently SINGLE boost applied to halo2 to obtain best g2_01_BB
