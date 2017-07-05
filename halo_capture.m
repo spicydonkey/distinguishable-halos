@@ -34,10 +34,7 @@ culled.tail.zxy=cell(length(f_idok),2);   % BEC tails
 culled.fuzz.zxy=cell(length(f_idok),1);   % halo fuzz + background counts - 1D collated since no source to distinguish
 
 % Convert T-->Z
-for i=1:size(txy,1)
-    txy{i}(:,1)=txy{i}(:,1)*v_z;    % ToF to Z
-end
-ZXY_all=txy;    % much easier to handle counts in ZXY
+ZXY_all=txy2zxy(txy);
 clear txy;
 
 %% Process TXY data
