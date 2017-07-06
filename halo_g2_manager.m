@@ -101,19 +101,20 @@ for iCorr=1:n_corr_analysis
     % Get integrated or sliced 1D correlation profile
     if isequal(this_corr_type,'angular')
         % TODO - correlations - dk integrated (may reduce peak height)
-        % TODO - 1D g2 angular properly - norm factor etc.
-        %         g2=corr_out_this.g2;    % 3D g2 in ZXY coord
-        %         g2_1d=n_shots*sum(corr_out_this.G2_corr,1)./sum(corr_out_this.G2_uncorr,1);
         g2_1d=sum(corr_out_this.G2_corr,1)./sum(corr_out_this.G2_uncorr,1);     % average dk
 
-        % Gaussian fit (offset=1) (angular G2 allows fitting both BB,CL)
-        % BB fit
-        param0=[4,pi,0.1];     % fit estimate [amp,mu,sigma]
-        [fitparam{1},fit_g2{1}]=gaussfit2(corr_out_this.bCent{2},g2_1d,param0,0);
-        
-        % CL fit
-        param0=[2,0,0.1];
-        [fitparam{2},fit_g2{2}]=gaussfit2(corr_out_this.bCent{2},g2_1d,param0,0);
+        % Gaussian fit (angular G2 allows fitting both BB,CL)
+        % BB fit (mu=pi; c=1)
+        param0=[4,0.03];            % fit estimate [amp,sigma]
+        parameq={[],pi,[],1};       % fix params
+%         [fitparam{1},fit_g2{1}]=gaussfit2(corr_out_this.bCent{2},g2_1d,param0,0);
+        [fitparam{1},fit_g2{1}]=fit_gauss_1d(corr_out_this.bCent{2},g2_1d,param0,parameq);
+
+        % CL fit (mu=0; c=1)
+        param0=[2,0.03];            % fit estimate [amp,sigma]
+        parameq={[],0,[],1};        % fix params
+%         [fitparam{2},fit_g2{2}]=gaussfit2(corr_out_this.bCent{2},g2_1d,param0,0);
+        [fitparam{2},fit_g2{2}]=fit_gauss_1d(corr_out_this.bCent{2},g2_1d,param0,parameq);
         
         % Plot
         if configs.flags.graphics   % plotting
@@ -128,40 +129,34 @@ for iCorr=1:n_corr_analysis
             xlim([0,pi]); ylim auto;
             
             % plot the fits
-            plot(ax,fit_g2{1}.x,fit_g2{1}.y,'r');     
-            plot(ax,fit_g2{2}.x,fit_g2{2}.y,'b--');
+            plot(ax,fit_g2{1}.x,fit_g2{1}.y,'r','LineWidth',2);     
+            plot(ax,fit_g2{2}.x,fit_g2{2}.y,'b--','LineWidth',2);
             hold(ax,'off');
             
-            legend({'Data','Gaussian fit'});            
+            legend({'Data','Gaussian fit (BB)','Gaussian fit (CL)'});            
         end
         
     elseif isequal(this_corr_type,'cart')
         %%% Get line through Z-axis @ dkx=dky=0
-        % TODO - $ind_zero assumes bin centers are symmetric about 0 and 0
-        % is indeed a bin center (i.e. odd nBin) - get index st bin centre
-        % closest to 0
         [~,I_zero]=cellfun(@(x) min(abs(x)),corr_out_this.bCent);   % index to bin centre nearest 0
-%         I_zero=round((corr_this.nBin+1)/2);    % NOT ROBUST: zero-cent'd bin index for sampling 3D-g2
         
         % Gaussian fit
-        % Set initial params - for Gaussian with offset 1
+        % Set initial params; fix background/constant offset to 1
         if strcmp(corr_this.type.opt,'BB')
-            param0=[4,0,0.1];       % BB [amp,mu,sigma]
+            param0=[4,0,0.03];      % BB [amp,mu,sigma]
+            parameq={[],[],[],1};   % fix params
         else
-            param0=[2,0.1];         % CL amplitude ~2 - centred around 0 (symmetric)
+            % CL --> symmetric around 0
+            param0=[2,0.03];        % CL [amp,sigma]
+            parameq={[],0,[],1};
         end
             
         perm_vect=[2,3,1];      % cyclic map (1,2,3-->2,3,1) to take 1D profile in Z,X,Y
         g2=corr_out_this.g2;    % 3D g2 in ZXY coord
         for jj=1:3
-            % take line profile thru the bin center (d~=0)
-            if strcmp(corr_this.type.opt,'BB')
-                [fitparam{jj},fit_g2{jj}]=gaussfit2(corr_out_this.bCent{jj},...
-                    g2(:,I_zero(2),I_zero(3)),param0,0);
-            else
-                [fitparam{jj},fit_g2{jj}]=gaussfit3(corr_out_this.bCent{jj},...
-                    g2(:,I_zero(2),I_zero(3)),param0,0);
-            end
+            % Gaussian fit to line profile thru zero!
+            [fitparam{jj},fit_g2{jj}]=fit_gauss_1d(corr_out_this.bCent{jj},...
+                g2(:,I_zero(2),I_zero(3)),param0,parameq);
             
             % Plot
             if configs.flags.graphics
