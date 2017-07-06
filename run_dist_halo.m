@@ -296,6 +296,36 @@ function [halo_k0,corr,efit,halo,txy,fout,err]=run_dist_halo(config_file)
         corr=NaN;       % need to return corr
     end
     
+    %% Mode occupancy
+    % TODO - uncertainty in mode occupancy
+    
+    % initialise vars
+    wbb=zeros(3,2);     % [g2_BB_rms_width SE]
+    I_BB_corr=0;
+    sigk=NaN;
+    n_mocc=NaN;
+    
+    % get cart BB correlation task
+    for ii=1:numel(configs.corr)
+        if isequal(configs.corr{ii}.type.coord,'cart')&&isequal(configs.corr{ii}.type.opt,'BB')
+            I_BB_corr=ii;
+            break;
+        end
+    end
+    
+    % mode occupancy
+    if I_BB_corr~=0
+        % get cart BB correlation widths
+        for ii=1:3      % Z,X,Y 1d g2 fit params
+            wbb(ii,:)=abs(corr{I_BB_corr}.fit{ii}(3,:));     % [rms_width,SE]
+        end
+        % source condensate k width
+        sigk=geomean(wbb(:,1))/1.1;
+        
+        % evaluate mode occupancy
+        n_mocc=halo_mocc(1,mean(abs(dk)),mean(vertcat(Nsc{:})),sigk);
+    end
+    
     %% Save results
     if configs.flags.savedata
         %%% fig
