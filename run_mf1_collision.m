@@ -49,6 +49,17 @@ bool_zcap=cellfun(@(zxy)abs(zxy(:,1))>(0.5*dz_poles*configs.halo.zcap),halo_zxy0
 halo_zxy0=cellfun(@(ZXY,BOOL)ZXY(~BOOL,:),halo_zxy0,bool_zcap,'UniformOutput',false);
 
 
+%% Cull aliased hits
+% cull from centred zxy0 halo data
+alias_deadz=100e-9*configs.misc.vel_z;      % dZ in 100 ns
+bool_alias=cellfun(@(x) findalias(x,alias_deadz),halo_zxy0,'UniformOutput',false);
+halo_zxy0_filt=cellfun(@(x,y) x(~y,:),halo_zxy0,bool_alias,'UniformOutput',false);
+
+% TODO - better var management
+halo_zxy0_orig=halo_zxy0;       % store original
+halo_zxy0=halo_zxy0_filt;       % alias filtered
+
+
 %% Elipsoid fit
 efit_flag='';
 [ecent,erad,evecs,v,echi2]=ellipsoid_fit(circshift(vertcat(halo_zxy0{:}),-1,2),efit_flag);
