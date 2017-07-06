@@ -64,6 +64,11 @@ dk=0.027;
 Nsc=720;
 wbb=0.031;
 
+% % mf=(1,1) run
+% kr=1;
+% dk=0.039;
+% Nsc=310;
+% wbb=0.033;
 
 Vm=(2*pi)^(3/2)*(wbb/1.1)^3        % mode/phase grain volume
 Vs=4*pi*sqrt(2*pi)*kr^2*dk         % total scattering volume
