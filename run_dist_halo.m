@@ -177,7 +177,19 @@ function [halo_k0,corr,efit,halo,txy,fout,err]=run_dist_halo(config_file)
     %   should have equal LOAD + HALO
     [halo,bec,culled,HFIG{length(HFIG)+1},errflag]=halo_capture(txy,fout,configs,verbose);
     
-
+    
+    %% Cull aliased hits
+    % TODO - check
+    
+    % cull from centred zxy0 halo data
+    alias_deadz=100e-9*configs.misc.vel_z;      % dZ in 100 ns
+    bool_alias=cellfun(@(x) findalias(x,alias_deadz),halo.zxy0,'UniformOutput',false);
+    halo_zxy0_filt=cellfun(@(x,y) x(~y,:),halo.zxy0,bool_alias,'UniformOutput',false);
+    
+    % TODO - better var management
+    halo.zxy0_orig=halo.zxy0;       % store original
+    halo.zxy0=halo_zxy0_filt;       % alias filtered
+    
     %% Characterise halos
     % TODO
     %   num in halo (+ mode occupancy - needs corr volume)
