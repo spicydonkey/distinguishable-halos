@@ -20,19 +20,22 @@ nbins=ceil(length(halo_R_all)/100);      % number of bins to histogram radial di
 N_pdf=N_r./diff(r_edge);                % in probability density function
 r_cent=r_edge(1:end-1)+0.5*diff(r_edge);    % get bin centres
 
-% fit Gaussian
-gaussfun='y~amp*exp(-1*(x1-mu)^2/(2*sigma^2))';
-param0=[100,1,0.1];
-fo = statset('TolFun',10^-10,...
-    'TolX',10^-10,...
-    'MaxIter',10^6,...
-    'UseParallel',0);
-gfit=fitnlm(r_cent,N_r,...
-     gaussfun,param0,...
-     'CoefficientNames',{'amp','mu','sigma'},'Options',fo);
+% fit Gaussian (0 offset)
+% gaussfun='y~amp*exp(-1*(x1-mu)^2/(2*sigma^2))';
+param0=[100,1,0.05];    
+parameq={[],[],[],1};   %[amp_0, mu_0, sigma_0, c_0]
+% fo = statset('TolFun',10^-10,...
+%     'TolX',10^-10,...
+%     'MaxIter',10^6,...
+%     'UseParallel',0);
+% gfit=fitnlm(r_cent,N_r,...
+%      gaussfun,param0,...
+%      'CoefficientNames',{'amp','mu','sigma'},'Options',fo);
+[paramfit,~,gfit]=fit_gauss_1d(r_cent,N_r,param0,parameq);
 
-dk=gfit.Coefficients.Estimate(3);   % halo thickness in standard deviation
- 
+% dk=abs(gfit.Coefficients.Estimate(3));   % halo thickness in standard deviation
+dk=paramfit(3,:);   % rms halo thickness & fit SE
+
 fitx=linspace(min(r_cent),max(r_cent),300);
 fity=feval(gfit,fitx);
 
@@ -63,7 +66,7 @@ Nsc_se=Nsc_std/sqrt(size(halos,1));
 %% Summary
 if verbose>0
     fprintf('===================HALO SUMMARY===================\n');
-    fprintf('Halo width (rms): %0.2g\n',dk);
+    fprintf('Halo width (rms): %0.2g\n',dk(1));
     fprintf('Number of scattered atoms, Nsc: %0.3g ± %0.2g\n',Nsc_avg,Nsc_se);
     fprintf('std Nsc: %0.2g\n',Nsc_std);
     fprintf('==================================================\n');
