@@ -12,7 +12,7 @@ configs.flags.build_txy=1;
 %%% MISCELLANEOUS
 configs.misc.vel_z=9.8*0.416;    % atom free-fall vert v at detector hit for T-to-Z conversion;
 vz=configs.misc.vel_z;
-
+configs.misc.deadtime=100e-9;
 
 %% FILES
 configs.files.path='\\AMPLPC29\He BEC Archive\EXPERIMENT-DATA\xstate_mom_corr\90deg_raman_beams\4\d';
@@ -115,11 +115,11 @@ configs.corr{8}.type.comp=1;
 configs.corr{8}.type.coord='angular';
 configs.corr{8}.type.opt=[];
 configs.corr{8}.lim=[0,0.2;0,pi];
-configs.corr{8}.nBin=[21,501];
+configs.corr{8}.nBin=[21,201];
 
 % 9) Single-halo Angular - m_J=1
 configs.corr{9}.type.comp=2;           
 configs.corr{9}.type.coord='angular';
 configs.corr{9}.type.opt=[];
 configs.corr{9}.lim=[0,0.2;0,pi];
-configs.corr{9}.nBin=[21,501];
+configs.corr{9}.nBin=[21,201];

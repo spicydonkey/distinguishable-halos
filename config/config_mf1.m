@@ -15,7 +15,8 @@ vz=configs.misc.vel_z;
 
 
 %% FILES
-configs.files.path='C:\Users\David\Documents\hebec\halo_analysis\data\dist_halo\mf1_collision\d';
+% configs.files.path='C:\Users\David\Documents\hebec\halo_analysis\data\dist_halo\mf1_collision\d';
+configs.files.path='\\AMPLPC29\Users\TDC_user\ProgramFiles\my_read_tdc_gui_v1.0.1\dld_output\xstate_collision_highv\mf1_collision\d';
 
 % WARNING: MODIFYING BELOW DIR SETTINGS ARE NOT RECOMMENDED
 configs.files.dir_data=fileparts(configs.files.path);    % fullpath to data directory
@@ -71,7 +72,7 @@ configs.corr{1}.type.comp=1;
 configs.corr{1}.type.coord='angular';
 configs.corr{1}.type.opt=[];
 configs.corr{1}.lim=[0,0.2;0,pi];
-configs.corr{1}.nBin=[21,501];
+configs.corr{1}.nBin=[21,401];
 
 % 2) Single-halo cart CL - m_J=0
 configs.corr{2}.type.comp=1;
