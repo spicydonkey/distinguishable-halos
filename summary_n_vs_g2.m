@@ -1,12 +1,12 @@
 % SUMMARY OF BB g2 amplitude and scattering halo mode occupancy
 
 %% DATA
-n_exp=[0.017,0.015,0.04,0.86,0.09,2.3e-3,0.3];
-g2_exp=[85,22,32,3.1,16,140,7];
+n_exp=[0.0080, 0.0156, 0.0389, 0.86, 0.086, 0.011, 0.3];
+g2_exp=[87, 22, 32, 3.1, 20, 95, 7];
 
 % UNCERTAINTY
-n_unc=0.8;      % simple ±80% uncertainty
-n_err=n_exp*n_unc;      % calculated
+n_unc=[0.68, 0.8, 0.38, 0.8, 0.39, 0.65, 0.8];      % simple ±80% uncertainty
+n_err=n_exp.*n_unc;      % calculated
 
 % g2_err
 g2_unc=0.5;     % simple
