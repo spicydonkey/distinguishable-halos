@@ -1,4 +1,4 @@
-function [paramfit,fitval]=fit_gauss_1d(x,y,param0,parameq,VERBOSE)
+function [paramfit,fitval,fitobject]=fit_gauss_1d(x,y,param0,parameq,VERBOSE)
 % Gaussian fit to the correlation plots and return fit params as estimate(amp,mu,,sigma,c) and fit param SE
 
 % INPUT
