@@ -15,7 +15,7 @@ t_fun_start=tic;
 hfig={};
 
 % Exp constants
-v_z=9.8*0.416;    % atom free-fall vert v at detector hit for T-to-Z conversion
+vz=9.8*0.416;    % atom free-fall vert v at detector hit for T-to-Z conversion
 
 % Parse input
 R_tail=configs.bec.dR_tail;     % estimated tail radius from BEC
@@ -68,80 +68,6 @@ for ii=1:numel(configs.bec.pos)
     % cull tail
     ZXY_all=cellfun(@(ZXY,BOOL)ZXY(~BOOL,:),ZXY_all,bool_tail,'UniformOutput',false);
 end
-
-% for i=1:length(f_idok)
-%     %fprintf('%d: %d\n',i,size(ZXY_all{i},1));
-%
-%     % ITERATE to improve BEC estimation
-%     % Initialisise
-%     bec.cent(i,:)=configs.bec.pos;
-%     ball_cent=configs.bec.pos;      % ball (centre) to capture BEC
-%     ball_rad=configs.bec.Rmax;      % radial window to count as BEC
-%     for i_cond=1:2
-%         % iterate until mean position from counts ~= ball centre
-%         err_cent=Inf;
-%         n_bec_max=0;
-%         n_iter=0;
-%         while err_cent>0.02e-3
-%             % get new ball centre for BEC capture
-%             ball_cent{i_cond}=bec.cent{i,i_cond};
-%             
-%             zxy_temp=ZXY_all{i}-repmat(ball_cent{i_cond},[size(ZXY_all{i},1),1]); % centre to ball
-%             rsq_temp=sum(zxy_temp.^2,2);            % evaluate radial distances
-%             %TODO - this could be much tighter since single shot shows BEC rad < 4 mm
-%             ind_bec=rsq_temp<((0.7*ball_rad{i_cond})^2);  % logical index vector for BEC - atoms within Rmax
-%             zxy_bec{i_cond}=ZXY_all{i}(ind_bec,:);    % collate captured BEC counts
-%             
-%             % Evaluate BEC centre
-%             bec.cent{i,i_cond}=mean(zxy_bec{i_cond},1);     % approx of BEC centre by mean position
-%             err_cent=norm(ball_cent{i_cond}-bec.cent{i,i_cond});    % error this iteration
-%             
-%             % total count in this ball - used to tell if BEC well-captured
-%             n_bec_this=sum(ind_bec);
-%             if n_bec_this>n_bec_max
-%                 n_bec_max=n_bec_this;
-%             end
-%             
-%             n_iter=n_iter+1;
-%         end
-%         % centre has converged
-%         
-%         ZXY_all{i}=ZXY_all{i}(~ind_bec,:);  % pop BEC out of all counts
-%         
-%         % Summary
-%         if n_bec_this/n_bec_max<0.8
-%             warning('While locating BEC, sudden drop in count observed in shot #%d.',f_idok(i));
-%         end
-%         if verbose>2
-%             disp('-------------------------------------------------');
-%             fprintf('Shot: %d, BEC#: %d\n',f_idok(i),i_cond);
-%             disp(['Iterations: ',num2str(n_iter)]);
-%             disp(['Total counts in BEC (/max): ',num2str(n_bec_this),' / ',num2str(n_bec_max)]);
-%             % total deviation from initial guess
-%             dev_tot=norm(bec.cent{i,i_cond}-configs.bec.pos{i_cond});
-%             disp(['Deviation from initial guess: ',num2str(1e3*dev_tot),' mm']);
-%         end
-%     end
-%     
-%     %% Clean around condensates
-%     % There is still spherical tail around the condensate capturing sphere which is
-%     %   much stronger than scattered counts
-%     % Must be done after locating condensates since the clean-up windows
-%     %   for two condensates will significantly overlap
-%     zxy_tail=cell(1,2);
-%     
-%     for i_cond=1:2
-%         zxy_temp=ZXY_all{i}-repmat(bec.cent{i,i_cond},[size(ZXY_all{i},1),1]); % relocate centre to approx BEC position
-%         rsq_temp=sum(zxy_temp.^2,2);            % evaluate radial distances
-%         ind_tail=rsq_temp<(((1+R_tail{i_cond})*configs.bec.Rmax{i_cond})^2);  % tail counts index
-%         zxy_tail{i_cond}=ZXY_all{i}(ind_tail,:);  % counts in BEC tail
-%         ZXY_all{i}=ZXY_all{i}(~ind_tail,:);         % pop tail out
-%     end
-%     
-%     % save single-shot to a cell
-%     bec.zxy(i,:)=zxy_bec;	% BEC
-% 	culled.tail.zxy(i,:)=zxy_tail;  % tail
-% end
 
 %% HALO (broad) capture
 % assuming BEC centre lies on halo's Z-extremity and estimating halo
