@@ -190,6 +190,14 @@ function [halo_k0,corr,efit,halo,txy,fout,err]=run_dist_halo(config_file)
     halo.zxy0_orig=halo.zxy0;       % store original
     halo.zxy0=halo_zxy0_filt;       % alias filtered
     
+    % Summary
+    n_multihit=cellfun(@(x)sum(x)/length(x),bool_alias);    % amount of aliased counts found in halo (ratio)
+    if verbose>0
+            disp('-------------------------------------------------');
+            disp('Multi-hit elmination');
+            fprintf('Shot/halo-averaged rate: %0.3g ± %0.3g\n',mean(mean(n_multihit)),mean(std(n_multihit)));
+    end
+    
     %% Characterise halos
     % TODO
     %   num in halo (+ mode occupancy - needs corr volume)
@@ -305,10 +313,12 @@ function [halo_k0,corr,efit,halo,txy,fout,err]=run_dist_halo(config_file)
     if do_corr_analysis
         [corr,HFIG{length(HFIG)+1}]=halo_g2_manager(halo_k0,configs,verbose);
     else
-        corr=NaN;       % need to return corr
+        corr=[];       % need to return corr
     end
     
+    
     %% Mode occupancy
+    
     % TODO - uncertainty in mode occupancy
     
     % initialise vars
@@ -317,25 +327,27 @@ function [halo_k0,corr,efit,halo,txy,fout,err]=run_dist_halo(config_file)
     sigk=NaN;
     n_mocc=NaN;
     
-    % get cart BB correlation task
-    for ii=1:numel(configs.corr)
-        if isequal(configs.corr{ii}.type.coord,'cart')&&isequal(configs.corr{ii}.type.opt,'BB')
-            I_BB_corr=ii;
-            break;
+    if ~isempty(corr)
+        % get cart BB correlation task
+        for ii=1:numel(configs.corr)
+            if isequal(configs.corr{ii}.type.coord,'cart')&&isequal(configs.corr{ii}.type.opt,'BB')
+                I_BB_corr=ii;
+                break;
+            end
         end
-    end
-    
-    % mode occupancy
-    if I_BB_corr~=0
-        % get cart BB correlation widths
-        for ii=1:3      % Z,X,Y 1d g2 fit params
-            wbb(ii,:)=abs(corr{I_BB_corr}.fit{ii}(3,:));     % [rms_width,SE]
-        end
-        % source condensate k width
-        sigk=geomean(wbb(:,1))/1.1;
         
-        % evaluate mode occupancy
-        n_mocc=halo_mocc(1,mean(abs(dk)),mean(vertcat(Nsc{:})),sigk);
+        % mode occupancy
+        if I_BB_corr~=0
+            % get cart BB correlation widths
+            for ii=1:3      % Z,X,Y 1d g2 fit params
+                wbb(ii,:)=abs(corr{I_BB_corr}.fit{ii}(3,:));     % [rms_width,SE]
+            end
+            % source condensate k width
+            sigk=geomean(wbb(:,1))/1.1;
+            
+            % evaluate mode occupancy
+            n_mocc=halo_mocc(1,mean(abs(dk)),mean(vertcat(Nsc{:})),sigk);
+        end
     end
     
     %% Save results
