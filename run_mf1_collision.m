@@ -20,7 +20,10 @@ zxy=txy2zxy(txy);       % zxy
 [bec_cent,bool_bec]=capture_bec(zxy,configs.bec.pos,configs.bec.Rmax,verbose);
 
 % pop bec + thermal counts
-bool_bec_combined=cellfun(@(x,y)x|y,bool_bec(:,1),bool_bec(:,2),'UniformOutput',false);
+% bool_bec_combined=cellfun(@(x,y)x|y,bool_bec(:,1),bool_bec(:,2),'UniformOutput',false);
+bool_bec_combined=cell_horzcat(bool_bec);       % horizontal concat the boolean list
+bool_bec_combined=cellfun(@(x)sum(x,2)>0,bool_bec_combined,'UniformOutput',false);    % row-wise OR
+
 halo_zxy=cellfun(@(ZXY,BOOL)ZXY(~BOOL,:),zxy,bool_bec_combined,'UniformOutput',false);
 
 % halo centre: midpoint of 'BEC poles'
