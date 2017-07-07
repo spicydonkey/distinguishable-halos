@@ -292,11 +292,10 @@ function [halo_k0,corr,efit,halo,txy,fout,err]=run_dist_halo(config_file)
     
     %% Characterise halos - spherically mapped
     Nsc=cell(1,size(halo_k,2));     % total number in halo
-    dk=zeros(1,size(halo_k,2));     % halo rms width
-%     gfit=cell(1,size(halo_k,2));    % gaussian fit to radial dist
+    dk=cell(1,size(halo_k,2));     % halo rms width
     
     for ii=1:size(halo_k,2)
-        [Nsc{ii},dk(ii),~]=halo_characterise(halo_k(:,ii),configs.halo.zcap,verbose);
+        [Nsc{ii},dk{ii},~]=halo_characterise(halo_k(:,ii),configs.halo.zcap,verbose);
     end
     
     %% Correct for halo centre
@@ -304,6 +303,7 @@ function [halo_k0,corr,efit,halo,txy,fout,err]=run_dist_halo(config_file)
     for ii=1:2
         halo_k0(:,ii)=boost_zxy(halo_k(:,ii),configs.halo.boost{ii});   % boost each halo as defined
     end
+    
     
     %% Correlation analysis
     % TODO
@@ -314,16 +314,20 @@ function [halo_k0,corr,efit,halo,txy,fout,err]=run_dist_halo(config_file)
         corr=[];       % need to return corr
     end
     
-    
     %% Mode occupancy
-    
     % TODO - uncertainty in mode occupancy
     
     % initialise vars
     wbb=zeros(3,2);     % [g2_BB_rms_width SE]
     I_BB_corr=0;
     sigk=NaN;
+    dk_mean=nan;
+    Nsc_mean=nan;
     n_mocc=NaN;
+    
+    err_Nsc=nan;
+    err_wbb=nan;
+    err_n_mocc=NaN;
     
     if ~isempty(corr)
         % get cart BB correlation task
@@ -334,7 +338,7 @@ function [halo_k0,corr,efit,halo,txy,fout,err]=run_dist_halo(config_file)
             end
         end
         
-        % mode occupancy
+        %% Halo mode occupancy
         if I_BB_corr~=0
             % get cart BB correlation widths
             for ii=1:3      % Z,X,Y 1d g2 fit params
@@ -343,8 +347,30 @@ function [halo_k0,corr,efit,halo,txy,fout,err]=run_dist_halo(config_file)
             % source condensate k width
             sigk=geomean(wbb(:,1))/1.1;
             
+            % rms halo width
+            dk_mean=mean(abs(cellfun(@(x)x(1),dk)));
+            
+            % scattered number in halo
+            Nsc_mean=mean(vertcat(Nsc{:}));
+            
             % evaluate mode occupancy
-            n_mocc=halo_mocc(1,mean(abs(dk)),mean(vertcat(Nsc{:})),sigk);
+            n_mocc=halo_mocc(1,dk_mean,Nsc_mean,sigk);
+        end
+        
+        %% Error analysis
+        % relative error - ratio to mean
+        err_Nsc=mean(cellfun(@(x)std(x)/mean(x),Nsc));      % relative error in scattered number
+        err_wbb=mean(wbb(:,2)./wbb(:,1));                   % relative error in ~correlation length
+        
+        % scale parameters and evaluate total uncertainty
+        err_n_mocc=sqrt(sum([err_Nsc,3*err_wbb].^2));
+        
+        
+        %% Summary
+        if verbose>0
+            disp('====================================================');
+            disp('HALO MODE OCCUPANCY');
+            fprintf('[n_mocc, err_n_mocc] = %0.3g, %0.2g\n',n_mocc,err_n_mocc);
         end
     end
     
