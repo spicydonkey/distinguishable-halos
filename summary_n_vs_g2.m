@@ -1,21 +1,36 @@
 % SUMMARY OF BB g2 amplitude and scattering halo mode occupancy
 
-%% DATA
+%%% DATA
+%% 90 deg data
 n_exp=[0.0080, 0.0156, 0.0389, 0.86, 0.086, 0.011, 0.3];
 g2_exp=[87, 22, 32, 3.1, 20, 95, 7];
 
 % UNCERTAINTY
 n_unc=[0.68, 0.8, 0.38, 0.8, 0.39, 0.65, 0.8];      % simple ±80% uncertainty
-n_err=n_exp.*n_unc;      % calculated
+
 
 % g2_err
-g2_unc=0.5;     % simple
+g2_unc=0.75;     % simple
+
+
+%% 30 deg data
+n_exp=[n_exp 0.224];
+n_unc=[n_unc 0.46];
+
+g2_exp=[g2_exp 7.5];
+    
+
+%% EVALUATE error
+n_err=n_exp.*n_unc;      % calculated
 g2_err=g2_exp*g2_unc;
 
+
+%% Theory
 r=3;
 n=linspace(min(n_exp)/r,r*max(n_exp),1000);       % logs
 % n=linspace(0,1.1*max(n_exp),1000);       % linear
 g2_theory=1+1./n;
+
 
 %% Plot
 % plot configs
