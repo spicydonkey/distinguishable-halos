@@ -1,13 +1,14 @@
 % Configuration file for distinguishable_halos.m
 %% FLAGS
 configs.flags.do_corr_analysis=1;
+    configs.flags.do_corr_err=1;
 configs.flags.force_all_stages=0;   % force all the stages to run (useful for debuging codebase)
 configs.flags.verbose=2;
 configs.flags.savedata=1;           
 configs.flags.archive_txy=1;        % archives loaded TXY as .mat file for future reuse
 configs.flags.graphics=1;           % toggle to control graphics/plotting options
 configs.flags.build_txy=1;
-
+    
 %%% MISCELLANEOUS
 configs.misc.vel_z=9.81*0.416;    % atom free-fall vert v at detector hit for T-to-Z conversion;
 vz=configs.misc.vel_z;
@@ -63,6 +64,9 @@ configs.halo.boost{2}=[0.038,0.015,-0.01];   %[0.025,0.015,-0.015];
 
 
 %% CORRELATION ANALYSIS
+% ERROR ANALYSIS
+configs.error.ncluster=5;     % number of clusters to divide runs for error analysis
+
 % 1) X-halo Cart BB
 configs.corr{1}.type.comp=[1,2];
 configs.corr{1}.type.coord='cart';
