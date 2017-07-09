@@ -309,7 +309,51 @@ function [halo_k0,corr,efit,halo,txy,fout,err]=run_dist_halo(config_file)
     % TODO
     %   check for preexisting saved files passed for above
     if do_corr_analysis
+        % Run correlation analysis in batch!
         [corr,HFIG{length(HFIG)+1}]=halo_g2_manager(halo_k0,configs,verbose);
+        
+        %% ERROR ANALYSIS
+        corr_err=[];
+        if configs.flags.do_corr_err
+            % get analysis configs
+            nshot=size(halo_k0,1);      % total number of shots
+            ncluster=configs.error.ncluster;    % get number of clusters to divide dataset
+            
+            corr_err=cell(ncluster,1);  % initialise correlation analysis output
+            
+            % no graphics in sampled g2 runs
+            configs_nograph=configs;
+            configs_nograph.flags.graphics=0;
+            
+            % run multiple correlation analysis
+            I_cluster=cell(ncluster,1);         % shot index clustered for g2 error analysis
+            numincluster=ceil(nshot/ncluster);  % number of shots in a cluster
+            parfor ii=1:ncluster
+                % randomly cluster shots
+                I_cluster{ii}=randperm(nshot,numincluster);     % a shot can be in multiple clusters
+                
+                % do the correlation analysis on a selected sample of shots!
+                corr_err{ii}=halo_g2_manager(halo_k0(I_cluster{ii},:),configs_nograph,0);
+            end
+            
+            % statistics
+            ncorr=numel(corr);          % number of correlation functions evaluated
+            g2_cluster=cell(ncorr,1);
+            for ii=1:ncorr
+                g2_cluster{ii}=cell(ncluster,1);
+                % collate g2 function evaluated from each cluster
+                for jj=1:ncluster
+                    g2_cluster{ii}{jj}=corr_err{jj}{ii}.g2;
+                end
+                
+                % concatenate g2 function as array in the next dimension
+                g2_cluster{ii}=cat(ndims(corr{ii}.g2)+1,corr_err{ii}{:});
+            end
+            % SD of g2 function for each correlation analysis
+            g2_err_mean=cellfun(@(x) mean(x,ndims(x)),g2_cluster,'UniformOutput',false);
+            g2_err_sd=cellfun(@(x) std(x,0,ndims(x)),g2_cluster,'UniformOutput',false);
+            
+        end
     else
         corr=[];       % need to return corr
     end
@@ -325,9 +369,9 @@ function [halo_k0,corr,efit,halo,txy,fout,err]=run_dist_halo(config_file)
     Nsc_mean=nan;
     n_mocc=NaN;
     
-    err_Nsc=nan;
-    err_wbb=nan;
-    err_n_mocc=NaN;
+    Nsc_err=nan;
+    wbb_err=nan;
+    n_mocc_err=NaN;
     
     if ~isempty(corr)
         % get cart BB correlation task
@@ -359,18 +403,18 @@ function [halo_k0,corr,efit,halo,txy,fout,err]=run_dist_halo(config_file)
         
         %% Error analysis
         % relative error - ratio to mean
-        err_Nsc=mean(cellfun(@(x)std(x)/mean(x),Nsc));      % relative error in scattered number
-        err_wbb=mean(wbb(:,2)./wbb(:,1));                   % relative error in ~correlation length
+        Nsc_err=mean(cellfun(@(x)std(x)/mean(x),Nsc));      % relative error in scattered number
+        wbb_err=mean(wbb(:,2)./wbb(:,1));                   % relative error in ~correlation length
         
         % scale parameters and evaluate total uncertainty
-        err_n_mocc=sqrt(sum([err_Nsc,3*err_wbb].^2));
+        n_mocc_err=sqrt(sum([Nsc_err,3*wbb_err].^2));
         
         
         %% Summary
         if verbose>0
             disp('====================================================');
             disp('HALO MODE OCCUPANCY');
-            fprintf('[n_mocc, err_n_mocc] = %0.3g, %0.2g\n',n_mocc,err_n_mocc);
+            fprintf('[n_mocc, n_mocc_err] = %0.3g, %0.2g\n',n_mocc,n_mocc_err);
         end
     end
     
