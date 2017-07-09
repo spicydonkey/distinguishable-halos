@@ -42,25 +42,7 @@ for iCorr=1:n_corr_analysis
     [G2_corr,G2_uncorr]=G2_caller(zxy(:,corr_this.type.comp),...
         bin_edge_tmp,corr_this.type.coord,corr_this.type.opt,verbose);
     
-%     % normalisation factor
-%     n_counts=cell2mat(cellfun(@(C) size(C,1),zxy,'UniformOutput',false));   % number of counts per shot
-%     nn1=n_counts(:,1);      % counts in species 1
-%     nn2=n_counts(:,end);    % counts in species 2
-%     % normalisation factor for g2 correlation depends only on number of
-%     % components
-%     if length(corr_this.type.comp)==2
-%         % X-state
-%         N_pair_uncorr=sum(nn1)*sum(nn2)-sum(nn1.*nn2);
-%         N_pair_corr=sum(nn1.*nn2);
-%     else
-%         % Single-halo
-%         N_pair_corr=sum(nn1.*(nn1-1)/2);
-%         N_pair_uncorr=(sum(nn1)^2-sum(nn1.^2))/2;
-%     end
-%     norm_factor=N_pair_uncorr/N_pair_corr;
-    
     % TODO - try smoothing G2 before calculating g2
-%     g2=norm_factor*G2_corr./G2_uncorr;      % normalised g2 RAW
     g2=G2_corr./G2_uncorr;
     
     % Get results
@@ -107,13 +89,11 @@ for iCorr=1:n_corr_analysis
         % BB fit (mu=pi; c=1)
         param0=[4,0.03];            % fit estimate [amp,sigma]
         parameq={[],pi,[],1};       % fix params
-%         [fitparam{1},fit_g2{1}]=gaussfit2(corr_out_this.bCent{2},g2_1d,param0,0);
         [fitparam{1},fit_g2{1}]=fit_gauss_1d(corr_out_this.bCent{2},g2_1d,param0,parameq);
 
         % CL fit (mu=0; c=1)
         param0=[2,0.03];            % fit estimate [amp,sigma]
         parameq={[],0,[],1};        % fix params
-%         [fitparam{2},fit_g2{2}]=gaussfit2(corr_out_this.bCent{2},g2_1d,param0,0);
         [fitparam{2},fit_g2{2}]=fit_gauss_1d(corr_out_this.bCent{2},g2_1d,param0,parameq);
         
         % Plot
