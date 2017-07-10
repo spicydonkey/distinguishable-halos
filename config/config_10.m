@@ -2,6 +2,7 @@
 
 %%% FLAGS
 configs.flags.do_corr_analysis=1;
+    configs.flags.do_corr_err=0;
 configs.flags.force_all_stages=0;    % force all the stages to run (useful for debug)
 configs.flags.verbose=2;
 configs.flags.savedata=1;       % TODO - req'd currently since each stage passes data by save/load to disk
@@ -12,10 +13,10 @@ configs.flags.build_txy=1;
 %%% MISCELLANEOUS
 configs.misc.vel_z=9.8*0.416;    % atom free-fall vert v at detector hit for T-to-Z conversion;
 vz=configs.misc.vel_z;
-
+configs.misc.deadtime=300e-9;
 
 %% FILES
-configs.files.path='\\AMPLPC29\Users\TDC_user\ProgramFiles\my_read_tdc_gui_v1.0.1\dld_output\d';
+configs.files.path='\\AMPLPC29\He BEC Archive\EXPERIMENT-DATA\xstate_mom_corr\90deg_raman_beams\10\d';
 
 % WARNING: MODIFYING BELOW DIR SETTINGS ARE NOT RECOMMENDED
 configs.files.dir_data=fileparts(configs.files.path);    % fullpath to data directory
@@ -41,39 +42,37 @@ configs.load.window{3}=[-35e-3,35e-3];    % Y [m]
 
 %% HALO
 %%% HALO PARAMS: BEC counts + oscillation removal for broad capture of halos
-configs.bec.pos{1}=[2.464*vz,-3.6e-3,4.3e-3];   % approx condensate locations (z,x,y)
+configs.bec.pos{1}=[1.00546e+01,-3.2e-3,4.3e-3];   % approx condensate locations (z,x,y)
 configs.bec.Rmax{1}=6e-3;      % max condensate sph radius
 configs.bec.dR_tail{1}=1;     % BEC tail radial frac diff
-configs.bec.pos{2}=[2.456*vz,-2.2e-3,0.8e-3];
+configs.bec.pos{2}=[1.00232e+01,-2.3e-3,0.6e-3];
 configs.bec.Rmax{2}=6e-3;
 configs.bec.dR_tail{2}=1;
 
 configs.halo.R{1}=26e-3;     % estimated radius of halo
 configs.halo.dR{1}=0.25;      % broad radial mask fractional width (in/out)
 configs.halo.R{2}=24e-3;
-configs.halo.dR{2}=0.25;
+configs.halo.dR{2}=0.3;
 
 configs.halo.zcap=0.8;
 
 configs.halo.boost{1}=zeros(1,3);
-configs.halo.boost{2}=[0.035,0.0,-0.02];
+configs.halo.boost{2}=[0.035,-0.005,-0.02];
 
 %% CORRELATION ANALYSIS
 % 1) X-halo Cart BB
 configs.corr{1}.type.comp=[1,2];           % components to analysis: cross halo 1,2
 configs.corr{1}.type.coord='cart';         % Cartesian (ZXY)
 configs.corr{1}.type.opt='BB';             % BB / CL
-configs.corr{1}.lim(1,:)=0.24*[-1,1]; % bin limits - Z
-configs.corr{1}.lim(2,:)=0.24*[-1,1]; % bin limits - X
-configs.corr{1}.lim(3,:)=0.24*[-1,1]; % bin limits - Y
+configs.corr{1}.lim=0.2*repmat([-1,1],[3,1]);
 configs.corr{1}.nBin=15*[1,1,1];   % number of bins
 
 % 2) X-halo Cart CL
 configs.corr{2}.type.comp=[1,2];
 configs.corr{2}.type.coord='cart';
 configs.corr{2}.type.opt='CL';
-configs.corr{2}.lim=0.3*repmat([0,1],[3,1]);
-configs.corr{2}.nBin=7*[1,1,1];   % number of bins
+configs.corr{2}.lim=0.2*repmat([0,1],[3,1]);
+configs.corr{2}.nBin=11*[1,1,1];   % number of bins
 
 % 3) Single-halo cart CL - m_J=0
 configs.corr{3}.type.comp=1;
