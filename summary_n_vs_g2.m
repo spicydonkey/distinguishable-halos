@@ -14,19 +14,20 @@ g2_exp=[87, 22, 32, 3.6, 20, 95, 8];
 n_unc=[0.68, 1.1, 0.38, 0.24, 0.39, 0.65, 0.32];      % relative error in ratio to mean
 
 % g2_err
-g2_unc=0.75;     % simple
+% g2_unc=0.75;     % simple error ratio
+g2_err=[0, 0, 0, 0, 0, 0, 0];
 
 % %% 30 deg data
 % n_exp=[n_exp 0.224];
-% n_unc=[n_unc 0.46];
-% 
 % g2_exp=[g2_exp 7.5];
 %     
+% n_unc=[n_unc 0.46];
+% g2_err=[g2_err 1.0];
 
 %% EVALUATE error limits
 % relative error
 n_err=n_exp.*n_unc;      % calculated
-g2_err=g2_exp*g2_unc;
+% g2_err=g2_exp*g2_unc;
 
 % error bounds
 ndata=numel(n_exp);         % number of data points
