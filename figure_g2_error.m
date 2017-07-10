@@ -12,15 +12,15 @@ valarray={1.5,'w'};
 
 hfig_g2=cell(ncorr,1);
 for ii=1:ncorr
-    corrthis=corr{ii};
+    corr_this=corr{ii};
     corrcfg=configs.corr{ii};
     
-    g2=corrthis.g2;
+    g2=corr_this.g2;
     g2_se=g2_cluster_se{ii};
     
     if isequal(corrcfg.type.coord,'cart')
         % plot g2 line profiles thru Z,X,Y axis
-        [~,I_zero]=cellfun(@(x) min(abs(x)),corrthis.bCent);   % index to bin centre nearest 0
+        [~,I_zero]=cellfun(@(x) min(abs(x)),corr_this.bCent);   % index to bin centre nearest 0
         
         perm_vect=[2,3,1];      % cyclic map (1,2,3-->2,3,1) to take 1D profile in Z,X,Y
         
@@ -28,7 +28,7 @@ for ii=1:ncorr
         hold on;
         for jj=1:3
             % get data to plot
-            X=corrthis.bCent{jj};               % bin centers along each axis (transverse = 0)
+            X=corr_this.bCent{jj};               % bin centers along each axis (transverse = 0)
             Y=g2(:,I_zero(2),I_zero(3));        % g2 along this axis
             Yerr=g2_se(:,I_zero(2),I_zero(3));  % SE of g2
             
@@ -43,14 +43,19 @@ for ii=1:ncorr
             g2_se=permute(g2_se,perm_vect);
             I_zero=I_zero(perm_vect);
         end
-        % annotate
+        %% annotate
         legend('show');
         box on;
+        
+        % set ylim from 0 -- auto max
         axis auto;
         ylim_auto=get(gca,'YLim');
-        axis auto;
-        set(gca,'YLim',[0,ylim_auto(2)]);
+        set(gca,'YLim',[0,ylim_auto(2)]);   % set min to 0
+        
+        % clip data to axis lims
         set(gca,'Clipping','on');
+        
+        % labelling
         title_str=['(',num2str(corrcfg.type.comp),') halos, ',...
             corrcfg.type.opt,', ','single-axis'];
         title(title_str);
@@ -58,6 +63,37 @@ for ii=1:ncorr
         
     else
         % TODO for angular g2
-        continue;
+        X=corr_this.bCent{2};        % theta bins
+        
+        % radially integrated g2 (may have reduced peak height)
+        Y=sum(corr_this.G2_corr,1)./sum(corr_this.G2_uncorr,1);
+        
+        %% evaluate error
+        % METHOD 1 - radial SD
+        Yerr=std(g2,[],1);      % take SD at each theta along dk
+        
+        %% plot 
+        hfig_g2{ii}=figure();
+        hdata=errorbar(X,Y,Yerr,'o',...
+            'DisplayName','Data',namearray,valarray);
+        
+        %% annotate
+        legend('show');
+        box on;
+        
+        % set ylim from 0 -- auto max / xlim 0 -- pi
+        axis auto;
+        ylim_auto=get(gca,'YLim');
+        set(gca,'XLim',[0,pi]);
+        set(gca,'YLim',[0,ylim_auto(2)]);   % set min to 0
+        
+        % clip data to axis lims
+        set(gca,'Clipping','on');
+        
+        % labelling
+        title_str=['$\Delta k$-integrated, ',...
+            '(',num2str(corrcfg.type.comp),') halos'];
+        title(title_str);
+        xlabel('$\Delta\theta$'); ylabel('$\bar{g}^{(2)}$');
     end
 end
