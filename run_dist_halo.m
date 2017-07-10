@@ -347,12 +347,11 @@ function [halo_k0,corr,efit,halo,txy,fout,err]=run_dist_halo(config_file)
                 end
                 
                 % concatenate g2 function as array in the next dimension
-                g2_cluster{ii}=cat(ndims(corr{ii}.g2)+1,corr_err{ii}{:});
+                g2_cluster{ii}=cat(ndims(corr{ii}.g2)+1,g2_cluster{ii}{:});
             end
-            % SD of g2 function for each correlation analysis
-            g2_err_mean=cellfun(@(x) mean(x,ndims(x)),g2_cluster,'UniformOutput',false);
-            g2_err_sd=cellfun(@(x) std(x,0,ndims(x)),g2_cluster,'UniformOutput',false);
-            
+            % SE of g2 function for each correlation analysis
+            g2_cluster_mean=cellfun(@(x) mean(x,ndims(x)),g2_cluster,'UniformOutput',false);
+            g2_cluster_se=cellfun(@(x) std(x,0,ndims(x))/sqrt(ncluster),g2_cluster,'UniformOutput',false);
         end
     else
         corr=[];       % need to return corr
