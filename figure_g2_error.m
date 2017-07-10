@@ -10,6 +10,7 @@ lstyle={'-','--',':','-.'};
 namearray={'LineWidth','MarkerFaceColor'};
 valarray={1.5,'w'};
 
+g2_amp_err=cell(ncorr,1);       % error in g2 amplitude
 hfig_g2=cell(ncorr,1);
 for ii=1:ncorr
     corr_this=corr{ii};
@@ -21,6 +22,9 @@ for ii=1:ncorr
     if isequal(corrcfg.type.coord,'cart')
         % plot g2 line profiles thru Z,X,Y axis
         [~,I_zero]=cellfun(@(x) min(abs(x)),corr_this.bCent);   % index to bin centre nearest 0
+        
+        % evaluate error in g2 amplitude - as uncertainty in g2 at peak
+        g2_amp_err{ii}=mean(g2_se(I_zero));
         
         perm_vect=[2,3,1];      % cyclic map (1,2,3-->2,3,1) to take 1D profile in Z,X,Y
         
