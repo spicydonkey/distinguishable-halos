@@ -2,7 +2,9 @@
 % Exmaple of single-halo capture
 
 %% set config
-config_mf1;
+% USER SET CONFIG!
+% config_mf1;
+config_mf1_2;
 
 verbose=configs.flags.verbose;
 
@@ -17,7 +19,7 @@ zxy=txy2zxy(txy);       % zxy
 
 %% Halo capture
 % capture BECs at poles
-[bec_cent,bool_bec]=capture_bec(zxy,configs.bec.pos,configs.bec.Rmax,verbose);
+[bec_cent,bool_bec]=capture_bec(zxy,configs.bec.pos,configs.bec.Rmax,0);
 
 % pop bec + thermal counts
 % bool_bec_combined=cellfun(@(x,y)x|y,bool_bec(:,1),bool_bec(:,2),'UniformOutput',false);
