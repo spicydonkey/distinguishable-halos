@@ -18,14 +18,19 @@ g2_exp=[92.5, 23.3, 31.5, 3.6, 20.3, 97.3, 8];      % mean fit amplitude
 n_unc=[0.68, 1.1, 0.38, 0.24, 0.39, 0.65, 0.32];      % relative error in ratio to mean
 
 g2_err=[9.1, 1.2, 2.1, 0.15, 0.5, 8.5, 0.43];   % error in SE
-g2_err=g2_err*sqrt(5);               % error in SD
 
+% 
 % %%% 30 deg data
-% n_exp=[n_exp 0.224];
-% g2_exp=[g2_exp 7.5];
+% n_exp=[n_exp 0.224 0.577];
+% g2_exp=[g2_exp 7.5 3.7];
 %     
-% n_unc=[n_unc 0.46];
-% g2_err=[g2_err 1.0];
+% n_unc=[n_unc 0.46 0.31];
+% g2_err=[g2_err 1.0 0.27];
+% 
+
+% Use SD for g2 uncertainty
+g2_err=g2_err*sqrt(5);
+
 
 %% EVALUATE error limits
 % relative error to abs
