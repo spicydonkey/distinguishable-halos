@@ -2,6 +2,7 @@
 
 %%% FLAGS
 configs.flags.do_corr_analysis=1;
+    configs.flags.do_corr_err=1;
 configs.flags.force_all_stages=0;    % force all the stages to run (useful for debug)
 configs.flags.verbose=2;
 configs.flags.savedata=1;       % TODO - req'd currently since each stage passes data by save/load to disk
@@ -12,7 +13,7 @@ configs.flags.build_txy=1;
 %%% MISCELLANEOUS
 configs.misc.vel_z=9.8*0.416;    % atom free-fall vert v at detector hit for T-to-Z conversion;
 vz=configs.misc.vel_z;
-configs.misc.deadtime=100e-9;
+configs.misc.deadtime=300e-9;
 
 %% FILES
 configs.files.path='\\AMPLPC29\He BEC Archive\EXPERIMENT-DATA\xstate_mom_corr\90deg_raman_beams\4\d';
@@ -58,9 +59,12 @@ configs.halo.zcap=0.8;   % z-cutoff (fractional wrt radius)
 % TODO - does boost need to be optimised for different g2 analysis?
 %   currently SINGLE boost applied to halo2 to obtain best g2_01_BB
 configs.halo.boost{1}=zeros(1,3);
-configs.halo.boost{2}=[0.04,0,-0.01];
+configs.halo.boost{2}=[0.042,-0.01,-0.01];       %[0.04,0,-0.01];
 
 %% CORRELATION ANALYSIS
+% ERROR ANALYSIS
+configs.error.ncluster=5;
+
 % 1) X-halo Cart BB
 configs.corr{1}.type.comp=[1,2];           % components to analysis: cross halo 1,2
 configs.corr{1}.type.coord='cart';         % Cartesian (ZXY)
@@ -72,7 +76,7 @@ configs.corr{1}.nBin=17*[1,1,1];   % number of bins
 configs.corr{2}.type.comp=[1,2];
 configs.corr{2}.type.coord='cart';
 configs.corr{2}.type.opt='CL';
-configs.corr{2}.lim=0.3*repmat([0,1],[3,1]);
+configs.corr{2}.lim=0.2*repmat([0,1],[3,1]);
 configs.corr{2}.nBin=13*[1,1,1];   % number of bins
 
 % 3) Single-halo cart CL - m_J=0
@@ -107,19 +111,19 @@ configs.corr{6}.nBin=15*[1,1,1];   % number of bins
 configs.corr{7}.type.comp=[1,2];
 configs.corr{7}.type.coord='angular';
 configs.corr{7}.type.opt=[];
-configs.corr{7}.lim=[0,0.2;0,pi];
+configs.corr{7}.lim=[0,0.1;0,pi];
 configs.corr{7}.nBin=[21,501];
 
 % 8) Single-halo Angular - m_J=0
 configs.corr{8}.type.comp=1;           
 configs.corr{8}.type.coord='angular';
 configs.corr{8}.type.opt=[];
-configs.corr{8}.lim=[0,0.2;0,pi];
+configs.corr{8}.lim=[0,0.1;0,pi];
 configs.corr{8}.nBin=[21,201];
 
 % 9) Single-halo Angular - m_J=1
 configs.corr{9}.type.comp=2;           
 configs.corr{9}.type.coord='angular';
 configs.corr{9}.type.opt=[];
-configs.corr{9}.lim=[0,0.2;0,pi];
+configs.corr{9}.lim=[0,0.1;0,pi];
 configs.corr{9}.nBin=[21,201];

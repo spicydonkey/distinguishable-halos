@@ -2,6 +2,7 @@
 
 %%% FLAGS
 configs.flags.do_corr_analysis=1;
+    configs.flags.do_corr_err=1;
 configs.flags.force_all_stages=0;    % force all the stages to run (useful for debug)
 configs.flags.verbose=2;
 configs.flags.savedata=1;       % TODO - req'd currently since each stage passes data by save/load to disk
@@ -12,7 +13,7 @@ configs.flags.build_txy=1;
 %%% MISCELLANEOUS
 configs.misc.vel_z=9.8*0.416;    % atom free-fall vert v at detector hit for T-to-Z conversion;
 vz=configs.misc.vel_z;
-configs.misc.deadtime=100e-9;
+configs.misc.deadtime=300e-9;
 
 %% FILES
 configs.files.path='\\AMPLPC29\He BEC Archive\EXPERIMENT-DATA\xstate_mom_corr\90deg_raman_beams\2\d';
@@ -58,9 +59,12 @@ configs.halo.zcap=0.70;   % z-cutoff (fractional wrt radius)
 % TODO - does boost need to be optimised for different g2 analysis?
 %   currently SINGLE boost applied to halo2 to obtain best g2_01_BB
 configs.halo.boost{1}=zeros(1,3);
-configs.halo.boost{2}=[0.045,0.0,-0.015];
+configs.halo.boost{2}=[0.048,0.005,-0.015];    %[0.045,0.0,-0.015];
 
 %% CORRELATION ANALYSIS
+% ERROR ANALYSIS
+configs.error.ncluster=5;
+
 % 1) X-halo Cart BB
 configs.corr{1}.type.comp=[1,2];           % components to analysis: cross halo 1,2
 configs.corr{1}.type.coord='cart';         % Cartesian (ZXY)

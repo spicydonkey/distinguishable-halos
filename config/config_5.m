@@ -2,7 +2,7 @@
 
 %%% FLAGS
 configs.flags.do_corr_analysis=1;
-    configs.flags.do_corr_err=0;
+    configs.flags.do_corr_err=1;
 configs.flags.force_all_stages=0;    % force all the stages to run (useful for debug)
 configs.flags.verbose=2;
 configs.flags.savedata=1;       % TODO - req'd currently since each stage passes data by save/load to disk
@@ -60,6 +60,9 @@ configs.halo.boost{1}=zeros(1,3);
 configs.halo.boost{2}=[0.03,-0.005,-0.02];
 
 %% CORRELATION ANALYSIS
+% ERROR ANALYSIS
+configs.error.ncluster=5;
+
 % 1) X-halo Cart BB
 configs.corr{1}.type.comp=[1,2];           % components to analysis: cross halo 1,2
 configs.corr{1}.type.coord='cart';         % Cartesian (ZXY)
