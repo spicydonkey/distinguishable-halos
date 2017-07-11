@@ -24,7 +24,7 @@ for ii=1:ncorr
         [~,I_zero]=cellfun(@(x) min(abs(x)),corr_this.bCent);   % index to bin centre nearest 0
         
         % evaluate error in g2 amplitude - as uncertainty in g2 at peak
-        g2_amp_err{ii}=mean(g2_se(I_zero));
+        g2_amp_err{ii}=mean(g2_se(I_zero(1),I_zero(2),I_zero(3)));
         
         perm_vect=[2,3,1];      % cyclic map (1,2,3-->2,3,1) to take 1D profile in Z,X,Y
         
