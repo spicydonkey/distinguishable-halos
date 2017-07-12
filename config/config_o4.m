@@ -15,7 +15,7 @@ vz=configs.misc.vel_z;
 configs.misc.deadtime=100e-9;
 
 %% FILES
-configs.files.path='C:\Users\David\Documents\hebec\halo_analysis\data\dist_halo\4\raw_data\d';
+configs.files.path='\\AMPLPC29\He BEC Archive\EXPERIMENT-DATA\xstate_mom_corr\30deg_raman_beams\4_separated_lownum\d';
 
 % WARNING: MODIFYING BELOW DIR SETTINGS ARE NOT RECOMMENDED
 configs.files.dir_data=fileparts(configs.files.path);    % fullpath to data directory
@@ -71,61 +71,61 @@ configs.error.ncluster=5;     % number of clusters to divide runs for error anal
 configs.corr{1}.type.comp=[1,2];
 configs.corr{1}.type.coord='cart';
 configs.corr{1}.type.opt='BB';
-configs.corr{1}.lim=0.25*repmat([-1,1],[3,1]);
+configs.corr{1}.lim=0.3*repmat([-1,1],[3,1]);
 configs.corr{1}.nBin=15*ones(1,3);
-
-% 2) Single-halo cart CL - m_J=0
-configs.corr{2}.type.comp=1;
-configs.corr{2}.type.coord='cart';
-configs.corr{2}.type.opt='CL';
-configs.corr{2}.lim=0.2*repmat([0,1],[3,1]);
-configs.corr{2}.nBin=11*ones(1,3);
-
-% 3) Single-halo cart CL - m_J=1
-configs.corr{3}.type.comp=2;
-configs.corr{3}.type.coord='cart';
-configs.corr{3}.type.opt='CL';
-configs.corr{3}.lim=0.2*repmat([0,1],[3,1]);
-configs.corr{3}.nBin=11*ones(1,3);
-
-% 4) Single-halo cart BB - m_J=0
-configs.corr{4}.type.comp=1;
-configs.corr{4}.type.coord='cart';
-configs.corr{4}.type.opt='BB';
-configs.corr{4}.lim=0.2*repmat([-1,1],[3,1]);
-configs.corr{4}.nBin=11*ones(1,3);
-
-% 5) single-halo cart BB - m_J=1
-configs.corr{5}.type.comp=2;
-configs.corr{5}.type.coord='cart';
-configs.corr{5}.type.opt='BB';
-configs.corr{5}.lim=0.2*repmat([-1,1],[3,1]);
-configs.corr{5}.nBin=11*ones(1,3);
-
-% 6) X-halo cart CL
-configs.corr{6}.type.comp=[1,2];
-configs.corr{6}.type.coord='cart';
-configs.corr{6}.type.opt='CL';
-configs.corr{6}.lim=0.2*repmat([0,1],[3,1]);
-configs.corr{6}.nBin=11*ones(1,3);
-
-% 7) X-halo Angular
-configs.corr{7}.type.comp=[1,2];
-configs.corr{7}.type.coord='angular';
-configs.corr{7}.type.opt=[];
-configs.corr{7}.lim=[0,0.1;0,pi];
-configs.corr{7}.nBin=[11,201];
-
-% 8) Single-halo Angular - m_J=0
-configs.corr{8}.type.comp=1;           
-configs.corr{8}.type.coord='angular';
-configs.corr{8}.type.opt=[];
-configs.corr{8}.lim=[0,0.1;0,pi];
-configs.corr{8}.nBin=[11,201];
-
-% 9) Single-halo Angular - m_J=1
-configs.corr{9}.type.comp=2;           
-configs.corr{9}.type.coord='angular';
-configs.corr{9}.type.opt=[];
-configs.corr{9}.lim=[0,0.1;0,pi];
-configs.corr{9}.nBin=[11,201];
+% 
+% % 2) Single-halo cart CL - m_J=0
+% configs.corr{2}.type.comp=1;
+% configs.corr{2}.type.coord='cart';
+% configs.corr{2}.type.opt='CL';
+% configs.corr{2}.lim=0.2*repmat([0,1],[3,1]);
+% configs.corr{2}.nBin=11*ones(1,3);
+% 
+% % 3) Single-halo cart CL - m_J=1
+% configs.corr{3}.type.comp=2;
+% configs.corr{3}.type.coord='cart';
+% configs.corr{3}.type.opt='CL';
+% configs.corr{3}.lim=0.2*repmat([0,1],[3,1]);
+% configs.corr{3}.nBin=11*ones(1,3);
+% 
+% % 4) Single-halo cart BB - m_J=0
+% configs.corr{4}.type.comp=1;
+% configs.corr{4}.type.coord='cart';
+% configs.corr{4}.type.opt='BB';
+% configs.corr{4}.lim=0.2*repmat([-1,1],[3,1]);
+% configs.corr{4}.nBin=11*ones(1,3);
+% 
+% % 5) single-halo cart BB - m_J=1
+% configs.corr{5}.type.comp=2;
+% configs.corr{5}.type.coord='cart';
+% configs.corr{5}.type.opt='BB';
+% configs.corr{5}.lim=0.2*repmat([-1,1],[3,1]);
+% configs.corr{5}.nBin=11*ones(1,3);
+% 
+% % 6) X-halo cart CL
+% configs.corr{6}.type.comp=[1,2];
+% configs.corr{6}.type.coord='cart';
+% configs.corr{6}.type.opt='CL';
+% configs.corr{6}.lim=0.2*repmat([0,1],[3,1]);
+% configs.corr{6}.nBin=11*ones(1,3);
+% 
+% % 7) X-halo Angular
+% configs.corr{7}.type.comp=[1,2];
+% configs.corr{7}.type.coord='angular';
+% configs.corr{7}.type.opt=[];
+% configs.corr{7}.lim=[0,0.1;0,pi];
+% configs.corr{7}.nBin=[11,201];
+% 
+% % 8) Single-halo Angular - m_J=0
+% configs.corr{8}.type.comp=1;           
+% configs.corr{8}.type.coord='angular';
+% configs.corr{8}.type.opt=[];
+% configs.corr{8}.lim=[0,0.1;0,pi];
+% configs.corr{8}.nBin=[11,201];
+% 
+% % 9) Single-halo Angular - m_J=1
+% configs.corr{9}.type.comp=2;           
+% configs.corr{9}.type.coord='angular';
+% configs.corr{9}.type.opt=[];
+% configs.corr{9}.lim=[0,0.1;0,pi];
+% configs.corr{9}.nBin=[11,201];

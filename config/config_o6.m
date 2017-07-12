@@ -15,7 +15,7 @@ vz=configs.misc.vel_z;
 configs.misc.deadtime=100e-9;
 
 %% FILES
-configs.files.path='C:\Users\David\Documents\hebec\dist_halo\30deg\6\d';
+configs.files.path='\\AMPLPC29\He BEC Archive\EXPERIMENT-DATA\xstate_mom_corr\30deg_raman_beams\6\d';
 
 % WARNING: MODIFYING BELOW DIR SETTINGS ARE NOT RECOMMENDED
 configs.files.dir_data=fileparts(configs.files.path);    % fullpath to data directory
@@ -28,7 +28,7 @@ configs.files.dirout=fullfile(configs.files.dir_data,'output');      % output di
 configs.load.version=1;         % TXY load stage version number
 
 % file ID and simple pass/fail
-configs.load.id=1:2102;          % file id numbers to use for analysis
+configs.load.id=1:2546;          % file id numbers to use for analysis
 configs.load.mincount=0;        % min counts in window - 0 for no min
 configs.load.maxcount=Inf;      % max counts in window - Inf for no max
 
@@ -71,7 +71,7 @@ configs.error.ncluster=5;     % number of clusters to divide runs for error anal
 configs.corr{1}.type.comp=[1,2];
 configs.corr{1}.type.coord='cart';
 configs.corr{1}.type.opt='BB';
-configs.corr{1}.lim=0.2*repmat([-1,1],[3,1]);
+configs.corr{1}.lim=0.3*repmat([-1,1],[3,1]);
 configs.corr{1}.nBin=15*ones(1,3);
 % 
 % % 2) Single-halo cart CL - m_J=0

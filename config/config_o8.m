@@ -15,7 +15,7 @@ vz=configs.misc.vel_z;
 configs.misc.deadtime=100e-9;
 
 %% FILES
-configs.files.path='\\AMPLPC29\He BEC Archive\EXPERIMENT-DATA\xstate_mom_corr\30deg_raman_beams\7\d';
+configs.files.path='\\AMPLPC29\He BEC Archive\EXPERIMENT-DATA\xstate_mom_corr\30deg_raman_beams\8\d';
 
 % WARNING: MODIFYING BELOW DIR SETTINGS ARE NOT RECOMMENDED
 configs.files.dir_data=fileparts(configs.files.path);    % fullpath to data directory
@@ -28,7 +28,7 @@ configs.files.dirout=fullfile(configs.files.dir_data,'output');      % output di
 configs.load.version=1;         % TXY load stage version number
 
 % file ID and simple pass/fail
-configs.load.id=1:7058;          % file id numbers to use for analysis
+configs.load.id=1:3431;          % file id numbers to use for analysis
 configs.load.mincount=0;        % min counts in window - 0 for no min
 configs.load.maxcount=Inf;      % max counts in window - Inf for no max
 
@@ -43,24 +43,24 @@ configs.load.window{3}=[-35e-3,35e-3];    % Y [m]
 
 %% HALO
 %%% HALO PARAMS: BEC counts + oscillation removal for broad capture of halos
-configs.bec.pos{1}=[2.00488e+01,2.4e-3,4.9e-3];   % approx condensate locations (z,x,y)
+configs.bec.pos{1}=[2.00478e+01,2.5e-3,5.0e-3];   % approx condensate locations (z,x,y)
 configs.bec.Rmax{1}=4e-3;      % max condensate sph radius
-configs.bec.dR_tail{1}=1.2;     % BEC tail radial frac diff
-configs.bec.pos{2}=[2.00468e+01,-9.8e-3,1.1e-3];
+configs.bec.dR_tail{1}=1.1;     % BEC tail radial frac diff
+configs.bec.pos{2}=[2.00468e+01,-9.7e-3,1.2e-3];
 configs.bec.Rmax{2}=4e-3;
-configs.bec.dR_tail{2}=1.2;
+configs.bec.dR_tail{2}=0.9;
 
 configs.halo.R{1}=10e-3;     % estimated radius of halo
 configs.halo.dR{1}=0.2;      % broad radial mask fractional width (in/out)
 configs.halo.R{2}=9e-3;
 configs.halo.dR{2}=0.2;
 
-configs.halo.zcap=0.6;   % z-cutoff (fractional wrt radius)
+configs.halo.zcap=0.7;   % z-cutoff (fractional wrt radius)
 
 % TODO - does boost need to be optimised for different g2 analysis?
 %   currently SINGLE boost applied to halo2 to obtain best g2_01_BB
 configs.halo.boost{1}=zeros(1,3);
-configs.halo.boost{2}=[0.0,0.015,-0.005];
+configs.halo.boost{2}=[0.025,0.0175,0.0];
 
 
 %% CORRELATION ANALYSIS
