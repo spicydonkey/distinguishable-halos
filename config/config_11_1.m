@@ -1,7 +1,7 @@
 % Configuration file for distinguishable_halos.m
 
 %%% FLAGS
-configs.flags.do_corr_analysis=0;
+configs.flags.do_corr_analysis=1;
     configs.flags.do_corr_err=1;
 configs.flags.force_all_stages=0;    % force all the stages to run (useful for debug)
 configs.flags.verbose=2;
@@ -30,7 +30,7 @@ configs.load.version=1;         % TXY load stage version number
 % file ID and simple pass/fail
 configs.load.id=1:3045;         % file id numbers to use for analysis
 configs.load.mincount=0;         % min counts in window - 0 for no min
-configs.load.maxcount=Inf;          % max counts in window - Inf for no max
+configs.load.maxcount=800;          % max counts in window - Inf for no max
 
 % Detector/trap alignment
 configs.load.rot_angle=0.61;
@@ -69,59 +69,59 @@ configs.corr{1}.type.coord='cart';         % Cartesian (ZXY)
 configs.corr{1}.type.opt='BB';             % BB / CL
 configs.corr{1}.lim=0.2*repmat([-1,1],[3,1]);
 configs.corr{1}.nBin=15*[1,1,1];   % number of bins
-
-% 2) X-halo Cart CL
-configs.corr{2}.type.comp=[1,2];
-configs.corr{2}.type.coord='cart';
-configs.corr{2}.type.opt='CL';
-configs.corr{2}.lim=0.2*repmat([0,1],[3,1]);
-configs.corr{2}.nBin=11*[1,1,1];   % number of bins
-
-% 3) Single-halo cart CL - m_J=0
-configs.corr{3}.type.comp=1;
-configs.corr{3}.type.coord='cart';
-configs.corr{3}.type.opt='CL';
-configs.corr{3}.lim=0.2*repmat([0,1],[3,1]);
-configs.corr{3}.nBin=11*[1,1,1];   % number of bins
-
-% 4) Single-halo cart CL - m_J=1
-configs.corr{4}.type.comp=2;
-configs.corr{4}.type.coord='cart';
-configs.corr{4}.type.opt='CL';
-configs.corr{4}.lim=0.2*repmat([0,1],[3,1]);
-configs.corr{4}.nBin=11*[1,1,1];
-
-% 5) Single-halo cart BB - m_J=0
-configs.corr{5}.type.comp=1;
-configs.corr{5}.type.coord='cart';
-configs.corr{5}.type.opt='BB';
-configs.corr{5}.lim=0.2*repmat([-1,1],[3,1]);
-configs.corr{5}.nBin=11*[1,1,1];   % number of bins
-
-% 6) Single-halo cart BB - m_J=1
-configs.corr{6}.type.comp=2;
-configs.corr{6}.type.coord='cart';
-configs.corr{6}.type.opt='BB';
-configs.corr{6}.lim=0.2*repmat([-1,1],[3,1]);
-configs.corr{6}.nBin=11*[1,1,1];   % number of bins
-
-% 7) X-halo Angular
-configs.corr{7}.type.comp=[1,2];
-configs.corr{7}.type.coord='angular';
-configs.corr{7}.type.opt=[];
-configs.corr{7}.lim=[0,0.1;0,pi];
-configs.corr{7}.nBin=[21,501];
-
-% 8) Single-halo Angular - m_J=0
-configs.corr{8}.type.comp=1;           
-configs.corr{8}.type.coord='angular';
-configs.corr{8}.type.opt=[];
-configs.corr{8}.lim=[0,0.1;0,pi];
-configs.corr{8}.nBin=[21,501];
-
-% 9) Single-halo Angular - m_J=1
-configs.corr{9}.type.comp=2;           
-configs.corr{9}.type.coord='angular';
-configs.corr{9}.type.opt=[];
-configs.corr{9}.lim=[0,0.1;0,pi];
-configs.corr{9}.nBin=[21,501];
+% 
+% % 2) X-halo Cart CL
+% configs.corr{2}.type.comp=[1,2];
+% configs.corr{2}.type.coord='cart';
+% configs.corr{2}.type.opt='CL';
+% configs.corr{2}.lim=0.2*repmat([0,1],[3,1]);
+% configs.corr{2}.nBin=11*[1,1,1];   % number of bins
+% 
+% % 3) Single-halo cart CL - m_J=0
+% configs.corr{3}.type.comp=1;
+% configs.corr{3}.type.coord='cart';
+% configs.corr{3}.type.opt='CL';
+% configs.corr{3}.lim=0.2*repmat([0,1],[3,1]);
+% configs.corr{3}.nBin=11*[1,1,1];   % number of bins
+% 
+% % 4) Single-halo cart CL - m_J=1
+% configs.corr{4}.type.comp=2;
+% configs.corr{4}.type.coord='cart';
+% configs.corr{4}.type.opt='CL';
+% configs.corr{4}.lim=0.2*repmat([0,1],[3,1]);
+% configs.corr{4}.nBin=11*[1,1,1];
+% 
+% % 5) Single-halo cart BB - m_J=0
+% configs.corr{5}.type.comp=1;
+% configs.corr{5}.type.coord='cart';
+% configs.corr{5}.type.opt='BB';
+% configs.corr{5}.lim=0.2*repmat([-1,1],[3,1]);
+% configs.corr{5}.nBin=11*[1,1,1];   % number of bins
+% 
+% % 6) Single-halo cart BB - m_J=1
+% configs.corr{6}.type.comp=2;
+% configs.corr{6}.type.coord='cart';
+% configs.corr{6}.type.opt='BB';
+% configs.corr{6}.lim=0.2*repmat([-1,1],[3,1]);
+% configs.corr{6}.nBin=11*[1,1,1];   % number of bins
+% 
+% % 7) X-halo Angular
+% configs.corr{7}.type.comp=[1,2];
+% configs.corr{7}.type.coord='angular';
+% configs.corr{7}.type.opt=[];
+% configs.corr{7}.lim=[0,0.1;0,pi];
+% configs.corr{7}.nBin=[21,501];
+% 
+% % 8) Single-halo Angular - m_J=0
+% configs.corr{8}.type.comp=1;           
+% configs.corr{8}.type.coord='angular';
+% configs.corr{8}.type.opt=[];
+% configs.corr{8}.lim=[0,0.1;0,pi];
+% configs.corr{8}.nBin=[21,501];
+% 
+% % 9) Single-halo Angular - m_J=1
+% configs.corr{9}.type.comp=2;           
+% configs.corr{9}.type.coord='angular';
+% configs.corr{9}.type.opt=[];
+% configs.corr{9}.lim=[0,0.1;0,pi];
+% configs.corr{9}.nBin=[21,501];

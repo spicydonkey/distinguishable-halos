@@ -180,7 +180,7 @@ function [halo_k0,corr,efit,halo,txy,fout,err]=run_dist_halo(config_file)
     
     %% Cull aliased hits    
     % cull from centred zxy0 halo data
-    alias_deadz=configs.misc.deadtime*configs.misc.vel_z;      % dZ in 100 ns
+    alias_deadz=configs.misc.deadtime*configs.misc.vel_z;
     bool_alias=cellfun(@(x) findalias(x,alias_deadz),halo.zxy0,'UniformOutput',false);
     halo_zxy0_filt=cellfun(@(x,y) x(~y,:),halo.zxy0,bool_alias,'UniformOutput',false);
     
