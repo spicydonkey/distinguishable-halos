@@ -105,6 +105,35 @@ set(hdata(1),namearray,valarray,'DisplayName','Fast collision');              % 
 set(hdata(2),namearray,valarray,'DisplayName','');                  % Y-err
 set(hdata(3),namearray,valarray,'DisplayName','');                  % X-err
 
+% % annotate plot
+% box on;
+% grid on;
+% oleg=legend([hdata(1),hdata_30(1),htheory]);
+% set(oleg,'FontSize',fontsize_small);
+% 
+% ax=gca;
+% ax.XScale='log';
+% ax.YScale='log';
+% 
+% xlim(n_lim);
+% ylim(g2_lim);
+% 
+% xlabel('Mode occupancy');
+% ylabel('$g^{(2)}_{BB}(0)-1$');
+% 
+% axis square;        % square plot
+
+%%% Bell's test regime
+% build patch corners
+x_corn=[n_lim(1),n_lim(2),n_lim(2),n_lim(1)];
+% y_corn=[g2_lim(1),g2_lim(1),g2_bell,g2_bell];     % below condition
+y_corn=[g2_bell,g2_bell,g2_lim(2),g2_lim(2)];       % above condition
+
+p_bell=patch(x_corn,y_corn,...
+    'b','FaceAlpha',0.1,'EdgeColor','none');
+
+uistack(p_bell,'bottom');   % move the patch object to bottom
+
 % annotate plot
 box on;
 grid on;
@@ -122,17 +151,6 @@ xlabel('Mode occupancy');
 ylabel('$g^{(2)}_{BB}(0)-1$');
 
 axis square;        % square plot
-
-%% Bell's test regime
-% build patch corners
-x_corn=[n_lim(1),n_lim(2),n_lim(2),n_lim(1)];
-% y_corn=[g2_lim(1),g2_lim(1),g2_bell,g2_bell];     % below condition
-y_corn=[g2_bell,g2_bell,g2_lim(2),g2_lim(2)];       % above condition
-
-p_bell=patch(x_corn,y_corn,...
-    'b','FaceAlpha',0.1,'EdgeColor','none');
-
-uistack(p_bell,'bottom');   % move the patch object to bottom
 
 
 %% FIG postprocess
