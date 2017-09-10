@@ -2,15 +2,24 @@
 
 %% Figure properties presets
 figname = 'g2_vs_mocc';
-fontsize_normal = 12;
-fontsize_small=9;
-linewidth = 1.5;
-% markersize = 5;
-% plotcolor = {'b','r'};
+path_save='C:\Users\HE BEC\Desktop\dist_halo_summary';
 
+datetimestr=datestr(datetime,'yyyymmdd_HHMMSS');    % timestamp when function called
+figname=sprintf('%s_%s',figname,datetimestr);   % attach timestamp to name
+
+fontsize_normal=10;
+fontsize_small=7;
+linewidth = 1.2;
+markersize = 4;
+% plotcolor = {'b','r'};
+% 
 % paperunits = 'centimeters';
-% papersize = [8 11];
-% paperposition = [0 0 papersize];
+papersize=[8 8];
+paperposition=[0,0,papersize];
+
+plotboxaspectratio=[1,1,1];
+boxlinewidth=1;
+ticklength=[0.02,0.025];
 
 % MISC
 gray_col=0.5*ones(1,3);         % gray data points
@@ -89,13 +98,18 @@ g2_theory=1+1./n;
 %% Plot
 
 % plot mode occupancy vs g2(0) - 1
-fig=figure();
+% fig=figure();
+fig=figure('Units','centimeters',...
+    'PaperUnits','centimeters',...
+    'PaperPositionMode','manual',...
+    'PaperSize',papersize,...
+    'PaperPosition',paperposition);
 hold on;
 htheory=plot(n,g2_theory-1,'k--','LineWidth',1.5,'DisplayName','Theory');       % theory curve
 
 % 30 deg data
 hdata_30=ploterr(n_exp_30,g2_exp_30-1,n_err_30,g2_err_30,'^','logxy','hhxy',0);
-set(hdata_30(1),namearray,valarray_30,'DisplayName','Slow collision');              % DATAPOINT
+set(hdata_30(1),namearray,valarray_30,'MarkerSize',markersize,'DisplayName','Slow collision');              % DATAPOINT
 set(hdata_30(2),namearray,valarray_30,'DisplayName','');                  % Y-err
 set(hdata_30(3),namearray,valarray_30,'DisplayName','');                  % X-err
 
@@ -104,24 +118,6 @@ hdata=ploterr(n_exp,g2_exp-1,n_err_bnd,g2_err_bnd,'o','logxy','hhxy',0);
 set(hdata(1),namearray,valarray,'DisplayName','Fast collision');              % DATAPOINT
 set(hdata(2),namearray,valarray,'DisplayName','');                  % Y-err
 set(hdata(3),namearray,valarray,'DisplayName','');                  % X-err
-
-% % annotate plot
-% box on;
-% grid on;
-% oleg=legend([hdata(1),hdata_30(1),htheory]);
-% set(oleg,'FontSize',fontsize_small);
-% 
-% ax=gca;
-% ax.XScale='log';
-% ax.YScale='log';
-% 
-% xlim(n_lim);
-% ylim(g2_lim);
-% 
-% xlabel('Mode occupancy');
-% ylabel('$g^{(2)}_{BB}(0)-1$');
-% 
-% axis square;        % square plot
 
 %%% Bell's test regime
 % build patch corners
@@ -136,7 +132,7 @@ uistack(p_bell,'bottom');   % move the patch object to bottom
 
 % annotate plot
 box on;
-grid on;
+% grid on;
 oleg=legend([hdata(1),hdata_30(1),htheory]);
 set(oleg,'FontSize',fontsize_small);
 
@@ -144,13 +140,23 @@ ax=gca;
 ax.XScale='log';
 ax.YScale='log';
 
+set(gca,'Units','normalized',...
+    'FontUnits','points',...
+    'FontWeight','normal',...
+    'FontSize',fontsize,...
+    'LineWidth',boxlinewidth,...
+    'TickLength',ticklength,...
+    'PlotBoxAspectRatio',plotboxaspectratio);
+%     'YTick',[0:0.5:3],...
+%     'XTick',[0:0.5:3],...
+    
 xlim(n_lim);
 ylim(g2_lim);
 
 xlabel('Mode occupancy');
 ylabel('$g^{(2)}_{BB}(0)-1$');
 
-axis square;        % square plot
+% axis square;        % square plot
 
 
 %% FIG postprocess
@@ -164,4 +170,8 @@ set(ax,'FontSize',fontsize_normal);
 % fig.PaperPosition = paperposition;
 
 % saveas(fig, [figname, '.eps'], 'psc2');     % save fig in cd
-saveas(fig, [figname, '.pdf']);
+% saveas(fig, [figname, '.pdf']);
+
+
+print(fig,fullfile(path_save,figname),'-dpdf');
+
