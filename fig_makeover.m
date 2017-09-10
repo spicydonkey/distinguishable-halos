@@ -6,7 +6,8 @@ ax=gca;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%% USER configure %%%%%%%%%%%%%%%%%%%%%%%%%
 savefig=1;
-path_save='C:\Users\HE BEC\Desktop\dist_halo_summary\g2_plots';
+% path_save='C:\Users\HE BEC\Desktop\dist_halo_summary\g2_plots';
+path_save='C:\Users\David\Desktop\fig';
 
 datetimestr=datestr(datetime,'yyyymmdd_HHMMSS');    % timestamp when function called
 
@@ -50,6 +51,8 @@ set(ax,'Units','normalized',...
     'PlotBoxAspectRatio',plotboxaspectratio,...
     'LineWidth',boxlinewidth,...
     'TickLength',ticklength);
+
+ylabel('$g^{(2)}_{0,1}$');
 
 % save
 if savefig

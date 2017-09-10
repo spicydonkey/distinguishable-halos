@@ -2,12 +2,14 @@
 
 %% Figure properties presets
 figname = 'g2_vs_mocc';
-path_save='C:\Users\HE BEC\Desktop\dist_halo_summary';
+% path_save='C:\Users\HE BEC\Desktop\dist_halo_summary';
+path_save='C:\Users\David\Desktop\fig';
 
 datetimestr=datestr(datetime,'yyyymmdd_HHMMSS');    % timestamp when function called
 figname=sprintf('%s_%s',figname,datetimestr);   % attach timestamp to name
 
 fontsize_normal=10;
+fontsize=fontsize_normal;
 fontsize_small=7;
 linewidth = 1.2;
 markersize = 4;
