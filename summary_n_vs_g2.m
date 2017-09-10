@@ -148,7 +148,8 @@ xlim(n_lim);
 ylim(g2_lim);
 
 xlabel('Mode occupancy');
-ylabel('$g^{(2)}_{BB}(0)-1$');
+% ylabel('$g^{(2)}_{BB}(0)-1$');
+ylabel('$g^{(2)}_{0,1}(0)-1$');
 
 axis square;        % square plot
 
