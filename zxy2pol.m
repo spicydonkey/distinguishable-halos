@@ -1,4 +1,6 @@
 function SPH_OUT = zxy2pol(ZXY_IN)
+% SPH_OUT = ZXY2POL(ZXY_IN)
+%
 % Converts counts in Cartesian coordinate to Spherical coord
 %
 % I/O
