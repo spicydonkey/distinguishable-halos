@@ -1,9 +1,14 @@
 function [Nsc,dk,gfit] = halo_characterise(halos,zcap,verbose)
 % Characterises halos:
-%   Number of scattered atoms, Nsc
-%   Halo thickness, dk
-% INPUT
-%   halos is a "centered" Nx1 cell of Mx3 ZXY array
+%
+% [NSC, DK, GFIT] = HALO_CHARACTERISE(HALO,ZCAP,VERBOSE)
+%
+% HALO: centered cell-array of counts (zxy)
+% ZCAP: z-limits used to crop halo
+%
+% NSC: Number of scattered atoms
+% DK: Halo thickness
+%
 
 % define params
 % zcap=config_halo.zcap;  % zcap spherical cap culling fraction to elim bec

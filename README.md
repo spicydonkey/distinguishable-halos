@@ -1,6 +1,10 @@
 # DISTINGUISHABLE HALO ANALYSIS
 2017.06.21 - David Shin
 
+## TODO
+- [] comment functions
+- [] unify function io behaviour:
+    - work by single-shot: input is an array of Nx3 (for zxy), except for g2 analysis, etc. which require shot-to-shot identification
 
 ## GETTING STARTED
 1. Configure the analysis by creating a Matlab script using config_090617_1" as an example template
