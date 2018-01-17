@@ -7,10 +7,24 @@ function [paramfit,fitval,fitobject]=fit_gauss_1d(x,y,param0,parameq,VERBOSE)
 % params0: 1x4(max) array of initial conditions to fitting algorithm - [amp_0, mu_0, sigma_0, c_0]
 % parameq: 1x4 cell-array for Gaussian parameter constraint (empty to
 % unconstrain)
-
+%
 % OUTPUT
 % paramfit: summary of fit parameters - [avg_params, sd_params]
 % evalfit: struct with fields x, y - fitted curve
+%
+%
+% USAGE
+%
+%   X=mean(rand(100,10),2);
+%   H=histogram(X);
+%   y=H.Values();
+%   y=y/max(y);
+%   x=H.BinEdges;
+%   x=x(1:end-1)+0.5*diff(x);
+%   peq={[],[],[],0};       % constrain offset (c)
+%   p0=[1,0.5,0.1];
+%   [pfit,fval,fobj]=fit_gauss_1d(x,y,p0,peq,1);
+%
 
 % Input parsing
 if ~exist('VERBOSE','var')
