@@ -14,34 +14,35 @@ if verbose>0, fprintf('Beginning halo capture...\n'), end;
 t_fun_start=tic;
 hfig={};
 
-% Exp constants
-vz=9.8*0.416;    % atom free-fall vert v at detector hit for T-to-Z conversion
-
 % Parse input
 R_tail=configs.bec.dR_tail;     % estimated tail radius from BEC
 R_halo=configs.halo.dR;         % fractional error around estimtaed halo rad for cropping (TODO - sensitivity?)
 
-f_idok=files.id_ok;     % id's of files in txy (loaded ok from source)
+shot_id=files.id_ok;        % id's of files in txy (loaded ok from source)
+nshot=size(txy,1);          % equivalent to length(shot_id)
 
 % Initialise vars
-halo.zxy=cell(length(f_idok),2);    % halo counts
-halo.zxy0=cell(length(f_idok),2);   % halo counts (oscillations compensated + cap removed)
-halo.cent=cell(length(f_idok),2);   % halo centres
-halo.R=cell(length(f_idok),2);      % halo radii 
-bec.zxy=cell(length(f_idok),2);     % BEC counts
-bec.cent=cell(length(f_idok),2);    % BEC centres
-culled.tail.zxy=cell(length(f_idok),2);   % BEC tails
-culled.fuzz.zxy=cell(length(f_idok),1);   % halo fuzz + background counts - 1D collated since no source to distinguish
+halo.zxy=cell(nshot,2);    % halo counts
+halo.zxy0=cell(nshot,2);   % halo counts (oscillations compensated + cap removed)
+halo.cent=cell(nshot,2);   % halo centres
+halo.R=cell(nshot,2);      % halo radii 
+bec.zxy=cell(nshot,2);     % BEC counts
+bec.cent=cell(nshot,2);    % BEC centres
+culled.tail.zxy=cell(nshot,2);   % BEC tails
+culled.fuzz.zxy=cell(nshot,1);   % halo fuzz + background counts - 1D collated since no source to distinguish
 
 % Convert T-->Z
 ZXY_all=txy2zxy(txy);
 clear txy;
 
-%% Process TXY data
-% BEC
 %% Locate condensates
 % get BEC counts
-[bec.cent,bool_bec]=capture_bec(ZXY_all,configs.bec.pos,configs.bec.Rmax);
+bool_bec=cell(nshot,2);
+for ii=1:nshot
+    for jj=1:2
+        [bec.cent{ii,jj},bool_bec{ii,jj}]=capture_bec(ZXY_all{ii},configs.bec.pos{jj},configs.bec.Rmax{jj});
+    end
+end
 
 % store BEC counts
 for ii=1:numel(configs.bec.pos)
@@ -72,10 +73,10 @@ end
 %% HALO (broad) capture
 % assuming BEC centre lies on halo's Z-extremity and estimating halo
 % radii, apply radial crop
-errflag=false(size(f_idok));  % flag for bad shots
+errflag=false(nshot,1);  % flag for bad shots
 zxy_halo=cell(1,2);     % temp for halo counts
 zxy0_halo=cell(1,2);    % temp for centred halo counts
-for i=1:length(f_idok)        % TODO: MAJOR BUG: treat f_id properly
+for i=1:nshot        % TODO: MAJOR BUG: treat f_id properly
     for i_halo=1:2
         % add/subtract estimated halo radius in Z: HALO 1 should be the
         %   non-magnetic Raman outcoupled atoms - Halo must sit "ABOVE" the
@@ -87,7 +88,7 @@ for i=1:length(f_idok)        % TODO: MAJOR BUG: treat f_id properly
         
         % Check for no counts captured for halo
         if sum(ind_halo)==0
-            warning('Halo capture: shot #%d, halo #%d has no counts.',f_idok(i),i_halo);
+            warning('Halo capture: shot #%d, halo #%d has no counts.',shot_id(i),i_halo);
             errflag(i)=1;
         end
         
@@ -102,7 +103,7 @@ for i=1:length(f_idok)        % TODO: MAJOR BUG: treat f_id properly
         % NaN error occurs for halo radius - Occurs or zero halo count
         if verbose>0
             if isnan(halo.R{i,i_halo}(1))
-                warning('Halo capture: shot #%d, halo #%d has returned NaN for halo radius.',f_idok(i),i_halo);
+                warning('Halo capture: shot #%d, halo #%d has returned NaN for halo radius.',shot_id(i),i_halo);
             end
         end
     end
@@ -125,7 +126,7 @@ for i=1:size(halo.zxy0,1)
 
         % check for zero counts
         if sum(~ind_cap_temp)==0
-            warning('Halo capture: shot #%d, halo #%d has no counts after removing cap.',f_idok(i),i_halo);
+            warning('Halo capture: shot #%d, halo #%d has no counts after removing cap.',shot_id(i),i_halo);
             errflag(i)=1;
         end
     end
