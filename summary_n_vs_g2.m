@@ -1,9 +1,16 @@
 % SUMMARY OF BB g2 amplitude and scattering halo mode occupancy
+%
+% DKS
+% 2018-06-04
+
+flag_save_plot=0;
+
 
 %% Figure properties presets
+path_base=fileparts(mfilename('fullpath'));
+
 figname = 'g2_vs_mocc';
-% path_save='C:\Users\HE BEC\Desktop\dist_halo_summary';
-path_save='C:\Users\David\Desktop\fig';
+path_save=fullfile(path_base,'out');
 
 datetimestr=datestr(datetime,'yyyymmdd_HHMMSS');    % timestamp when function called
 figname=sprintf('%s_%s',figname,datetimestr);   % attach timestamp to name
@@ -12,7 +19,7 @@ fontsize_normal=10;
 fontsize=fontsize_normal;
 fontsize_small=7;
 linewidth = 1.2;
-markersize = 4;
+markersize = 5;
 % plotcolor = {'b','r'};
 % 
 % paperunits = 'centimeters';
@@ -24,10 +31,16 @@ boxlinewidth=1;
 ticklength=[0.02,0.025];
 
 % MISC
-gray_col=0.5*ones(1,3);         % gray data points
+% gray_col=0.5*ones(1,3);         % gray data points
 namearray={'LineWidth','MarkerFaceColor','Color'};      % error bar graphics properties
-valarray={linewidth,'w','k'};                 % 90 deg (normal) data
-valarray_30={linewidth,gray_col,gray_col};    % 30 deg (slow) data
+% valarray={linewidth,'w','k'};                 % 90 deg (normal) data
+% valarray_30={linewidth,gray_col,gray_col};    % 30 deg (slow) data
+
+[c1,c2]=palette(2);
+valarray={linewidth,c2(1,:),c1(1,:)};
+valarray_30={linewidth,c2(2,:),c1(2,:)};
+
+patch_col=0.9*ones(1,3);
 
 
 %% CONFIGS
@@ -110,14 +123,14 @@ hold on;
 htheory=plot(n,g2_theory-1,'k--','LineWidth',1.5,'DisplayName','Theory');       % theory curve
 
 % 30 deg data
-hdata_30=ploterr(n_exp_30,g2_exp_30-1,n_err_30,g2_err_30,'^','logxy','hhxy',0);
+hdata_30=ploterr(n_exp_30,g2_exp_30-1,n_err_30,g2_err_30,'d','logxy','hhxy',0);
 set(hdata_30(1),namearray,valarray_30,'MarkerSize',markersize,'DisplayName','Slow collision');              % DATAPOINT
 set(hdata_30(2),namearray,valarray_30,'DisplayName','');                  % Y-err
 set(hdata_30(3),namearray,valarray_30,'DisplayName','');                  % X-err
 
 % 90 deg data
 hdata=ploterr(n_exp,g2_exp-1,n_err_bnd,g2_err_bnd,'o','logxy','hhxy',0);
-set(hdata(1),namearray,valarray,'DisplayName','Fast collision');              % DATAPOINT
+set(hdata(1),namearray,valarray,'MarkerSize',markersize,'DisplayName','Fast collision');              % DATAPOINT
 set(hdata(2),namearray,valarray,'DisplayName','');                  % Y-err
 set(hdata(3),namearray,valarray,'DisplayName','');                  % X-err
 
@@ -128,7 +141,9 @@ x_corn=[n_lim(1),n_lim(2),n_lim(2),n_lim(1)];
 y_corn=[g2_bell,g2_bell,g2_lim(2),g2_lim(2)];       % above condition
 
 p_bell=patch(x_corn,y_corn,...
-    'b','FaceAlpha',0.1,'EdgeColor','none');
+    patch_col,'EdgeColor','none');
+%     'b','FaceAlpha',0.1,'EdgeColor','none');
+
 
 uistack(p_bell,'bottom');   % move the patch object to bottom
 
@@ -151,7 +166,8 @@ set(gca,'Units','normalized',...
     'PlotBoxAspectRatio',plotboxaspectratio);
 %     'YTick',[0:0.5:3],...
 %     'XTick',[0:0.5:3],...
-    
+set(gca,'Layer','Top');     % graphics axes should be always on top
+
 xlim(n_lim);
 ylim(g2_lim);
 
@@ -175,6 +191,6 @@ set(ax,'FontSize',fontsize_normal);
 % saveas(fig, [figname, '.eps'], 'psc2');     % save fig in cd
 % saveas(fig, [figname, '.pdf']);
 
-
-print(fig,fullfile(path_save,figname),'-dpdf');
-
+if flag_save_plot
+    print(fig,fullfile(path_save,figname),'-dpdf');
+end
