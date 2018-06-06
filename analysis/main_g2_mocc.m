@@ -148,8 +148,8 @@ p_bell=patch(x_corn,y_corn,...
 %     'b','FaceAlpha',0.1,'EdgeColor','none');
 
 % label regions
-text(5e-3,3,'$\mathcal{B} < 2$','FontSize',fontsize_normal);
-text(5e-3,7,'$\textrm{max}\,\mathcal{B} > 2$','FontSize',fontsize_normal);
+text(5e-3,3,'$\mathcal{B} < \frac{1}{\sqrt{2}}$','FontSize',fontsize_normal);
+text(5e-3,7,'$\textrm{max}\,\mathcal{B} > \frac{1}{\sqrt{2}}$','FontSize',fontsize_normal);
 
 uistack(p_bell,'bottom');   % move the patch object to bottom
 
@@ -177,7 +177,8 @@ xlim(n_lim);
 ylim(g2_lim);
 
 
-xlabel('$n_\textrm{sc}$');          % average atom occupation in an arbitrary (check) scattering mode in halo
+% xlabel('$n_\textrm{sc}$');          % average atom occupation in an arbitrary (check) scattering mode in halo
+xlabel('$n$');
 ylabel('$g^{(2)}_{\uparrow\downarrow}-1$');
 
 
