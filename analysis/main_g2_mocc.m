@@ -7,6 +7,8 @@ flag_save_plot=0;
 
 
 %% Figure properties presets
+dir_temp=fullfile(userpath,'temp');
+
 path_base=fileparts(mfilename('fullpath'));
 
 figname = 'src_g2_nsc';
@@ -15,15 +17,15 @@ path_save=fullfile(path_base,'out');
 datetimestr=datestr(datetime,'yyyymmdd_HHMMSS');    % timestamp when function called
 figname=sprintf('%s_%s',figname,datetimestr);   % attach timestamp to name
 
-fontsize_normal=10;
+fontsize_normal=12;
 fontsize=fontsize_normal;
-fontsize_small=7;
-fontsize_large=14;
+fontsize_small=10;
+fontsize_large=13;
 linewidth = 1.2;
 markersize = 5;
-% plotcolor = {'b','r'};
-% 
-% paperunits = 'centimeters';
+
+
+paperunits = 'centimeters';
 papersize=[8 8];
 paperposition=[0,0,papersize];
 
@@ -31,15 +33,21 @@ plotboxaspectratio=[1,1,1];
 boxlinewidth=1;
 ticklength=[0.02,0.025];
 
-% MISC
+%%% MISC
 % gray_col=0.5*ones(1,3);         % gray data points
 namearray={'LineWidth','MarkerFaceColor','Color'};      % error bar graphics properties
 % valarray={linewidth,'w','k'};                 % 90 deg (normal) data
 % valarray_30={linewidth,gray_col,gray_col};    % 30 deg (slow) data
 
-[c1,c2]=palette(2);
-valarray={linewidth,c2(1,:),c1(1,:)};
-valarray_30={linewidth,c2(2,:),c1(2,:)};
+% [c1,c2]=palette(2);
+% valarray={linewidth,c2(1,:),c1(1,:)};
+% valarray_30={linewidth,c2(2,:),c1(2,:)};
+
+[c1,c2]=palette(10);        % 8th color is is purplish
+col_idx1=8;     
+col_idx2=8;
+valarray_90={linewidth,c2(col_idx1,:),c1(col_idx1,:)};
+valarray_30={linewidth,c1(col_idx2,:),c1(col_idx2,:)};
 
 patch_col=0.9*ones(1,3);
 
@@ -58,9 +66,7 @@ g2_bell=(2*sqrt(2)+3)-1;            % Wasak, Chwedenczuk - limit g2 - 1
 n_exp=[0.0085, 0.0126, 0.0575, 0.604, 0.0887, 0.0102, 0.273 0.052];
 g2_exp=[92.5, 23.3, 31.5, 3.6, 20.3, 97.3, 8 26.6];      % mean fit amplitude
 
-% uncertainties
 n_unc=[0.68, 1.1, 0.38, 0.24, 0.39, 0.65, 0.32 0.84];      % relative error in ratio to mean
-
 g2_err=[9.1, 1.2, 2.1, 0.15, 0.5, 8.5, 0.43 1.5];   % error in SE
 
 
@@ -106,6 +112,8 @@ end
 
 
 %% Theory curve
+%   Model: spontaneous pair source
+
 r=3;
 n=linspace(min(n_exp)/r,r*max(n_exp),1000);       % logs
 % n=linspace(0,1.1*max(n_exp),1000);       % linear
@@ -113,29 +121,29 @@ g2_theory=1+1./n;
 
 
 %% Plot
-
 % plot mode occupancy vs g2(0) - 1
-% fig=figure();
-fig=figure('Name','src_g2_nsc',...
+fig=figure('Name',figname,...
     'Units','centimeters',...
-    'PaperUnits','centimeters',...
+    'PaperUnits',paperunits,...
     'PaperPositionMode','manual',...
     'PaperSize',papersize,...
     'PaperPosition',paperposition);
 hold on;
 htheory=plot(n,g2_theory-1,'k--','LineWidth',1.5,'DisplayName','Theory');       % theory curve
 
-% 30 deg data
+%%% 30 deg data
 hdata_30=ploterr(n_exp_30,g2_exp_30-1,n_err_30,g2_err_30,'d','logxy','hhxy',0);
-set(hdata_30(1),namearray,valarray_30,'MarkerSize',markersize,'DisplayName','Slow collision ($30^\circ$)');              % DATAPOINT
+% set(hdata_30(1),namearray,valarray_30,'MarkerSize',markersize,'DisplayName','Slow collision ($30^\circ$)');              % DATAPOINT
+set(hdata_30(1),namearray,valarray_30,'MarkerSize',markersize,'DisplayName','$30^\circ$');              % DATAPOINT
 set(hdata_30(2),namearray,valarray_30,'DisplayName','');                  % Y-err
 set(hdata_30(3),namearray,valarray_30,'DisplayName','');                  % X-err
 
-% 90 deg data
+%%% 90 deg data
 hdata=ploterr(n_exp,g2_exp-1,n_err_bnd,g2_err_bnd,'o','logxy','hhxy',0);
-set(hdata(1),namearray,valarray,'MarkerSize',markersize,'DisplayName','Fast collision ($90^\circ$)');              % DATAPOINT
-set(hdata(2),namearray,valarray,'DisplayName','');                  % Y-err
-set(hdata(3),namearray,valarray,'DisplayName','');                  % X-err
+% set(hdata(1),namearray,valarray,'MarkerSize',markersize,'DisplayName','Fast collision ($90^\circ$)');              % DATAPOINT
+set(hdata(1),namearray,valarray_90,'MarkerSize',markersize,'DisplayName','$90^\circ$');              % DATAPOINT
+set(hdata(2),namearray,valarray_90,'DisplayName','');                  % Y-err
+set(hdata(3),namearray,valarray_90,'DisplayName','');                  % X-err
 
 %%% Bell's test regime
 % build patch corners
@@ -153,14 +161,20 @@ text(5e-3,7,'$\textrm{max}\,\mathcal{B} > \frac{1}{\sqrt{2}}$','FontSize',fontsi
 
 uistack(p_bell,'bottom');   % move the patch object to bottom
 
+
 % annotate plot
 box on;
-oleg=legend([hdata(1),hdata_30(1),htheory]);
+% oleg=legend([hdata(1),hdata_30(1),htheory]);
+oleg=legend([hdata(1),hdata_30(1)]);
+title(legend,'Beam angle');
 set(oleg,'FontSize',fontsize_small);
 
 ax=gca;
 ax.XScale='log';
 ax.YScale='log';
+ax.XTick=10.^[-2,-1,0];
+ax.YTick=10.^[0,1,2];
+
 
 set(gca,'Units','normalized',...
     'FontUnits','points',...
@@ -169,8 +183,7 @@ set(gca,'Units','normalized',...
     'LineWidth',boxlinewidth,...
     'TickLength',ticklength,...
     'PlotBoxAspectRatio',plotboxaspectratio);
-%     'YTick',[0:0.5:3],...
-%     'XTick',[0:0.5:3],...
+
 set(gca,'Layer','Top');     % graphics axes should be always on top
 
 xlim(n_lim);
@@ -179,21 +192,24 @@ ylim(g2_lim);
 
 % xlabel('$n_\textrm{sc}$');          % average atom occupation in an arbitrary (check) scattering mode in halo
 xlabel('$n$');
-ylabel('$g^{(2)}_{\uparrow\downarrow}-1$');
+ylabel('$g^{(2)}_{\mathrm{BB},\uparrow\downarrow}-1$');
 
 
 %% FIG postprocess
 set(ax,'FontSize',fontsize_normal);
 
-% fig.Units = paperunits;
-% fig.Position = paperposition;
-% 
-% fig.PaperSize = papersize;
-% fig.PaperUnits = paperunits;
-% fig.PaperPosition = paperposition;
+fig.Units = paperunits;
+fig.Position = paperposition;
 
-% saveas(fig, [figname, '.eps'], 'psc2');     % save fig in cd
+fig.PaperSize = papersize;
+fig.PaperUnits = paperunits;
+fig.PaperPosition = paperposition;
+
+% save fig to temp directory
+% saveas(fig, [figname, '.eps'], 'psc2');     
 % saveas(fig, [figname, '.pdf']);
+print(fig,fullfile(dir_temp,strcat(figname,'.pdf')),'-dpdf');
+
 
 if flag_save_plot
     if ~exist(path_save,'dir')
