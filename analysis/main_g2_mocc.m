@@ -55,19 +55,29 @@ patch_col=0.9*ones(1,3);
 %% CONFIGS
 % plotting limits
 n_lim=[2e-3,1e0];       % axes lims for mode occupancy
-g2_lim=[1e0,2e2];      % axes lims for g2-1
+g2_lim=[8e-1,1e2];      % axes lims for g2-1
 
 % condition for violoation of Bell's test
 g2_bell=(2*sqrt(2)+3)-1;            % Wasak, Chwedenczuk - limit g2 - 1
 
 
+
 %% DATA
 %%% 90 deg data
-n_exp=[0.0085, 0.0126, 0.0575, 0.604, 0.0887, 0.0102, 0.273 0.052];
-g2_exp=[92.5, 23.3, 31.5, 3.6, 20.3, 97.3, 8 26.6];      % mean fit amplitude
+% n_exp=[0.0085, 0.0126, 0.0575, 0.604, 0.0887, 0.0102, 0.273 0.052];
+% g2_exp=[92.5, 23.3, 31.5, 3.6, 20.3, 97.3, 8 26.6];      % mean fit amplitude
+% 
+% n_unc=[0.68, 1.1, 0.38, 0.24, 0.39, 0.65, 0.32 0.84];       % relative error in ratio to mean
+% g2_err=[9.1, 1.2, 2.1, 0.15, 0.5, 8.5, 0.43 1.5];           % error in SE
 
-n_unc=[0.68, 1.1, 0.38, 0.24, 0.39, 0.65, 0.32 0.84];      % relative error in ratio to mean
-g2_err=[9.1, 1.2, 2.1, 0.15, 0.5, 8.5, 0.43 1.5];   % error in SE
+%%% load from revised analysis
+vars2load={'g2_amp','g2_amp_sdev','n_mocc','n_mocc_err'};
+S=load('C:\Users\HE BEC\bell_data\pairsource\90\pairsource_collated_del_run2.mat',vars2load{:});
+
+g2_exp=S.g2_amp;
+g2_err=S.g2_amp_sdev;
+n_exp=S.n_mocc;
+n_unc=S.n_mocc_err;
 
 
 %%% 30 deg data
@@ -79,8 +89,9 @@ g2_err_30=[1.0 0.16 0.06 0.41];
 
 
 % Use SD for g2 uncertainty
-g2_err=g2_err*sqrt(5);
+% g2_err=g2_err*sqrt(5);
 g2_err_30=g2_err_30*sqrt(5);
+
 
 
 %% EVALUATE error limits
@@ -117,10 +128,10 @@ end
 r=3;
 n=linspace(min(n_exp)/r,r*max(n_exp),1000);       % logs
 % n=linspace(0,1.1*max(n_exp),1000);       % linear
-g2_theory=1+1./n;
+% g2_theory=1+1./n;
+g2_theory=2+1./n;
 
-
-%% Plot
+%% Plot (g2-1)
 % plot mode occupancy vs g2(0) - 1
 fig=figure('Name',figname,...
     'Units','centimeters',...
@@ -165,9 +176,9 @@ uistack(p_bell,'bottom');   % move the patch object to bottom
 % annotate plot
 box on;
 % oleg=legend([hdata(1),hdata_30(1),htheory]);
-oleg=legend([hdata(1),hdata_30(1)]);
-title(legend,'Beam angle');
-set(oleg,'FontSize',fontsize_small);
+% oleg=legend([hdata(1),hdata_30(1)]);
+% title(legend,'Beam angle');
+% set(oleg,'FontSize',fontsize_small);
 
 ax=gca;
 ax.XScale='log';
@@ -176,9 +187,7 @@ ax.XTick=10.^[-2,-1,0];
 ax.YTick=10.^[0,1,2];
 
 
-set(gca,'Units','normalized',...
-    'FontUnits','points',...
-    'FontWeight','normal',...
+set(gca,...
     'FontSize',fontsize,...
     'LineWidth',boxlinewidth,...
     'TickLength',ticklength,...
@@ -195,7 +204,7 @@ xlabel('$n$');
 ylabel('$g^{(2)}_{\mathrm{BB},\uparrow\downarrow}-1$');
 
 
-%% FIG postprocess
+%%% FIG postprocess
 set(ax,'FontSize',fontsize_normal);
 
 fig.Units = paperunits;
@@ -208,7 +217,9 @@ fig.PaperPosition = paperposition;
 % save fig to temp directory
 % saveas(fig, [figname, '.eps'], 'psc2');     
 % saveas(fig, [figname, '.pdf']);
-print(fig,fullfile(dir_temp,strcat(figname,'.pdf')),'-dpdf');
+
+% print to temp directory
+% print(fig,fullfile(dir_temp,strcat(figname,'.pdf')),'-dpdf');
 
 
 if flag_save_plot
