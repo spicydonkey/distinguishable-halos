@@ -60,8 +60,6 @@ g2_lim=[8e-1,1e2];      % axes lims for g2-1
 % condition for violoation of Bell's test
 g2_bell=(2*sqrt(2)+3)-1;            % Wasak, Chwedenczuk - limit g2 - 1
 
-
-
 %% DATA
 %%% 90 deg data
 % n_exp=[0.0085, 0.0126, 0.0575, 0.604, 0.0887, 0.0102, 0.273 0.052];
@@ -70,9 +68,17 @@ g2_bell=(2*sqrt(2)+3)-1;            % Wasak, Chwedenczuk - limit g2 - 1
 % n_unc=[0.68, 1.1, 0.38, 0.24, 0.39, 0.65, 0.32 0.84];       % relative error in ratio to mean
 % g2_err=[9.1, 1.2, 2.1, 0.15, 0.5, 8.5, 0.43 1.5];           % error in SE
 
-%%% load from revised analysis
+
+path_dir='C:\Users\HE BEC\Documents\lab\bell_momentumspin\pairsource\90';
+file_name='pairsource_collated_del_run2.mat';
+
 vars2load={'g2_amp','g2_amp_sdev','n_mocc','n_mocc_err'};
-S=load('C:\Users\HE BEC\bell_data\pairsource\90\pairsource_collated_del_run2.mat',vars2load{:});
+
+% load from revised analysis
+% S=load('C:\Users\HE BEC\bell_data\pairsource\90\pairsource_collated_del_run2.mat',vars2load{:});
+file_path=fullfile(path_dir,file_name);
+S=load(file_path,vars2load{:});
+
 
 g2_exp=S.g2_amp;
 g2_err=S.g2_amp_sdev;
@@ -140,6 +146,7 @@ fig=figure('Name',figname,...
     'PaperSize',papersize,...
     'PaperPosition',paperposition);
 hold on;
+fig.Renderer='painters';
 htheory=plot(n,g2_theory-1,'k--','LineWidth',1.5,'DisplayName','Theory');       % theory curve
 
 %%% 30 deg data
@@ -167,8 +174,10 @@ p_bell=patch(x_corn,y_corn,...
 %     'b','FaceAlpha',0.1,'EdgeColor','none');
 
 % label regions
-text(5e-3,3,'$\mathcal{B} < \frac{1}{\sqrt{2}}$','FontSize',fontsize_normal);
-text(5e-3,7,'$\textrm{max}\,\mathcal{B} > \frac{1}{\sqrt{2}}$','FontSize',fontsize_normal);
+% text(5e-3,3,'$\mathcal{B} < \frac{1}{\sqrt{2}}$','FontSize',fontsize_normal);
+% text(5e-3,7,'$\textrm{max}\,\mathcal{B} > \frac{1}{\sqrt{2}}$','FontSize',fontsize_normal);
+text(3e-3,3.5,'Local (QM)','FontSize',fontsize_small);
+text(3e-3,6,'Nonlocal (QM)','FontSize',fontsize_small);
 
 uistack(p_bell,'bottom');   % move the patch object to bottom
 
@@ -176,16 +185,15 @@ uistack(p_bell,'bottom');   % move the patch object to bottom
 % annotate plot
 box on;
 % oleg=legend([hdata(1),hdata_30(1),htheory]);
-% oleg=legend([hdata(1),hdata_30(1)]);
-% title(legend,'Beam angle');
-% set(oleg,'FontSize',fontsize_small);
+oleg=legend([hdata(1),hdata_30(1)]);
+title(legend,'Beam angle');
+set(oleg,'FontSize',fontsize_small);
 
 ax=gca;
 ax.XScale='log';
 ax.YScale='log';
 ax.XTick=10.^[-2,-1,0];
 ax.YTick=10.^[0,1,2];
-
 
 set(gca,...
     'FontSize',fontsize,...
@@ -198,10 +206,10 @@ set(gca,'Layer','Top');     % graphics axes should be always on top
 xlim(n_lim);
 ylim(g2_lim);
 
-
 % xlabel('$n_\textrm{sc}$');          % average atom occupation in an arbitrary (check) scattering mode in halo
-xlabel('$n$');
-ylabel('$g^{(2)}_{\mathrm{BB},\uparrow\downarrow}-1$');
+xlabel('Mode occupancy $n$');
+% ylabel('$g^{(2)}_{\mathrm{BB},\uparrow\downarrow}-1$');
+ylabel('$g^{(2)}_{\uparrow\downarrow}-1$');
 
 
 %%% FIG postprocess
