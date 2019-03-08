@@ -5,7 +5,12 @@ function bool = fileExists(fileName)
 % 
 % Return true if the file exists.
 % 
-        import java.io.*;
-        a=File(fileName);
-        bool=a.exists();
+if ispc
+    import java.io.*;
+    a=File(fileName);
+    bool=a.exists();
+elseif isunix
+    bool=exist(fileName,'file')==2;
+end
+
 end
