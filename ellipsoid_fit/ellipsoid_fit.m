@@ -24,6 +24,7 @@ function [ center, radii, evecs, v, chi2 ] = ellipsoid_fit_new( X, equals )
 % * evecs     -  the radii directions as columns of the 3x3 matrix
 % * v         -  the 10 parameters describing the ellipsoid / conic algebraically: 
 %                Ax^2 + By^2 + Cz^2 + 2Dxy + 2Exz + 2Fyz + 2Gx + 2Hy + 2Iz + J = 0
+%                + constraint: A + B + C = 3 (reduces to 9 indep params)
 % * chi2      -  residual sum of squared errors (chi^2), this chi2 is in the 
 %                coordinate frame in which the ellipsoid is a unit sphere.
 %
@@ -31,6 +32,11 @@ function [ center, radii, evecs, v, chi2 ] = ellipsoid_fit_new( X, equals )
 % Yury Petrov, Oculus VR
 % Date:
 % September, 2015
+%
+% Edited:
+% David Shin
+% david.shin@anu.edu.au
+% March, 2019
 %
 
 narginchk( 1, 3 ) ;  % check input arguments
@@ -59,13 +65,19 @@ end
 if length( x ) < 5 && ( strcmp( equals, '0xy' ) || strcmp( equals, '0xz' ) )
    error( 'Must have at least 5 points to fit a unique oriented ellipsoid with two equal radii' );
 end
-if length( x ) < 4 && strcmp( equals, 'xyz' );
+if length( x ) < 4 && strcmp( equals, 'xyz' )
    error( 'Must have at least 4 points to fit a unique sphere' );
 end
 
 % fit ellipsoid in the form Ax^2 + By^2 + Cz^2 + 2Dxy + 2Exz + 2Fyz + 2Gx +
 % 2Hy + 2Iz + J = 0 and A + B + C = 3 constraint removing one extra
 % parameter
+% ----------------------------------------------------------------------
+% NOTE: 
+%   linear LSE model to fit: 
+%       f(x,y,z;PARAM)=(A+1)x^2 + (B+1)y^2 + (4-A-B)z^2 + 2Dxy + ... + J
+%   such that datapoints' dependent values are: x^2 + y^2 + z^2
+% ----------------------------------------------------------------------
 if strcmp( equals, '' )
     D = [ x .* x + y .* y - 2 * z .* z, ...
         x .* x + z .* z - 2 * y .* y, ...
